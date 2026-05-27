@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orderly - Platform Pre-Order Mahasiswa</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <!-- ============ NAVBAR ============ -->
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.html">Orderly</a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="index.html">Beranda</a>
+                    </li>
+                    <li class="nav-item" id="buyerNav" style="display: none;">
+                        <a class="nav-link" href="index.html">Katalog</a>
+                    </li>
+                    <li class="nav-item" id="sellerNav" style="display: none;">
+                        <a class="nav-link" href="dashboard/seller.html">Dashboard</a>
+                    </li>
+                    <li class="nav-item" id="adminNav" style="display: none;">
+                        <a class="nav-link" href="dashboard/admin.html">Admin Panel</a>
+                    </li>
+                </ul>
+
+                <!-- Auth Buttons or User Dropdown -->
+                <div class="auth-buttons" id="authButtons">
+                    <a href="auth/login.html" class="btn btn-login">Masuk</a>
+                    <a href="auth/register.html" class="btn btn-register">Daftar</a>
+                </div>
+
+                <!-- User Dropdown (shown when logged in) -->
+                <div class="user-dropdown" id="userDropdown" style="display: none;">
+                    <div class="user-avatar" id="userAvatarBtn">
+                        <span id="avatarText">U</span>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-size: 0.9rem; font-weight: 600;" id="userName">User</div>
+                        <div style="font-size: 0.8rem; opacity: 0.8;" id="userRole">Pembeli</div>
+                    </div>
+                    <button class="btn btn-sm btn-secondary" onclick="logout()" style="border-radius: 6px; padding: 0.4rem 0.8rem;">
+                        🚪 Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ============ HERO SECTION ============ -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>🚀 Solusi Pre-Order untuk Mahasiswa</h1>
+            <p>Orderly adalah platform katalog digital dan marketplace pre-order yang dirancang khusus untuk ekosistem mahasiswa. Mudah, aman, dan terstruktur.</p>
+            
+            <div id="heroButtons">
+                <a href="auth/register.html" class="btn btn-primary-white me-2" style="padding: 0.75rem 2rem; border-radius: 8px; font-weight: 600;">
+                    Mulai Sekarang
+                </a>
+                <a href="auth/login.html" class="btn btn-secondary-white" style="padding: 0.75rem 2rem; border-radius: 8px; font-weight: 600;">
+                    Masuk
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ FEATURES SECTION ============ -->
+    <section class="features">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 style="font-size: 2.5rem; font-weight: 800; color: var(--text-dark); margin-bottom: 1rem;">✨ Fitur Unggulan</h2>
+                <p style="font-size: 1.1rem; color: var(--text-light);">Semua yang Anda butuhkan untuk berbelanja atau berjualan</p>
+            </div>
+
+            <div class="row g-4">
+                <!-- Feature 1 -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="feature-card">
+                        <div class="feature-icon">📦</div>
+                        <h3>Katalog Terpusat</h3>
+                        <p>Lihat semua produk pre-order dari berbagai penjual dalam satu tempat yang terstruktur dan mudah dicari.</p>
+                    </div>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="feature-card">
+                        <div class="feature-icon">🔐</div>
+                        <h3>Aman & Terpercaya</h3>
+                        <p>Sistem verifikasi akun, pembayaran terenkripsi, dan proteksi data pelanggan yang ketat.</p>
+                    </div>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="feature-card">
+                        <div class="feature-icon">💳</div>
+                        <h3>Tracking Pembayaran</h3>
+                        <p>Upload bukti pembayaran, lacak status pesanan, dan dapatkan notifikasi real-time.</p>
+                    </div>
+                </div>
+
+                <!-- Feature 4 -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="feature-card">
+                        <div class="feature-icon">⭐</div>
+                        <h3>Rating & Review</h3>
+                        <p>Lihat review pelanggan dan rating penjual untuk membuat keputusan pembelian yang tepat.</p>
+                    </div>
+                </div>
+
+                <!-- Feature 5 -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="feature-card">
+                        <div class="feature-icon">📊</div>
+                        <h3>Dashboard Seller</h3>
+                        <p>Kelola produk, pantau PO, lihat statistik penjualan, dan kelola pesanan dengan mudah.</p>
+                    </div>
+                </div>
+
+                <!-- Feature 6 -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="feature-card">
+                        <div class="feature-icon">🎯</div>
+                        <h3>Pre-Order Management</h3>
+                        <p>Atur kuota, deadline, dan kelola pre-order dengan sistem yang fleksibel dan efisien.</p>
+                    </div>
+                </div>
+
+                <!-- Feature 7 -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="feature-card">
+                        <div class="feature-icon">📱</div>
+                        <h3>Responsif & User-Friendly</h3>
+                        <p>Aplikasi dirancang mobile-first dengan interface yang intuitif dan mudah digunakan.</p>
+                    </div>
+                </div>
+
+                <!-- Feature 8 -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="feature-card">
+                        <div class="feature-icon">⚡</div>
+                        <h3>Cepat & Reliable</h3>
+                        <p>Server yang responsif, loading cepat, dan uptime 99.9% untuk pengalaman terbaik.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ CTA SECTION ============ -->
+    <section style="background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%); color: white; padding: 4rem 0; text-align: center;">
+        <div class="container">
+            <h2 style="font-size: 2rem; font-weight: 800; margin-bottom: 1rem;">Siap Memulai?</h2>
+            <p style="font-size: 1.1rem; margin-bottom: 2rem; opacity: 0.95;">Daftar sekarang dan mulai berbelanja atau berjualan</p>
+            
+            <div id="ctaButtons">
+                <a href="auth/register.html" class="btn btn-light me-2" style="padding: 0.75rem 2rem; border-radius: 8px; font-weight: 600; color: var(--primary-color);">
+                    Daftar Gratis
+                </a>
+                <a href="auth/login.html" class="btn" style="background-color: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 0.75rem 2rem; border-radius: 8px; font-weight: 600;">
+                    Masuk
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ FOOTER ============ -->
+    <footer style="background-color: var(--dark-bg); color: white; padding: 2rem 0; text-align: center; margin-top: 4rem;">
+        <div class="container">
+            <p style="margin-bottom: 0.5rem;">© 2026 Orderly. Solusi Pre-Order untuk Mahasiswa.</p>
+            <p style="margin: 0; opacity: 0.7; font-size: 0.9rem;">Dibuat dengan ❤️ untuk komunitas mahasiswa</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/auth.js"></script>
+    <script>
+        // Update navbar based on auth state
+        function updateNavbar() {
+            const authButtons = document.getElementById('authButtons');
+            const userDropdown = document.getElementById('userDropdown');
+            const buyerNav = document.getElementById('buyerNav');
+            const sellerNav = document.getElementById('sellerNav');
+            const adminNav = document.getElementById('adminNav');
+
+            if (isLoggedIn()) {
+                // Hide auth buttons, show user dropdown
+                authButtons.style.display = 'none';
+                userDropdown.style.display = 'flex';
+
+                // Update user info
+                const user = auth.user;
+                document.getElementById('userName').textContent = formatUserName(user);
+                document.getElementById('userRole').textContent = 
+                    user.role === 'seller' ? '🏪 Penjual' : 
+                    user.role === 'admin' ? '👨‍💼 Admin' : 
+                    '👤 Pembeli';
+
+                // Update avatar
+                const initials = user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+                document.getElementById('avatarText').textContent = initials;
+
+                // Show role-specific nav
+                if (user.role === 'buyer') {
+                    buyerNav.style.display = 'block';
+                } else if (user.role === 'seller') {
+                    sellerNav.style.display = 'block';
+                } else if (user.role === 'admin') {
+                    adminNav.style.display = 'block';
+                }
+
+                // Update CTA buttons
+                document.getElementById('heroButtons').innerHTML = `
+                    <a href="index.html" class="btn btn-primary-white me-2" style="padding: 0.75rem 2rem; border-radius: 8px; font-weight: 600;">
+                        Jelajahi Katalog
+                    </a>
+                `;
+
+                document.getElementById('ctaButtons').innerHTML = `
+                    <a href="index.html" class="btn btn-light" style="padding: 0.75rem 2rem; border-radius: 8px; font-weight: 600; color: var(--primary-color);">
+                        Lihat Katalog
+                    </a>
+                `;
+            }
+        }
+
+        // Initialize on page load
+        updateNavbar();
+    </script>
+</body>
+</html>
