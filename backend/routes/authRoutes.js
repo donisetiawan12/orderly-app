@@ -2,8 +2,12 @@ const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
 const { verifyToken, verifyRole } = require('../middleware/authMiddleware');
+// GUNAKAN KURUNG KURAWAL DISINI:
+const { uploadKTM } = require('../middleware/uploadMiddleware'); 
 
-router.post('/register', authController.register);
+// Pastikan di sini uploadKTM tidak undefined
+router.post('/register', uploadKTM, authController.register);
+
 router.post('/login', authController.login);
 
 // Test endpoint untuk verifikasi token
@@ -23,5 +27,9 @@ router.get('/seller-only', verifyToken, verifyRole('seller', 'admin'), (req, res
         user: req.user
     });
 });
+
+// Cuma admin yang bisa akses
+router.get('/admin/pending-sellers', verifyToken, verifyRole('admin'), authController.getPendingSellers);
+router.put('/admin/approve-seller/:id', verifyToken, verifyRole('admin'), authController.approveSeller);
 
 module.exports = router;

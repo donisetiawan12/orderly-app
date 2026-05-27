@@ -1,0 +1,11 @@
+# Mengabaikan folder library
+node_modules/
+
+# Mengabaikan folder upload gambar
+uploads/
+
+# Mengabaikan file konfigurasi rahasia
+.env
+
+# Mengabaikan file sistem (khusus macOS)
+.DS_Store
