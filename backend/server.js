@@ -1,4 +1,5 @@
 const express = require('express');
+const router = express.Router();
 const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
@@ -20,6 +21,7 @@ app.use(cors({
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // ============ STATIC FILES ============
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -35,12 +37,14 @@ const cartRoutes = require('./routes/cartRoutes'); // <--- Tambahin ini
 const authRoutes = require('./routes/authRoutes');
 const productRoutes = require('./routes/productRoutes');
 const orderRoutes = require('./routes/orderRoutes'); // <--- Nanti kita buat file ini
+const categoryRoutes = require('./routes/categoryRoutes');
 
 // Gunakan Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes); // <--- Tinggal tambahin ini nanti
 app.use('/api/cart', cartRoutes); // <--- Tambahin ini
+app.use('/api/categories', categoryRoutes);
 
 // ============ ERROR HANDLING MIDDLEWARE ============
 app.use((err, req, res, next) => {
@@ -62,3 +66,17 @@ app.listen(PORT, () => {
     console.log(`📦 Environment: ${process.env.NODE_ENV || 'development'}`);
 });
 
+router.get('/', (req, res) => {
+    db.query('SELECT * FROM categories', (err, results) => {
+        if (err) {
+            return res.status(500).json({ message: err.message });
+        }
+        res.json({
+            status: "success",
+            message: "Data kategori dimuat",
+            data: results
+        });
+    });
+});
+
+module.exports = router;
