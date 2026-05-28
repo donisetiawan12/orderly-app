@@ -17,7 +17,15 @@ const storageProduct = multer.diskStorage({
     }
 });
 
-// Definisi Middleware
+// Setup untuk Bukti Bayar
+const storagePayment = multer.diskStorage({
+    destination: './uploads/payments/', // Pastikan folder ini ada di direktori lu!
+    filename: (req, file, cb) => {
+        cb(null, `pay-${Date.now()}${path.extname(file.originalname)}`);
+    }
+});
+
+// Middleware KTM
 const uploadKTM = multer({ 
     storage: storageKTM,
     fileFilter: (req, file, cb) => {
@@ -28,7 +36,18 @@ const uploadKTM = multer({
     }
 }).single('ktm_file');
 
+// Middleware Produk
 const uploadProduct = multer({ storage: storageProduct }).single('image');
 
-// EKSPOR SEKALI SAJA
-module.exports = { uploadKTM, uploadProduct };
+// Middleware Bukti Bayar
+const uploadPayment = multer({ 
+    storage: storagePayment,
+    fileFilter: (req, file, cb) => {
+        const filetypes = /jpeg|jpg|png/; // Bukti bayar fokus ke gambar
+        const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+        if (extname) return cb(null, true);
+        cb(new Error('Hanya file gambar (jpg/png) yang diperbolehkan untuk bukti bayar!'));
+    }
+}).single('payment_proof'); // Nama field di Postman nanti harus "payment_proof"
+
+module.exports = { uploadKTM, uploadProduct, uploadPayment };

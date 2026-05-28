@@ -29,12 +29,18 @@ app.get('/ping', (req, res) => {
     return res.status(200).json({ message: "pong", timestamp: new Date().toISOString() });
 });
 
+const cartRoutes = require('./routes/cartRoutes'); // <--- Tambahin ini
+
 // Daftarkan Routes di sini
 const authRoutes = require('./routes/authRoutes');
-const productRoutes = require('./routes/productRoutes'); // <--- PASTIKAN FILE INI ADA
+const productRoutes = require('./routes/productRoutes');
+const orderRoutes = require('./routes/orderRoutes'); // <--- Nanti kita buat file ini
 
+// Gunakan Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/products', productRoutes); // <--- INI YG KURANG
+app.use('/api/products', productRoutes);
+app.use('/api/orders', orderRoutes); // <--- Tinggal tambahin ini nanti
+app.use('/api/cart', cartRoutes); // <--- Tambahin ini
 
 // ============ ERROR HANDLING MIDDLEWARE ============
 app.use((err, req, res, next) => {
@@ -55,3 +61,4 @@ app.listen(PORT, () => {
     console.log(`✅ Server berjalan di http://localhost:${PORT}`);
     console.log(`📦 Environment: ${process.env.NODE_ENV || 'development'}`);
 });
+
