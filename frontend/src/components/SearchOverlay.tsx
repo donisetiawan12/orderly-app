@@ -1,40 +1,65 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function SearchOverlay({ isOpen, onClose, searchTerm, setSearchTerm }: any) {
   const [products, setProducts] = useState<any[]>([]);
+  const router = useRouter();
 
   useEffect(() => {
-    async function fetchProducts() {
+    async function fetchAllProducts() {
+      if (!isOpen) return;
       try {
-        const response = await fetch('http://localhost:5000/api/products');
-        const json = await response.json();
-        // Sesuaikan dengan struktur API lu, pastikan jadi Array
-        if (json && json.data) {
-          // Kalau strukturnya json.data.products, pakai json.data.products
-          setProducts(Array.isArray(json.data) ? json.data : json.data.products || []);
-        }
+        const [res1, res2] = await Promise.all([
+          fetch('http://localhost:5000/api/products?page=1'),
+          fetch('http://localhost:5000/api/products?page=2')
+        ]);
+        const json1 = await res1.json();
+        const json2 = await res2.json();
+
+        const allProducts = [...(json1.data?.products || []), ...(json2.data?.products || [])];
+        
+        // Hapus duplikat berdasarkan ID agar tidak muncul produk yang sama berkali-kali
+        const uniqueProducts = Array.from(new Map(allProducts.map(item => [item.id, item])).values());
+        setProducts(uniqueProducts);
       } catch (error) {
         console.error("Gagal fetch search:", error);
       }
     }
-    
-    if (isOpen) fetchProducts();
+    fetchAllProducts();
   }, [isOpen]);
 
-  // Logika filter lokal
-  const filtered = products.filter((p) =>
-    (p.name || '').toLowerCase().includes((searchTerm || '').toLowerCase())
-  );
+  // Gunakan useMemo agar filter hanya berjalan saat searchTerm berubah
+  const filtered = useMemo(() => {
+    if (!searchTerm) return [];
+    return products
+      .filter((p) => p.name?.toLowerCase().includes(searchTerm.toLowerCase()))
+      .slice(0, 8); // Batasi maksimal 8 hasil agar tampilan rapi
+  }, [searchTerm, products]);
+
+  const handleSelectProduct = (item: any) => {
+    setSearchTerm(item.name); 
+    onClose();
+
+    // Scroll halus ke section menu
+    setTimeout(() => {
+      const menuSection = document.getElementById('menu-section');
+      if (menuSection) {
+        menuSection.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 300);
+  };
 
   if (!isOpen) return null;
 
   return (
     <div id="searchOv" className="open">
-      <button type="button" className="sovclose" onClick={onClose}><i className="fas fa-times"></i></button>
+      <button type="button" className="sovclose" onClick={onClose}>
+        <i className="fas fa-times"></i>
+      </button>
       
       <div className="sovbox">
-        <h4>What are you craving today?</h4>
+        <h4>Apa Yang Sedang Kamu Cari?</h4>
         <div className="sovinput">
           <input 
             type="text" 
@@ -47,13 +72,18 @@ export default function SearchOverlay({ isOpen, onClose, searchTerm, setSearchTe
 
         <div className="sovcats">
           {searchTerm && filtered.map((item) => (
-            <div className="sovcat" key={item.id} onClick={onClose}>
-              {/* Pastikan path gambar backend lu sudah benar */}
-              <img src={`http://localhost:5000/uploads/${item.image}`} alt={item.name} />
-              {item.name}
+            <div className="sovcat" key={item.id} onClick={() => handleSelectProduct(item)} style={{ cursor: 'pointer' }}>
+              <img 
+                src={item.image ? `http://localhost:5000/${item.image}` : '/img/default.jpg'} 
+                alt={item.name} 
+                onError={(e: any) => e.target.src = '/img/default.jpg'}
+              />
+              <span>{item.name}</span>
             </div>
           ))}
-          {searchTerm && filtered.length === 0 && <p>Tidak ada hasil.</p>}
+          {searchTerm && filtered.length === 0 && (
+            <p className="text-center mt-3" style={{ color: '#888' }}>Tidak ada hasil untuk "{searchTerm}".</p>
+          )}
         </div>
       </div>
     </div>

@@ -17,7 +17,9 @@ export default function Categories({ activeFilter, setActiveFilter }: any) {
         console.error("Gagal load kategori:", error);
       }
     }
+    
     fetchCategories();
+    
   }, []);
 
   return (
@@ -36,9 +38,9 @@ export default function Categories({ activeFilter, setActiveFilter }: any) {
           {categories.map((cat) => (
             <div className="col-6 col-sm-4 col-md-3 col-lg-2" key={cat.id}>
               <div 
-                className={`catcard ${activeFilter === cat.id ? 'active' : ''}`}
-                onClick={() => setActiveFilter(cat.id)}
-              >
+                  className={`catcard ${String(activeFilter) === String(cat.id) ? 'active' : ''}`}
+                  onClick={() => setActiveFilter(String(cat.id))} // Pastikan jadi String
+                >
                 {/* Pastikan file ini ada di public/img/category/1.jpg sampai 6.jpg */}
                 <img 
                   className="catimg" 

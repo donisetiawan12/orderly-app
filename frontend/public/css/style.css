@@ -231,6 +231,9 @@ img {
 /* ===================== SECTION COMMONS ===================== */
 section {
   padding: 88px 0;
+  /* Coba naikkan dari 80px ke 110px atau lebih */
+  scroll-margin-top: 110px; 
+  margin-top: 100px; /* Tambahkan margin-top agar ada jarak antara section dengan navbar saat scroll */
 }
 .slbl {
   font-family: "Dancing Script", cursive;
@@ -645,8 +648,15 @@ section {
 }
 
 /* ===================== ABOUT ===================== */
+/* Kita pakai warna biru muda yang halus (sky blue) */
 #about {
-  background: #fff;
+  background-color: #f0f7ff;
+  
+  /* Geser posisi berhenti scroll agar tidak terlalu mepet */
+  scroll-margin-top: 60px; 
+  
+  /* Tambahkan padding-top agar warna biru terlihat dimulai tepat di bawah navbar */
+  padding-top: 100px; 
 }
 .astack {
   position: relative;
@@ -861,10 +871,14 @@ section {
   font-family: "Playfair Display", serif;
 }
 .mdesc {
-  font-size: 0.78rem;
-  color: #aaa;
-  margin-bottom: 13px;
-  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* Maksimal 2 baris saja */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  /* Sesuaikan tinggi agar seragam */
+  height: 2.8em; 
+  line-height: 1.4em;
 }
 .mfoot {
   display: flex;
@@ -893,7 +907,7 @@ section {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--primary), #c01e12);
+  background: var(--primary);
   border: none;
   color: #fff;
   font-size: 1rem;
@@ -902,7 +916,7 @@ section {
   justify-content: center;
   cursor: pointer;
   transition: 0.3s;
-  box-shadow: 0 4px 11px rgba(232, 40, 26, 0.28);
+  box-shadow: 0 4px 11px rgba(26, 47, 232, 0.28);
 }
 .madd:hover {
   transform: scale(1.15) rotate(90deg);

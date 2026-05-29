@@ -32,14 +32,15 @@ export default function Navbar({ onSearchOpen }: any) {
             <li className="nav-item"><a className="nav-link" href="#testimonials">Reviews</a></li>
             <li className="nav-item"><a className="nav-link" href="#contact-section">Contact</a></li>
           </ul>
-          <div className="d-flex align-items-center gap-1">
-            <button onClick={onSearchOpen} className="btn-search">
+        
+        <div className="d-flex align-items-center gap-1">
+            <button onClick={onSearchOpen} id="navSearchBtn">
                 <i className="fas fa-search"></i>
             </button>       
             <a href="#menu" className="nav-link nav-cta">
               <i className="fas fa-shopping-bag me-1"></i>Pesan Sekarang
             </a>
-          </div>
+        </div>
         </div>
       </div>
     </nav>
