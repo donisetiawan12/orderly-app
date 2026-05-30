@@ -47,7 +47,7 @@ export default function Hero() {
             <div style={{ position: "relative", textAlign: "center" }}>
               <div className="hcircle">
                 {/* Gambar ilustrasi marketplace atau dashboard Orderly */}
-                <img src="/img/orderly-hero.png" alt="Orderly Marketplace" className="img-fluid" />
+                <img src="/img/hero.jpeg" alt="Orderly Marketplace" className="img-fluid" />
               </div>
               
               {/* Feature Cards untuk Seller/Buyer */}

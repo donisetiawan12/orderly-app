@@ -5,8 +5,8 @@ export default function Footer() {
         <div className="row g-5">
           {/* Logo & Sosmed */}
           <div className="col-lg-4">
-            <div className="fnm">Sar<span>ab</span></div>
-            <p className="fdesc">We bring the world's finest flavors together in a fast, friendly, and affordable experience. Every meal crafted with love.</p>
+            <div className="fnm">Order<span>ly</span></div>
+            <p className="fdesc">Mudahkan harimu dengan layanan pesan-antar kampus terbaik. Cepat, murah, dan terpercaya. Karena mahasiswa berhak makan enak tanpa harus ribet.</p>
             <div className="fsoc">
               <a href="#"><i className="fab fa-facebook-f"></i></a>
               <a href="#"><i className="fab fa-instagram"></i></a>
@@ -55,7 +55,7 @@ export default function Footer() {
             </div>
             <div className="fci">
               <div className="fciico"><i className="fas fa-envelope"></i></div>
-              <div className="fciinfo"><strong>Email</strong>hello@sarabfood.com</div>
+              <div className="fciinfo"><strong>Email</strong>hello@Orderlyfood.com</div>
             </div>
             <div className="fci">
               <div className="fciico"><i className="fas fa-clock"></i></div>
@@ -70,7 +70,7 @@ export default function Footer() {
         <div className="container">
           <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
             <p className="mb-0">
-              &copy; 2026 <span>Sarab Restaurant</span>. All Rights Reserved. 
+              &copy; 2026 <span>Orderly Restaurant</span>. All Rights Reserved. 
               <br /> Made with <span><i className="fas fa-heart"></i></span>
             </p>
             <div>

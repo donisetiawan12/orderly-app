@@ -24,8 +24,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // ============ STATIC FILES ============
+// Ganti baris app.use('/uploads', ...) yang lama dengan ini:
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
 // ============ ROUTES ============
 app.get('/ping', (req, res) => {
     return res.status(200).json({ message: "pong", timestamp: new Date().toISOString() });

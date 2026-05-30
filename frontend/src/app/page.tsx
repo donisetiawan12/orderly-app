@@ -7,7 +7,9 @@ import Marquee from '../components/Marquee';
 import Footer from '../components/Footer';
 import Categories from '../components/Categories'; 
 import About from '../components/About';
+import HowItWorks from '../components/HowItWorks';
 import Menu from '../components/Menu';
+import Contact from '../components/Contact';
 import MenuDetailPopup from '../components/MenuDetailPopup';
 
 export default function Home() {
@@ -45,7 +47,6 @@ export default function Home() {
            activeFilter={activeFilter} 
            setActiveFilter={setActiveFilter} 
         />
-        <About /> {/* Pastikan About di sini */}
        <Menu 
           searchTerm={searchTerm} 
           activeFilter={activeFilter}
@@ -53,11 +54,15 @@ export default function Home() {
           onOpenDetail={setSelectedProduct}
           onClearSearch={() => setSearchTerm('')}
         />
-
+        
+        <HowItWorks />  {/* <--- PASTIIN BAGIAN INI ADA! */}
+          
         <MenuDetailPopup 
           product={selectedProduct} 
           onClose={() => setSelectedProduct(null)} 
         />
+        <About /> {/* Pastikan About di sini */}
+        <Contact /> {/* Pastikan Contact di sini */}
       </main>
       
       <Footer />

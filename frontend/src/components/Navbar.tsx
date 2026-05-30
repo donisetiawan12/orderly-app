@@ -23,14 +23,12 @@ export default function Navbar({ onSearchOpen }: any) {
         </button>
 
         <div className="collapse navbar-collapse" id="navmenu">
-          <ul className="navbar-nav mx-auto">
-            <li className="nav-item"><a className="nav-link active" href="#hero">Home</a></li>
-            <li className="nav-item"><a className="nav-link" href="#about">About</a></li>
-            <li className="nav-item"><a className="nav-link" href="#menu">Menu</a></li>
-            <li className="nav-item"><a className="nav-link" href="#chefs">Chefs</a></li>
-            <li className="nav-item"><a className="nav-link" href="#reservation">Reservation</a></li>
-            <li className="nav-item"><a className="nav-link" href="#testimonials">Reviews</a></li>
-            <li className="nav-item"><a className="nav-link" href="#contact-section">Contact</a></li>
+         <ul className="navbar-nav mx-auto">
+            <li className="nav-item"><a className="nav-link" href="#hero">Home</a></li>
+            <li className="nav-item"><a className="nav-link" href="#about">Tentang</a></li>
+            <li className="nav-item"><a className="nav-link" href="#menu-section">Menu</a></li>
+            <li className="nav-item"><a className="nav-link" href="#hours">Cara Kerja</a></li>
+            <li className="nav-item"><a className="nav-link" href="#contact-section">Kontak</a></li>
           </ul>
         
         <div className="d-flex align-items-center gap-1">

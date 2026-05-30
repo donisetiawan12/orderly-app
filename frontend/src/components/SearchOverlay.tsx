@@ -19,7 +19,7 @@ export default function SearchOverlay({ isOpen, onClose, searchTerm, setSearchTe
 
         const allProducts = [...(json1.data?.products || []), ...(json2.data?.products || [])];
         
-        // Hapus duplikat berdasarkan ID agar tidak muncul produk yang sama berkali-kali
+        // Hapus duplikat
         const uniqueProducts = Array.from(new Map(allProducts.map(item => [item.id, item])).values());
         setProducts(uniqueProducts);
       } catch (error) {
@@ -29,19 +29,17 @@ export default function SearchOverlay({ isOpen, onClose, searchTerm, setSearchTe
     fetchAllProducts();
   }, [isOpen]);
 
-  // Gunakan useMemo agar filter hanya berjalan saat searchTerm berubah
   const filtered = useMemo(() => {
     if (!searchTerm) return [];
     return products
       .filter((p) => p.name?.toLowerCase().includes(searchTerm.toLowerCase()))
-      .slice(0, 8); // Batasi maksimal 8 hasil agar tampilan rapi
+      .slice(0, 8); 
   }, [searchTerm, products]);
 
   const handleSelectProduct = (item: any) => {
     setSearchTerm(item.name); 
     onClose();
 
-    // Scroll halus ke section menu
     setTimeout(() => {
       const menuSection = document.getElementById('menu-section');
       if (menuSection) {
@@ -72,15 +70,18 @@ export default function SearchOverlay({ isOpen, onClose, searchTerm, setSearchTe
 
         <div className="sovcats">
           {searchTerm && filtered.map((item) => (
-            <div className="sovcat" key={item.id} onClick={() => handleSelectProduct(item)} style={{ cursor: 'pointer' }}>
+            <div className="sovcat" key={item.id} onClick={() => handleSelectProduct(item)} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
               <img 
-                src={item.image ? `http://localhost:5000/${item.image}` : '/img/default.jpg'} 
+                // PERBAIKAN: Menambahkan /uploads/products/ agar sesuai dengan struktur backend
+                src={item.image ? `http://localhost:5000/uploads/products/${item.image}` : '/img/default.jpg'} 
                 alt={item.name} 
-                onError={(e: any) => e.target.src = '/img/default.jpg'}
+                style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '5px', marginRight: '15px' }}
+                onError={(e: any) => { e.target.src = '/img/default.jpg'; }}
               />
               <span>{item.name}</span>
             </div>
           ))}
+          
           {searchTerm && filtered.length === 0 && (
             <p className="text-center mt-3" style={{ color: '#888' }}>Tidak ada hasil untuk "{searchTerm}".</p>
           )}
