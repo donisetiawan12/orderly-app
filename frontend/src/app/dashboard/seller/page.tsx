@@ -2,56 +2,53 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Sidebar from './Sidebar';
+import Navbar from './Navbar';
 
 export default function SellerDashboard() {
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const savedUser = localStorage.getItem('user');
+    const user = localStorage.getItem('user');
     const token = localStorage.getItem('token');
 
-    if (!savedUser || !token) {
-      router.push('/'); // Tendang ke home jika belum login
+    if (!user || !token) {
+      router.push('/');
       return;
     }
 
-    const parsedUser = JSON.parse(savedUser);
-    if (parsedUser.role !== 'seller') {
-      router.push('/'); // Tendang jika bukan seller
-      return;
-    }
-
-    setUser(parsedUser);
     setLoading(false);
   }, [router]);
 
   if (loading) {
     return (
-      <div className="d-flex justify-content-center align-items-center vh-100 bg-light">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
+      <div className="vh-100 d-flex justify-content-center align-items-center">
+        Loading...
       </div>
     );
   }
 
   return (
-    <div className="bg-light min-vh-100">
-      {/* Mini Navbar Dashboard */}
-      <nav className="navbar navbar-dark bg-dark shadow-sm py-3">
-        <div className="container">
-          <a className="navbar-brand fw-bold d-flex align-items-center gap-2" href="#">
-            <i className="fas fa-store text-warning"></i> Orderly Seller Panel
-          </a>
-          <button onClick={() => router.push('/')} className="btn btn-outline-light btn-sm rounded-pill">
-            <i className="fas fa-arrow-left me-1"></i> Kembali ke Marketplace
-          </button>
-        </div>
-      </nav>
+    <>
+      {/* Background */}
+      <div className="absolute w-full bg-blue-500 min-h-75"></div>
 
-      
-    </div>
+      {/* Sidebar */}
+      <Sidebar />
+
+      {/* Main wrapper */}
+      <main className="relative h-full max-h-screen transition-all duration-200 ease-in-out xl:ml-68 rounded-xl">
+        
+        {/* Navbar */}
+        <Navbar />
+
+        {/* Content area */}
+        <div className="px-6 py-6">
+          {/* nanti isi dashboard cards / table di sini */}
+        </div>
+
+      </main>
+    </>
   );
 }

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Waktu pembuatan: 28 Bulan Mei 2026 pada 14.53
+-- Waktu pembuatan: 10 Jun 2026 pada 21.03
 -- Versi server: 10.4.28-MariaDB
 -- Versi PHP: 8.0.28
 
@@ -36,13 +36,6 @@ CREATE TABLE `cart` (
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data untuk tabel `cart`
---
-
-INSERT INTO `cart` (`id`, `user_id`, `product_id`, `quantity`, `created_at`, `updated_at`) VALUES
-(1, 3, 3, 1, '2026-05-28 12:46:41', '2026-05-28 12:46:41');
-
 -- --------------------------------------------------------
 
 --
@@ -55,15 +48,21 @@ CREATE TABLE `categories` (
   `description` text DEFAULT NULL,
   `slug` varchar(100) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `image` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data untuk tabel `categories`
 --
 
-INSERT INTO `categories` (`id`, `name`, `description`, `slug`, `created_at`, `updated_at`) VALUES
-(1, 'Makanan', NULL, 'makanan', '2026-05-27 16:02:12', '2026-05-27 16:02:12');
+INSERT INTO `categories` (`id`, `name`, `description`, `slug`, `created_at`, `updated_at`, `image`) VALUES
+(1, 'Makanan', 'Aneka makanan berat dan jajanan kampus.', 'makanan', '2026-05-28 19:22:56', '2026-05-30 19:32:37', 'makanan.png'),
+(2, 'Minuman', 'Kopi, teh, jus, dan minuman segar lainnya.', 'minuman', '2026-05-28 19:22:56', '2026-05-30 19:41:02', 'minuman.png'),
+(3, 'Elektronik', 'Charger, kabel data, flashdisk, dan aksesori gadget.', 'elektronik', '2026-05-28 19:22:56', '2026-05-30 19:02:12', 'elektronik.jpg'),
+(4, 'ATK & Buku', 'Alat tulis, buku catatan, dan keperluan tugas.', 'atk-buku', '2026-05-28 19:22:56', '2026-05-30 19:02:12', 'atk.jpg'),
+(5, 'Fashion', 'Jaket almamater, kaos, dan perlengkapan kampus.', 'fashion', '2026-05-28 19:22:56', '2026-05-30 19:41:43', 'fashion.png'),
+(7, 'jasa', 'membuat kategori jasa', '', '2026-05-30 18:41:00', '2026-05-30 19:42:06', 'jasa.jpeg');
 
 -- --------------------------------------------------------
 
@@ -91,8 +90,7 @@ CREATE TABLE `orders` (
 --
 
 INSERT INTO `orders` (`id`, `buyer_id`, `product_id`, `seller_id`, `quantity`, `total_price`, `status`, `payment_method`, `payment_proof`, `notes`, `created_at`, `updated_at`) VALUES
-(1, 3, 3, 3, 1, 50000.00, 'completed', NULL, 'uploads/payments/pay-1779970331209.jpeg', NULL, '2026-05-28 11:49:46', '2026-05-28 12:20:10'),
-(2, 3, 3, 3, 1, 50000.00, 'paid', NULL, 'uploads/payments/pay-1779969631719.png', NULL, '2026-05-28 11:58:55', '2026-05-28 12:00:31');
+(1, 2, 1, 1, 19, 20000.00, 'completed', NULL, 'test.jpg', 'mantap', '2026-05-30 20:25:03', '2026-05-30 20:25:33');
 
 -- --------------------------------------------------------
 
@@ -113,17 +111,27 @@ CREATE TABLE `products` (
   `po_deadline` datetime DEFAULT NULL,
   `status` enum('active','inactive') DEFAULT 'active',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `location` varchar(100) DEFAULT 'Kampus A',
+  `sold_quantity` int(11) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data untuk tabel `products`
 --
 
-INSERT INTO `products` (`id`, `seller_id`, `category_id`, `name`, `description`, `price`, `quantity`, `image`, `po_quota`, `po_deadline`, `status`, `created_at`, `updated_at`) VALUES
-(3, 3, 1, 'Kopi Arabika', 'Kopi dari dataran tinggi...', 50000.00, 8, 'uploads/products/prod-1779968656481.png', 0, NULL, 'active', '2026-05-28 11:44:16', '2026-05-28 11:58:55'),
-(4, 3, NULL, 'Kopi Arabika 2', 'Kopi dari dataran tinggi... 2', 500002.00, 102, 'uploads/products/prod-1779971047474.jpeg', 0, NULL, 'active', '2026-05-28 12:24:07', '2026-05-28 12:24:07'),
-(5, 3, 1, 'Kopi Arabika 2', 'Kopi dari dataran tinggi... 2', 500002.00, 102, 'uploads/products/prod-1779971088041.stl', 0, NULL, 'active', '2026-05-28 12:24:48', '2026-05-28 12:24:48');
+INSERT INTO `products` (`id`, `seller_id`, `category_id`, `name`, `description`, `price`, `quantity`, `image`, `po_quota`, `po_deadline`, `status`, `created_at`, `updated_at`, `location`, `sold_quantity`) VALUES
+(1, 1, 1, 'Nasi Goreng Spesial', 'Nasi goreng dengan bumbu rempah rahasia.', 15000.00, 20, 'nasigoreng.jpg', 0, '2026-05-31 23:59:59', 'active', '2026-05-29 15:31:57', '2026-05-30 20:58:44', 'Kampus A', 0),
+(2, 1, 1, 'Mie Ayam Bakso', 'Mie kenyal dengan topping ayam cincang.', 12000.00, 25, 'miayambakso.jpeg', 0, '2026-05-31 23:59:59', 'active', '2026-05-29 15:31:57', '2026-05-30 20:58:44', 'Kampus A', 0),
+(3, 1, 2, 'Kopi Arabika', 'Kopi asli dari dataran tinggi.', 10000.00, 30, 'kopiarabika.jpeg', 0, '2026-06-01 23:59:59', 'active', '2026-05-29 15:31:57', '2026-05-30 18:03:38', 'Kampus A', 0),
+(4, 1, 2, 'Es Teh Manis', 'Teh segar dengan rasa manis yang pas.', 5000.00, 50, 'estehmanis.jpeg', 0, '2026-06-01 23:59:59', 'active', '2026-05-29 15:31:57', '2026-05-30 18:05:12', 'Kampus A', 0),
+(5, 1, 3, 'Kabel Data Type-C', 'Fast charging untuk perangkat Android.', 25000.00, 10, 'kabeldata.jpg', 0, '2026-06-01 23:59:59', 'active', '2026-05-29 15:31:57', '2026-05-30 18:26:55', 'Kampus A', 0),
+(6, 1, 3, 'Flashdisk 32GB', 'Penyimpanan data cepat dan awet.', 65000.00, 5, 'flashdisk.jpg', 0, '2026-06-03 23:59:59', 'active', '2026-05-29 15:31:57', '2026-05-30 20:58:44', 'Kampus A', 0),
+(7, 1, 4, 'Buku Catatan A5', 'Buku tulis untuk keperluan kuliah.', 7000.00, 40, 'buku.jpg', 0, '2026-06-03 23:59:59', 'active', '2026-05-29 15:31:57', '2026-05-30 20:58:44', 'Kampus A', 0),
+(8, 1, 4, 'Pulpen Gel Hitam', 'Pulpen nyaman untuk menulis tugas.', 3500.00, 100, 'pulpen.jpg', 0, '2026-06-05 23:59:59', 'active', '2026-05-29 15:31:57', '2026-05-30 20:58:44', 'Kampus A', 0),
+(9, 1, 5, 'Kaos Polos Cotton', 'Bahan katun adem, nyaman dipakai.', 45000.00, 20, 'kaos.jpg', 0, '2026-06-05 23:59:59', 'active', '2026-05-29 15:31:57', '2026-05-30 20:58:44', 'Kampus A', 0),
+(10, 1, 5, 'Jaket Hoodie', 'Hoodie tebal dengan desain simpel.', 120000.00, 10, 'hoodie.jpg', 0, '2026-06-05 23:59:59', 'active', '2026-05-29 15:31:57', '2026-05-30 20:58:44', 'Kampus A', 0),
+(11, 3, 7, 'Jasa Membuat Website', 'Jasa Pembuatan Website Developer sampai hosting dengan vps gratis dan bebas domaind', 500000.00, 0, 'default.jpg', 0, NULL, 'active', '2026-05-30 18:43:06', '2026-05-30 18:43:06', 'Kampus A', 0);
 
 -- --------------------------------------------------------
 
@@ -141,13 +149,6 @@ CREATE TABLE `reviews` (
   `comment` text DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data untuk tabel `reviews`
---
-
-INSERT INTO `reviews` (`id`, `order_id`, `buyer_id`, `seller_id`, `product_id`, `rating`, `comment`, `created_at`) VALUES
-(1, 1, 3, 3, 3, 5, 'Barangnya mantap, pengiriman cepat sekali!', '2026-05-28 12:20:18');
 
 -- --------------------------------------------------------
 
@@ -193,7 +194,13 @@ CREATE TABLE `users` (
 INSERT INTO `users` (`id`, `name`, `email`, `password`, `role`, `verification_status`, `ktm_path`, `phone`, `address`, `profile_picture`, `created_at`, `updated_at`) VALUES
 (1, 'Admin', 'admin@gmail.com', '$2b$10$UXfajGH6Np456xCUMwauGOz9Lsm/VNzxIhOEddKlBcFsmgXkSBaEK', 'admin', 'approved', NULL, NULL, NULL, NULL, '2026-05-27 15:51:45', '2026-05-27 15:52:08'),
 (2, 'buyer', 'buyer@gmail.com', '$2b$10$qR7UnEEHdMz6tyb9bBsEOegcZLbOZhxuz/GaCKMhSdlT6oBpQo4AG', 'buyer', 'approved', NULL, NULL, NULL, NULL, '2026-05-27 15:52:41', '2026-05-27 15:52:41'),
-(3, 'seller', 'seller@gmail.com', '$2b$10$sIs/iUczCdAqr.ydlhz3s.dITgqPzBGlGjET4lzwtaSd/SFJ53Ksq', 'seller', 'approved', 'uploads/ktm/ktm-1779897267043.png', NULL, NULL, NULL, '2026-05-27 15:54:27', '2026-05-27 15:56:41');
+(3, 'seller', 'seller@gmail.com', '$2b$10$sIs/iUczCdAqr.ydlhz3s.dITgqPzBGlGjET4lzwtaSd/SFJ53Ksq', 'seller', 'approved', 'uploads/ktm/ktm-1779897267043.png', NULL, NULL, NULL, '2026-05-27 15:54:27', '2026-05-27 15:56:41'),
+(4, 'tes1', 'tes@gmail.com', '$2b$10$dogwqHszwsm6I8TJ3r8HzO2n62ykwp0c/FR1buAAmNUtUPWyi65eq', 'buyer', 'approved', NULL, NULL, NULL, NULL, '2026-06-10 14:02:30', '2026-06-10 14:02:30'),
+(5, 'tes2', 'tes2@gmail.com', '$2b$10$Ij1P.l0YIOiMCXOX7Yrh7utgBUUTSnZTpyOVTtxaTnLvIni7ACwTG', 'buyer', 'approved', NULL, NULL, NULL, NULL, '2026-06-10 14:03:30', '2026-06-10 14:03:30'),
+(6, 'tes3', 'tes3@gmail.com', '$2b$10$Eh9hOCKxEr7Pnkm3cHAyFOAd5dTeGtM1fAEVVGbYWi2JY6IQW3o6a', 'buyer', 'approved', NULL, NULL, NULL, NULL, '2026-06-10 14:09:32', '2026-06-10 14:09:32'),
+(7, 'seller1', 'seller1@gmail.com', '$2b$10$4Jziw0v6IW9m88YjBuwHQ.JQU/016W.Is08fquWpLqnbq03SoSiZi', 'seller', 'approved', 'uploads/ktm/ktm-1781101182631.png', NULL, NULL, NULL, '2026-06-10 14:19:42', '2026-06-10 14:20:01'),
+(8, 'seller2', 'seller2@gmail.com', '$2b$10$VpBfW0br1EJmP/qrmzloauSYL77/4UvFiEEIILQBfj4wun7tFKuA6', 'seller', 'approved', 'uploads/ktm/ktm-1781101818606.jpeg', NULL, NULL, NULL, '2026-06-10 14:30:18', '2026-06-10 14:30:45'),
+(9, 'buyer1', 'buyer1@gmail.com', '$2b$10$iLP48IxMpD9A0o3Ve96LsuokWPT2AmkY1ghcWqj.TBRYKh0zbFam.', 'buyer', 'approved', NULL, NULL, NULL, NULL, '2026-06-10 14:33:19', '2026-06-10 14:33:19');
 
 --
 -- Indexes for dumped tables
@@ -280,25 +287,25 @@ ALTER TABLE `cart`
 -- AUTO_INCREMENT untuk tabel `categories`
 --
 ALTER TABLE `categories`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT untuk tabel `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT untuk tabel `products`
 --
 ALTER TABLE `products`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT untuk tabel `reviews`
 --
 ALTER TABLE `reviews`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT untuk tabel `seller_stats`
@@ -310,7 +317,7 @@ ALTER TABLE `seller_stats`
 -- AUTO_INCREMENT untuk tabel `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- Ketidakleluasaan untuk tabel pelimpahan (Dumped Tables)
