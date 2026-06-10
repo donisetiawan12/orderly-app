@@ -144,7 +144,7 @@ export default function RegisterModal({
                 Orderly
               </h1>
 
-              <h3
+              {/* <h3
                 className="mt-4"
                 style={{
                   fontWeight: 700,
@@ -152,7 +152,7 @@ export default function RegisterModal({
               >
                 Mulai Jual & Beli
                 Sekarang
-              </h3>
+              </h3> */}
 
               <p
                 className="mt-3"

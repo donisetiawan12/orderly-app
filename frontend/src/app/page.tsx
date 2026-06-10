@@ -77,7 +77,8 @@ export default function Home() {
       />
 
       <main>
-        <Hero />
+        <Hero onSearchOpen={() => setIsSearchOpen(true)} 
+          onLoginOpen={() => setShowLogin(true)} />
 
         <Marquee />
 

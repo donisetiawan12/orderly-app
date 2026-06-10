@@ -143,14 +143,14 @@ export default function LoginModal({
                 Orderly
               </h1>
 
-              <h3
+              {/* <h3
                 className="mt-4"
                 style={{
                   fontWeight: 700,
                 }}
               >
                 Marketplace Mahasiswa
-              </h3>
+              </h3> */}
 
               <p
                 className="mt-3"

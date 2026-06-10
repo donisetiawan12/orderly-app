@@ -443,7 +443,7 @@ section {
   transform: translateY(-3px);
   background: var(--primary);
   box-shadow: 0 10px 20px rgba(79, 70, 229, 0.2);
-  color: #fff;
+  color: #150ab4;
 }
 
 .btn-play:hover .pico {
