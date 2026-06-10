@@ -1,86 +1,62 @@
 'use client';
-
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-interface Props {
+interface LoginModalProps {
   show: boolean;
   onClose: () => void;
   onOpenRegister: () => void;
+  setUser: (user: any) => void;
 }
 
-export default function LoginModal({
-  show,
-  onClose,
-  onOpenRegister,
-}: Props) {
+export default function LoginModal({ show, onClose, onOpenRegister, setUser }: LoginModalProps) {
   const router = useRouter();
-
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   if (!show) return null;
 
-  const handleLogin = async (
-    e: React.FormEvent
-  ) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+    setLoading(true);
 
     try {
-      setLoading(true);
+      // Sesuaikan URL ini dengan endpoint backend Node.js/Laravel kamu bro
+      const res = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
 
-      const response = await fetch(
-        'http://localhost:5000/api/auth/login',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type':
-              'application/json',
-          },
-          body: JSON.stringify({
-            email,
-            password,
-          }),
-        }
-      );
+      const data = await res.json();
 
-      const data =
-        await response.json();
-
-      if (!response.ok) {
-        alert(data.message);
-        return;
+      if (!res.ok) {
+        throw new Error(data.message || 'Login gagal, periksa email & password!');
       }
 
-      localStorage.setItem(
-        'token',
-        data.token
-      );
+      // 1. Simpan ke LocalStorage agar tidak hilang saat di-refresh
+      localStorage.setItem('user', JSON.stringify(data.user));
+      localStorage.setItem('token', data.token); // kalau backend pakai JWT token
 
-      localStorage.setItem(
-        'user',
-        JSON.stringify(data.user)
-      );
-
+      // 2. Update state user global di page.tsx
+      setUser(data.user);
       onClose();
 
+      // 3. Logika redirect berdasarkan Role dari DB kamu
       if (data.user.role === 'admin') {
-        router.push(
-          '/admin/dashboard'
-        );
-      } else if (
-        data.user.role === 'seller'
-      ) {
-        router.push(
-          '/seller/dashboard'
-        );
+        router.push('/dashboard/admin');
+      } else if (data.user.role === 'seller') {
+        router.push('/dashboard/seller');
       } else {
-        router.push('/dashboard');
+        // Buyer tetap di halaman utama
+        router.push('/');
       }
-    } catch (error) {
-      console.error(error);
-      alert('Login gagal');
+
+    } catch (err: any) {
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -195,12 +171,10 @@ export default function LoginModal({
 
           {/* RIGHT SIDE FORM */}
           <div className="col-md-6 p-5">
+            
             <div className="d-flex justify-content-between align-items-center mb-4">
               <h2
                 className="fw-bold"
-                style={{
-                  color: '#4f46e5',
-                }}
               >
                 Login
               </h2>
@@ -219,9 +193,10 @@ export default function LoginModal({
               bertransaksi di
               Orderly.
             </p>
+            {error && <div className="alert alert-danger py-2 mt-2">{error}</div>}
 
             <form
-              onSubmit={handleLogin}
+              onSubmit={handleLoginSubmit}
             >
               <div className="mb-3">
                 <label className="form-label fw-semibold">
@@ -230,8 +205,13 @@ export default function LoginModal({
 
                 <input
                   type="email"
-                  className="form-control form-control-lg"
+                  className="form-control"
                   placeholder="Masukkan email"
+                  style={{
+                  borderRadius: '14px',
+                  height: '55px',
+                  border: '1px solid #e5e7eb',
+                }}
                   value={email}
                   onChange={(e) =>
                     setEmail(

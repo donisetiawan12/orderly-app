@@ -1,8 +1,13 @@
 'use client';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { Plus_Jakarta_Sans } from 'next/font/google';
+
 
 import "./globals.css";
 
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+});
 // src/app/layout.tsx
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -16,7 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="stylesheet" href="/css/magnific-popup.css" />
         <link rel="stylesheet" href="/css/style.css" />
       </head>
-      <body>
+      <body className={jakarta.className}>
         {children}
       </body>
     </html>

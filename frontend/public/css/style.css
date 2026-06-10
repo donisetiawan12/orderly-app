@@ -2509,3 +2509,14 @@ footer {
     50% { transform: scale(1.05); }
     100% { transform: scale(1); }
 }
+
+
+@keyframes toastProgress {
+  from {
+    width: 100%;
+  }
+
+  to {
+    width: 0%;
+  }
+}
