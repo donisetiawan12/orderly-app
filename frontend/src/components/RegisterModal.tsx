@@ -155,8 +155,13 @@ export default function RegisterModal({
                 <label className="form-label fw-semibold">Nama Lengkap</label>
                 <input
                   type="text"
-                  className="form-control form-control-lg"
+                  className="form-control"
                   placeholder="Masukkan nama lengkap"
+                  style={{
+                  borderRadius: '14px',
+                  height: '55px',
+                  border: '1px solid #e5e7eb',
+                }}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
@@ -167,8 +172,13 @@ export default function RegisterModal({
                 <label className="form-label fw-semibold">Email</label>
                 <input
                   type="email"
-                  className="form-control form-control-lg"
+                  className="form-control"
                   placeholder="Masukkan email resmi"
+                  style={{
+                  borderRadius: '14px',
+                  height: '55px',
+                  border: '1px solid #e5e7eb',
+                }}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -179,8 +189,13 @@ export default function RegisterModal({
                 <label className="form-label fw-semibold">Password</label>
                 <input
                   type="password"
-                  className="form-control form-control-lg"
+                  className="form-control "
                   placeholder="Masukkan password"
+                  style={{
+                  borderRadius: '14px',
+                  height: '55px',
+                  border: '1px solid #e5e7eb',
+                }}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -192,8 +207,13 @@ export default function RegisterModal({
                 <label className="form-label fw-semibold">No. WhatsApp / Telepon</label>
                 <input
                   type="tel"
-                  className="form-control form-control-lg"
+                  className="form-control "
                   placeholder="Contoh: 0812345678xx"
+                  style={{
+                  borderRadius: '14px',
+                  height: '55px',
+                  border: '1px solid #e5e7eb',
+                }}
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   required
@@ -205,7 +225,12 @@ export default function RegisterModal({
               <div className="mb-3">
                 <label className="form-label fw-semibold">Daftar Sebagai</label>
                 <select
-                  className="form-select form-select-lg"
+                  className="form-select"
+                  style={{
+                  borderRadius: '14px',
+                  height: '55px',
+                  border: '1px solid #e5e7eb',
+                }}
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
                 >

@@ -229,8 +229,13 @@ export default function LoginModal({ show, onClose, onOpenRegister, setUser }: L
 
                 <input
                   type="password"
-                  className="form-control form-control-lg"
+                  className="form-control"
                   placeholder="Masukkan password"
+                  style={{
+                  borderRadius: '14px',
+                  height: '55px',
+                  border: '1px solid #e5e7eb',
+                }}
                   value={password}
                   onChange={(e) =>
                     setPassword(
