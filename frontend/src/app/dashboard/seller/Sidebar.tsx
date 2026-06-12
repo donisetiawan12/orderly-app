@@ -1,6 +1,23 @@
 'use client';
 
+import Link from 'next/link';
+import { usePathname } from 'next/navigation'; // <-- Import hook buat deteksi URL aktif
+
 export default function Sidebar() {
+  const pathname = usePathname(); // <-- Ambil data path URL browser saat ini
+
+  // Helper function buat nentuin class link (Aktif vs Biasa)
+  const getLinkClass = (path: string) => {
+    const baseClass = "py-2.7 text-sm my-0 mx-2 flex items-center whitespace-nowrap rounded-lg px-4 font-semibold transition-all duration-200";
+    
+    // Jika URL browser sama dengan path menu, kasih class active bawaan Argon
+    if (pathname === path) {
+      return `${baseClass} bg-blue-500/13 text-blue-600 dark:text-white`;
+    }
+    // Jika tidak aktif, pakai warna abu-abu default
+    return `${baseClass} text-slate-700 hover:bg-slate-100/50`;
+  };
+
   return (
     <aside
       className="fixed inset-y-0 flex-wrap items-center justify-between block w-full p-0 my-4 overflow-y-auto antialiased transition-transform duration-200 -translate-x-full bg-white border-0 shadow-xl max-w-64 ease-nav-brand z-990 xl:ml-6 rounded-2xl xl:left-0 xl:translate-x-0"
@@ -22,76 +39,57 @@ export default function Sidebar() {
       <div className="items-center block w-auto max-h-screen overflow-auto h-sidenav grow basis-full">
         <ul className="flex flex-col pl-0 mb-0">
 
+          {/* MENU 1: DASHBOARD UTAMA */}
           <li className="mt-0.5 w-full">
-            <a
-              className="py-2.7 bg-blue-500/13 text-sm my-0 mx-2 flex items-center whitespace-nowrap rounded-lg px-4 font-semibold text-slate-700"
-              href="#"
+            <Link
+              className={getLinkClass('/dashboard/seller')} // <-- Otomatis nyala kalau di /dashboard/seller
+              href="/dashboard/seller" // Fix: dipastikan rute absolute-nya lengkap bro
             >
               <div className="mr-2 flex h-8 w-8 items-center justify-center">
                 <i className="ni ni-tv-2 text-blue-500"></i>
               </div>
-
               <span className="ml-1">Dashboard</span>
-            </a>
+            </Link>
           </li>
 
+          {/* MENU 2: MANAJEMEN PRODUK */}
           <li className="mt-0.5 w-full">
-            <a
-              className="py-2.7 text-sm my-0 mx-2 flex items-center whitespace-nowrap px-4 font-semibold text-slate-700"
-              href="#"
+            <Link
+              className={getLinkClass('/dashboard/products')} // <-- Otomatis nyala kalau di /dashboard/products
+              href="/dashboard/products"
             >
               <div className="mr-2 flex h-8 w-8 items-center justify-center">
-                <i className="ni ni-box-2 text-orange-500"></i>
+                <i className="ni ni-box-2 text-orange-500" style={{ fontSize: '14px' }}></i>
               </div>
-
-              <span className="ml-1">
-                Manajemen Produk
-              </span>
-            </a>
+              <span className="ml-1">Manajemen Produk</span>
+            </Link>
           </li>
 
+       {/* MENU PESANAN (Sudah aktif mengarah ke halaman tabel pesanan baru) */}
           <li className="mt-0.5 w-full">
-            <a
-              className="py-2.7 text-sm my-0 mx-2 flex items-center whitespace-nowrap px-4 font-semibold text-slate-700"
-              href="#"
-            >
+            <Link className={getLinkClass('/dashboard/pesanan')} href="/dashboard/pesanan">
               <div className="mr-2 flex h-8 w-8 items-center justify-center">
                 <i className="ni ni-cart text-emerald-500"></i>
               </div>
-
-              <span className="ml-1">
-                Pesanan
-              </span>
-            </a>
+              <span className="ml-1">Pesanan</span>
+            </Link>
           </li>
 
           <li className="mt-0.5 w-full">
-            <a
-              className="py-2.7 text-sm my-0 mx-2 flex items-center whitespace-nowrap px-4 font-semibold text-slate-700"
-              href="#"
-            >
+            <a className={getLinkClass('/dashboard/reviews')} href="#">
               <div className="mr-2 flex h-8 w-8 items-center justify-center">
                 <i className="ni ni-chat-round text-cyan-500"></i>
               </div>
-
-              <span className="ml-1">
-                Ulasan Pelanggan
-              </span>
+              <span className="ml-1">Ulasan Pelanggan</span>
             </a>
           </li>
 
           <li className="mt-0.5 w-full">
-            <a
-              className="py-2.7 text-sm my-0 mx-2 flex items-center whitespace-nowrap px-4 font-semibold text-slate-700"
-              href="#"
-            >
+            <a className={getLinkClass('/dashboard/payments')} href="#">
               <div className="mr-2 flex h-8 w-8 items-center justify-center">
                 <i className="ni ni-money-coins text-yellow-500"></i>
               </div>
-
-              <span className="ml-1">
-                Payment Saya
-              </span>
+              <span className="ml-1">Payment Saya</span>
             </a>
           </li>
 
@@ -102,32 +100,20 @@ export default function Sidebar() {
           </li>
 
           <li className="mt-0.5 w-full">
-            <a
-              className="py-2.7 text-sm my-0 mx-2 flex items-center whitespace-nowrap px-4 font-semibold text-slate-700"
-              href="#"
-            >
+            <a className={getLinkClass('/dashboard/settings')} href="#">
               <div className="mr-2 flex h-8 w-8 items-center justify-center">
                 <i className="ni ni-settings-gear-65 text-orange-500"></i>
               </div>
-
-              <span className="ml-1">
-                Pengaturan Akun
-              </span>
+              <span className="ml-1">Pengaturan Akun</span>
             </a>
           </li>
 
           <li className="mt-0.5 w-full">
-            <a
-              className="py-2.7 text-sm my-0 mx-2 flex items-center whitespace-nowrap px-4 font-semibold text-slate-700"
-              href="#"
-            >
+            <a className={getLinkClass('/logout')} href="#">
               <div className="mr-2 flex h-8 w-8 items-center justify-center">
                 <i className="ni ni-button-power text-red-500"></i>
               </div>
-
-              <span className="ml-1">
-                Logout
-              </span>
+              <span className="ml-1">Logout</span>
             </a>
           </li>
 

@@ -1,33 +1,69 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
+import Link from 'next/link';
 
 export default function Navbar() {
   const router = useRouter();
+  const pathname = usePathname(); // Ambil path URL aktif saat ini
+
+  // Pecah path URL (Contoh: "/seller/dashboard/orders" -> ["seller", "dashboard", "orders"])
+  const pathSegments = pathname.split('/').filter((segment) => segment !== '');
 
   return (
     <nav
-      className="relative flex flex-wrap items-center justify-between px-0 py-2 mx-6 transition-all ease-in shadow-none duration-250 rounded-2xl lg:flex-nowrap lg:justify-start"
+      // Menggunakan mx-4 agar presisi sejajar dengan kartu & tabel di bawahnya
+      className="relative flex flex-wrap items-center justify-between px-0 py-2 mx-4 transition-all ease-in shadow-none duration-250 rounded-2xl lg:flex-nowrap lg:justify-start"
       navbar-main="true"
       navbar-scroll="false"
     >
-      <div className="flex items-center justify-between w-full px-4 py-1 mx-auto flex-wrap-inherit">
+      {/* items-center menjaga hubungan vertikal antara grid kiri dan kanan */}
+      <div className="flex items-center justify-between w-full px-0 py-1 mx-auto flex-wrap-inherit">
 
-        {/* Breadcrumb */}
-        <nav>
-          <ol className="flex flex-wrap pt-1 mr-12 bg-transparent rounded-lg sm:mr-16">
-            <li className="text-sm leading-normal">
-              <a className="text-white opacity-50" href="#">
-                Pages
-              </a>
-            </li>
+        {/* ================= BREADCRUMB OTOMATIS (FIX TRULY CENTERED ALIGNED) ================= */}
+        {/* Kita injeksi inline style translateY buat maksa teks turun pas di garis tengah tombol marketplace */}
+        <nav className="block" style={{ transform: 'translateY(5px)' }}>
+          <ol className="flex flex-wrap pt-0 bg-transparent rounded-lg items-center mb-0 list-none p-0">
+            {/* Jika path kosong (di halaman root atau /), default tampilkan Dashboard */}
+            {pathSegments.length === 0 ? (
+              <li
+                className="text-sm pl-2 capitalize leading-normal text-white font-bold before:float-left before:pr-2 before:text-white/60 before:content-['/']"
+                aria-current="page"
+              >
+                Dashboard
+              </li>
+            ) : (
+              // Looping segment URL untuk membuat breadcrumb otomatis
+              pathSegments.map((segment, index) => {
+                const isLast = index === pathSegments.length - 1;
+                
+                // Mengganti tanda strip (-) atau underscore (_) jadi spasi agar rapi dibaca
+                const cleanSegmentName = segment.replace(/[-_]/g, ' ');
 
-            <li
-              className="text-sm pl-2 capitalize leading-normal text-white before:float-left before:pr-2 before:text-white before:content-['/']"
-              aria-current="page"
-            >
-              Dashboard
-            </li>
+                if (isLast) {
+                  // Segment terakhir (Halaman aktif sekarang): Teks tebal/bold murni
+                  return (
+                    <li
+                      key={index}
+                      className="text-sm pl-2 capitalize leading-normal text-white font-bold before:float-left before:pr-2 before:text-white/60 before:content-['/']"
+                      aria-current="page"
+                    >
+                      {cleanSegmentName}
+                    </li>
+                  );
+                } else {
+                  // Segment tengah/induk: Teks agak transparan (opacity)
+                  return (
+                    <li
+                      key={index}
+                      className="text-sm pl-2 capitalize leading-normal text-white opacity-60 before:float-left before:pr-2 before:text-white/60 before:content-['/']"
+                    >
+                      {cleanSegmentName}
+                    </li>
+                  );
+                }
+              })
+            )}
           </ol>
         </nav>
 
@@ -39,24 +75,26 @@ export default function Navbar() {
 
             {/* Back Button */}
             <li className="flex items-center">
-<button
-  onClick={() => router.push('/')}
-  className="btn btn-outline-light btn-sm rounded-pill !text-white px-3 py-1 border border-white/40 transition hover:bg-white hover:!text-black hover:border-white"
->
-  <i className="fas fa-arrow-left mr-1"></i>
-  Kembali ke Marketplace
-</button>
+              <button
+                type="button"
+                onClick={() => router.push('/')}
+                className="btn btn-outline-light btn-sm rounded-pill !text-white px-3 py-1 border border-white/40 transition hover:bg-white hover:!text-black hover:border-white cursor-pointer"
+                style={{ fontSize: '12px', fontWeight: 'bold' }}
+              >
+                <i className="fas fa-arrow-left mr-1"></i>
+                Kembali ke Marketplace
+              </button>
             </li>
 
             {/* Profile */}
             <li className="flex items-center">
-              <a
+              <Link
                 href="/sign-in"
-                className="block px-0 py-2 text-sm font-semibold text-white transition-all ease-nav-brand"
+                className="block px-0 py-2 text-sm font-semibold text-white transition-all ease-nav-brand hover:opacity-80"
               >
                 <i className="fa fa-user sm:mr-1"></i>
                 <span className="hidden sm:inline">Profile</span>
-              </a>
+              </Link>
             </li>
 
           </ul>

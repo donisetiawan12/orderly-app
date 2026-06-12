@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
+import Footer from './Footer';
+import DashboardCards from './DashboardCards'; // Import komponen baru di sini
 
 export default function SellerDashboard() {
   const router = useRouter();
@@ -23,7 +25,7 @@ export default function SellerDashboard() {
 
   if (loading) {
     return (
-      <div className="vh-100 d-flex justify-content-center align-items-center">
+      <div className="h-screen w-screen flex justify-center items-center">
         Loading...
       </div>
     );
@@ -38,16 +40,27 @@ export default function SellerDashboard() {
       <Sidebar />
 
       {/* Main wrapper */}
-      <main className="relative h-full max-h-screen transition-all duration-200 ease-in-out xl:ml-68 rounded-xl">
+      <main className="relative h-full min-h-screen transition-all duration-200 ease-in-out xl:ml-68 rounded-xl flex flex-col justify-between">
         
-        {/* Navbar */}
-        <Navbar />
+        <div>
+          {/* Navbar */}
+          <Navbar />
 
-        {/* Content area */}
-        <div className="px-6 py-6">
-          {/* nanti isi dashboard cards / table di sini */}
+          {/* Content area */}
+          <div className="px-6 py-6 mx-auto w-full">
+            {/* Komponen Cards Dinamis */}
+            <DashboardCards />
+            
+            {/* Tempat untuk row tabel atau grafik selanjutnya */}
+          </div>
         </div>
 
+        {/* FOOTER SEKARANG DI SINI (DI DALAM MAIN)! 
+          Biar dia dapet margin kiri otomatis dari 'xl:ml-68' bawaan tag main,
+          jadi posisinya dijamin sejajar rapi sama grafik dan card atasnya.
+        */}
+        <Footer />
+         
       </main>
     </>
   );

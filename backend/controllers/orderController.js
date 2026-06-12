@@ -5,48 +5,54 @@ const sendResponse = (res, statusCode, status, message, data = null) => {
     res.status(statusCode).json({ status, message, data });
 };
 
-// Buat Pesanan Baru (Checkout)
 exports.createOrder = async (req, res) => {
+    console.log("==========================================");
+    console.log("🚀 API CHECKOUT LAGI DITEMBAK BUYER!");
+    console.log("Data yang masuk dari Frontend:", req.body);
+    console.log("==========================================");
+
+
     try {
-        const { product_id, seller_id, quantity, total_price, notes } = req.body;
-        const buyer_id = req.user.id;
+        // 1. Ambil data yang dikirim oleh buyer dari frontend
+        const { product_id, seller_id, quantity, total_price, payment_method, notes } = req.body;
+        const buyer_id = req.user.id; // Mengambil id buyer dari token middleware auth lu
 
-        // DEBUG: Cek apa yang masuk dari Postman
-        console.log("Data diterima:", { buyer_id, product_id, seller_id, quantity, total_price, notes });
-
-        // Validasi dasar
-        if (!product_id || !seller_id || !quantity) {
-            return res.status(400).json({ status: "error", message: "Data pesanan tidak lengkap!" });
-        }
-
-        // Cek stok produk
-        const [product] = await db.execute("SELECT quantity FROM products WHERE id = ?", [product_id]);
-        if (product.length === 0) return res.status(404).json({ status: "error", message: "Produk tidak ditemukan" });
+        // 2. Query utama: Masukkan data pesanan baru ke tabel orders
+        const sqlInsertOrder = `
+            INSERT INTO orders (buyer_id, product_id, seller_id, quantity, total_price, status, payment_method, notes) 
+            VALUES (?, ?, ?, ?, ?, 'pending', ?, ?)
+        `;
         
-        if (product[0].quantity < quantity) {
-            return res.status(400).json({ status: "error", message: "Stok produk tidak mencukupi!" });
-        }
-
-        // INSERT dengan memastikan tidak ada 'undefined'
-        const sql = `INSERT INTO orders (buyer_id, product_id, seller_id, quantity, total_price, notes) VALUES (?, ?, ?, ?, ?, ?)`;
-        
-        // Pakai || null untuk mencegah undefined
-        await db.execute(sql, [
+        // PENTING: Gunakan db.query atau db.execute sesuai settingan awal project lu
+        const [orderResult] = await db.query(sqlInsertOrder, [
             buyer_id, 
             product_id, 
             seller_id, 
             quantity, 
-            total_price || 0, 
-            notes || null // Kalau notes kosong, kirim NULL ke database
+            total_price, 
+            payment_method, 
+            notes
         ]);
 
-        // Kurangi stok
-        await db.execute("UPDATE products SET quantity = quantity - ? WHERE id = ?", [quantity, product_id]);
+        // 3. QUERY SAKTI: Paksa database untuk menambah sold_quantity produk tersebut!
+        // Ini yang bakal nembak langsung kolom 'sold_quantity' yang tadinya 0 di DB lu
+        const sqlUpdateProductSold = `
+            UPDATE products 
+            SET sold_quantity = sold_quantity + ? 
+            WHERE id = ?
+        `;
+        await db.query(sqlUpdateProductSold, [quantity, product_id]);
 
-        res.status(201).json({ status: "success", message: "Pesanan berhasil dibuat!" });
-    } catch (error) {
-        console.error("Order Error Detail:", error);
-        res.status(500).json({ status: "error", message: "Gagal melakukan checkout" });
+        // 4. Kirim respon sukses ke frontend buyer
+        res.status(201).json({
+            status: "success",
+            message: "🛒 Pesanan berhasil dibuat, kuota PO otomatis berkurang!",
+            orderId: orderResult.insertId
+        });
+
+    } catch (err) {
+        console.error("🔥 ERROR PAS BUYER CHECKOUT:", err.message);
+        res.status(500).json({ message: 'Gagal memproses pesanan: ' + err.message });
     }
 };
 
@@ -106,25 +112,56 @@ exports.getSellerStats = async (req, res) => {
             [seller_id]
         );
 
-        // 2. Ambil total pendapatan (order yang sudah PAID saja)
+        // 2. Ambil total pendapatan (order yang sudah PAID, CONFIRMED, SHIPPED, atau COMPLETED)
         const [totalRevenue] = await db.execute(
-            "SELECT SUM(total_price) as revenue FROM orders WHERE seller_id = ? AND status = 'paid'", 
+            "SELECT SUM(total_price) as revenue FROM orders WHERE seller_id = ? AND status IN ('paid', 'confirmed', 'shipped', 'completed')", 
             [seller_id]
         );
 
-        // 3. Ambil daftar order terbaru
+        // 3. Ambil total produk aktif milik seller
+        const [totalProducts] = await db.execute(
+            "SELECT COUNT(*) as total FROM products WHERE seller_id = ?",
+            [seller_id]
+        );
+
+        // 4. Ambil jumlah pelanggan unik
+        const [totalCustomers] = await db.execute(
+            "SELECT COUNT(DISTINCT buyer_id) as total FROM orders WHERE seller_id = ?",
+            [seller_id]
+        );
+
+        // 5. [BARU] Ambil SEMUA data order khusus untuk grafik tahun ini (Tanpa LIMIT 5)
+        // Kolom created_at ditarik agar bisa dihitung naik-turunnya oleh frontend secara akurat
+        const [chartOrders] = await db.execute(
+            `SELECT total_price, quantity, created_at 
+             FROM orders 
+             WHERE seller_id = ? AND status IN ('paid', 'confirmed', 'shipped', 'completed')`,
+            [seller_id]
+        );
+
+        // 6. Ambil daftar 5 order terbaru untuk list tabel (Tetap pakai LIMIT 5 agar rapi)
         const [recentOrders] = await db.execute(
-            "SELECT o.*, u.username as buyer_name FROM orders o JOIN users u ON o.buyer_id = u.id WHERE o.seller_id = ? ORDER BY o.created_at DESC LIMIT 5",
+            `SELECT o.id, o.status, o.total_price, o.quantity, o.payment_proof, o.notes, 
+                    u.name as buyer_name, p.name as product_name, o.created_at
+            FROM orders o 
+            JOIN users u ON o.buyer_id = u.id 
+            JOIN products p ON o.product_id = p.id
+            WHERE o.seller_id = ? 
+            ORDER BY o.created_at DESC LIMIT 5`,
             [seller_id]
         );
 
+        // Kirim data gabungan ke frontend
         sendResponse(res, 200, "success", "Data statistik berhasil dimuat", {
             total_order: totalOrder[0].total,
             total_revenue: totalRevenue[0].revenue || 0,
-            recent_orders: recentOrders
+            total_products: totalProducts[0].total || 0,     
+            total_customers: totalCustomers[0].total || 0,   
+            recent_orders: recentOrders,
+            chart_orders: chartOrders // 🔍 Kita selipkan data utuh grafik di sini, bro!
         });
     } catch (error) {
-        console.error("Stats Error:", error);
+        console.error("❌ Detail Error Database:", error);
         sendResponse(res, 500, "error", "Gagal memuat statistik");
     }
 };
