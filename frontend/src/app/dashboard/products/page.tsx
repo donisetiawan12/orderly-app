@@ -12,6 +12,7 @@ interface Product {
   price: number;
   quantity: number;
   description: string;
+  location?: string;
   image: string | null;
   po_quota: number;       
   po_deadline: string | null; 
@@ -37,11 +38,14 @@ export default function ProductManagement() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [dashboardData, setDashboardData] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [location, setLocation] = useState('Kampus A'); // Default disamakan dengan DB
   
   // State untuk Modal Form (Tambah / Edit)
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [currentProductId, setCurrentProductId] = useState<number | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5; // Batasan 5 baris per halaman
   
   // State Input Form Utama
   const [name, setName] = useState('');
@@ -151,6 +155,7 @@ export default function ProductManagement() {
     setPrice(product.price.toString());
     setStock(product.quantity.toString());
     setDescription(product.description || '');
+    setLocation(product.location || 'Kampus A');
     setImageFile(null);
     
     const formattedDate = product.po_deadline ? product.po_deadline.substring(0, 16) : '';
@@ -176,6 +181,7 @@ export default function ProductManagement() {
     formData.append('name', name);
     formData.append('price', price);
     formData.append('description', description);
+    formData.append('location', location);
     formData.append('quantity', stock); 
     formData.append('seller_id', sellerId);
     formData.append('status', 'active');
@@ -283,12 +289,28 @@ export default function ProductManagement() {
             fetchProducts();
             fetchDashboardStats(); // Refresh stats atas setelah hapus produk
             Swal.fire({
-              title: 'Terhapus Tuntas!',
-              text: 'Katalog produk berhasil dieliminasi.',
-              icon: 'success',
-              confirmButtonText: 'Selesai',
-              confirmButtonColor: '#10b981'
-            });
+                title: 'Terhapus Tuntas!',
+                text: 'Katalog produk berhasil dieliminasi.',
+                icon: 'success',
+                confirmButtonText: 'Selesai',
+                confirmButtonColor: '#10b981',
+                // 🚀 KUNCI UTAMA: Matikan efek hover via CSS internal Swal
+                didOpen: () => {
+                  const confirmBtn = document.querySelector('.swal2-confirm') as HTMLElement;
+                  if (confirmBtn) {
+                    // Setel warna teks putih murni
+                    confirmBtn.style.setProperty('color', '#ffffff', 'important');
+                    // Setel warna background ijo lu
+                    confirmBtn.style.setProperty('background-color', '#10b981', 'important');
+                    // Matikan efek transisi box-shadow biar pas di-klik atau di-hover gak ada efek kedip
+                    confirmBtn.style.setProperty('box-shadow', 'none', 'important');
+                    
+                    // 🛠️ TRICK ANTI HOVER: Paksa warna background tetep sama pas mouse masuk/keluar
+                    confirmBtn.onmouseenter = () => confirmBtn.style.setProperty('background-color', '#10b981', 'important');
+                    confirmBtn.onmouseleave = () => confirmBtn.style.setProperty('background-color', '#10b981', 'important');
+                  }
+                }
+              });
           } else {
             Swal.fire({
               title: 'Gagal!',
@@ -328,7 +350,7 @@ export default function ProductManagement() {
 
         <div className="px-6 py-6 mx-auto w-full max-w-full block box-border overflow-x-hidden">
           
-          {/* ================= BARIS 1: 4 CARDS STATISTIK KILAS TOKO ================= */}
+        {/* ================= BARIS 1: 4 CARDS STATISTIK KILAS TOKO ================= */}
           <div className="flex flex-wrap -mx-3 mb-6">
             {/* Card 1: Total Revenue */}
             <div className="w-full max-w-full px-3 mb-6 sm:w-1/2 sm:flex-none xl:mb-0 xl:w-1/4">
@@ -339,15 +361,16 @@ export default function ProductManagement() {
                       <div>
                         <p className="mb-0 font-sans text-xs font-bold uppercase text-slate-400">Pendapatan</p>
                         <h5 className="mb-2 font-bold dark:text-white text-lg text-slate-800">
-                          Rp {(dashboardData?.total_revenue || 0).toLocaleString('id-ID')}
+                          {/* 🚀 FIX: Dipaksa jadi Number dulu biar titik ribuannya muncul sempurna */}
+                          Rp {Number(dashboardData?.total_revenue || 0).toLocaleString('id-ID')}
                         </h5>
                         <p className="mb-0 dark:text-white dark:opacity-60 text-xs text-slate-400">
                           Total Semua <span className="font-bold text-emerald-500">Pendapatan</span> Anda
                         </p>
                       </div>
                     </div>
-                    <div className="px-3 text-right basis-1/3">
-                      <div className="inline-block w-12 h-12 text-center rounded-circle bg-gradient-to-tl from-blue-500 to-violet-500">
+                     <div className="px-3 text-right basis-1/3">
+                      <div className="inline-block w-12 h-12 text-center rounded-circle bg-gradient-to-tl from-emerald-500 to-teal-400">
                         <i className="ni ni-money-coins text-lg relative top-3.5 text-white"></i>
                       </div>
                     </div>
@@ -356,17 +379,20 @@ export default function ProductManagement() {
               </div>
             </div>
 
-            {/* Card 2: Total Customers */}
+            {/* Card 2: Total Transaksi & Info Pelanggan */}
             <div className="w-full max-w-full px-3 mb-6 sm:w-1/2 sm:flex-none xl:mb-0 xl:w-1/4">
               <div className="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 rounded-2xl">
                 <div className="flex-auto p-4">
                   <div className="flex flex-row -mx-3">
                     <div className="flex-none w-2/3 max-w-full px-3">
                       <div>
+                        {/* 🚀 JUDUL UTAMA DIGANTI JADI TOTAL TRANSAKSI */}
                         <p className="mb-0 font-sans text-xs font-bold uppercase text-slate-400">Pelanggan</p>
                         <h5 className="mb-2 font-bold dark:text-white text-lg text-slate-800">
-                          {dashboardData?.total_customers || 0}
+                          {/* 🚀 VARIABEL DIGANTI KE total_order */}
+                          {dashboardData?.total_order || 0} Orang
                         </h5>
+                        {/* 💡 KETERANGAN DI BAWAH TETEP INFO PELANGGAN */}
                         <p className="mb-0 dark:text-white dark:opacity-60 text-xs text-slate-400">
                           Total Semua <span className="font-bold text-emerald-500">Pelanggan</span> Anda
                         </p>
@@ -399,7 +425,7 @@ export default function ProductManagement() {
                       </div>
                     </div>
                     <div className="px-3 text-right basis-1/3">
-                      <div className="inline-block w-12 h-12 text-center rounded-circle bg-gradient-to-tl from-emerald-500 to-teal-400">
+                      <div className="inline-block w-12 h-12 text-center rounded-circle bg-gradient-to-tl from-blue-500 to-violet-500">
                         <i className="ni ni-paper-diploma text-lg relative top-3.5 text-white"></i>
                       </div>
                     </div>
@@ -408,20 +434,41 @@ export default function ProductManagement() {
               </div>
             </div>
 
-            {/* Card 4: Total Orders */}
+            {/* 🔥 Card 4: Butuh Validasi Pesanan Masuk (Udah Sinkron dengan Fitur Anti-Jail) */}
             <div className="w-full max-w-full px-3 sm:w-1/2 sm:flex-none xl:w-1/4">
               <div className="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 rounded-2xl">
                 <div className="flex-auto p-4">
                   <div className="flex flex-row -mx-3">
                     <div className="flex-none w-2/3 max-w-full px-3">
                       <div>
-                        <p className="mb-0 font-sans text-xs font-bold uppercase text-slate-400">Pesanan</p>
-                        <h5 className="mb-2 font-bold dark:text-white text-lg text-slate-800">
-                          {dashboardData?.total_order || 0}
-                        </h5>
-                        <p className="mb-0 dark:text-white dark:opacity-60 text-xs text-slate-400">
-                          Total Semua <span className="font-bold text-emerald-500">Pesanan</span> Anda
-                        </p>
+                        <p className="mb-0 font-sans text-xs font-bold uppercase text-slate-400">PESANAN</p>
+                        
+                        {/* 🔄 Menghitung jumlah pesanan aktif yang berstatus 'pending' atau 'paid' */}
+                        {(() => {
+                         const activeCount = (dashboardData as any)?.recent_orders?.filter(
+                            (o: any) => o.status === 'paid' || o.status === 'pending'
+                          ).length || 0;
+
+                          return (
+                            <>
+                              <div className="flex items-center gap-2 mt-0.5 mb-2">
+                                <h5 className={`mb-0 font-bold text-lg ${activeCount > 0 ? 'text-red-500' : 'text-slate-700 dark:text-white'}`}>
+                                  {activeCount} Pesanan
+                                </h5>
+                              
+                              </div>
+                              <p className="mb-0 dark:text-white dark:opacity-60 text-xs text-slate-400">
+                                
+                                {activeCount > 0 ? (
+                                  <span className="text-red-500 font-bold animate-pulse">Perlu tindakan seller segera!</span>
+                                ) : (
+                                  <span>Semua pesanan <span className="font-bold text-emerald-500">aman/clear</span></span>
+                                )}
+                              </p>
+                            </>
+                          );
+                        })()}
+
                       </div>
                     </div>
                     <div className="px-3 text-right basis-1/3">
@@ -438,141 +485,257 @@ export default function ProductManagement() {
           {/* ================= BARIS 2: HEADER MANAJEMEN PRODUK ================= */}
          
 
-          {/* TABEL DATA PRODUK */}
-          <div className="w-full bg-white dark:bg-slate-850 rounded-2xl shadow-xl p-4 border-0 block overflow-hidden">
-             <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
-            <h4 className="text-xl mb-0 font-sans text-xs font-bold uppercase text-slate-400">📦 Manajemen Katalog Produk</h4>
-            <button 
-              onClick={openAddModal}
-              style={{ backgroundColor: '#10b981', color: '#ffffff', fontWeight: 'bold', fontSize: '13px', padding: '10px 18px', borderRadius: '8px', border: 'none', cursor: 'pointer', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}
-            >
-              ➕ Tambah Produk Baru
-            </button>
-          </div>
-            <div className="overflow-x-auto w-full">
-              <table className="items-center w-full mb-0 align-top border-collapse">
-                <thead>
-                  <tr className="text-slate-400 text-xs uppercase text-left border-b border-gray-100">
-                    <th className="py-3 font-bold text-center" style={{ width: '50px', textAlign: 'center' }}>No</th>
-                    <th className="py-3 font-bold" style={{ minWidth: '80px' }}>Foto</th>
-                    <th className="py-3 font-bold">Nama Produk</th>
-                    <th className="py-3 font-bold text-center">Harga Jual</th>
-                    <th className="py-3 font-bold text-center">Stok / Qty Ready</th>
-                    <th className="py-3 font-bold text-center">Kuota Sisa PO</th>
-                    <th className="py-3 font-bold text-center">Batas Waktu PO</th>
-                    <th className="py-3 font-bold">Deskripsi</th>
-                    <th className="py-3 font-bold text-center">Aksi Manajemen</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {products.length > 0 ? (
-                    products.map((product, index) => {
-                      let deadlineDisplay = "Tanpa Batas";
-                      if (product.po_deadline) {
-                        const dateObj = new Date(product.po_deadline);
-                        deadlineDisplay = dateObj.toLocaleString('id-ID', {
-                          day: '2-digit',
-                          month: 'short',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        });
-                      }
+    {/* TABEL DATA PRODUK */}
+<div className="w-full bg-white dark:bg-slate-850 rounded-2xl shadow-xl p-4 border-0 block overflow-hidden">
+  <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
+    <h6 className="mb-4 dark:text-white font-bold text-base text-slate-800">📦 Manajemen Katalog Produk</h6>
+    <button 
+      onClick={openAddModal}
+      style={{ backgroundColor: '#10b981', color: '#ffffff', fontWeight: 'bold', fontSize: '13px', padding: '10px 18px', borderRadius: '8px', border: 'none', cursor: 'pointer', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}
+    >
+      ➕ Tambah Produk Baru
+    </button>
+  </div>
+  
+  <div className="overflow-x-auto w-full">
+    <table className="items-center w-full mb-0 align-top border-collapse">
+      <thead>
+        <tr className="text-slate-400 text-xs uppercase text-left border-b border-gray-100">
+          <th className="py-3 font-bold text-center" style={{ width: '50px', textAlign: 'center' }}>No</th>
+          <th className="py-3 font-bold" style={{ minWidth: '80px' }}>Foto</th>
+          <th className="py-3 font-bold">Nama Produk</th>
+          <th className="py-3 font-bold text-center">Harga Jual</th>
+          <th className="py-3 font-bold text-center">Stok / Qty Ready</th>
+          <th className="py-3 font-bold text-center">Kuota Sisa PO</th>
+          <th className="py-3 font-bold text-center">Batas Waktu PO</th>
+          {/* Header Alamat */}
+          <th className="py-3 font-bold text-center" style={{ minWidth: '120px', textAlign: 'center' }}>Alamat / Stand</th>
+          <th className="py-3 font-bold">Deskripsi</th>
+          <th className="py-3 font-bold text-center">Aksi Manajemen</th>
+        </tr>
+      </thead>
+      <tbody>
+        {products.length > 0 ? (
+          /* 🚀 LOGIKA DINAMIS PAGINATION: Memotong data otomatis per 5 baris sesuai halaman aktif */
+          products
+            .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+            .map((product, index) => {
+              let deadlineDisplay = "Tanpa Batas";
+              if (product.po_deadline) {
+                const dateObj = new Date(product.po_deadline);
+                deadlineDisplay = dateObj.toLocaleString('id-ID', {
+                  day: '2-digit',
+                  month: 'short',
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                });
+              }
 
-                      return (
-                        <tr key={product.id} className="border-b border-gray-50 last:border-none hover:bg-slate-50">
-                          <td className="py-4 align-middle text-sm text-center font-medium text-slate-500" style={{ textAlign: 'center' }}>
-                            {index + 1}
-                          </td>
-                          <td className="py-4 align-middle">
-                            <div style={{ width: '50px', height: '50px', borderRadius: '8px', overflow: 'hidden', backgroundColor: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #e2e8f0' }}>
-                              <img 
-                                src={product.image ? `http://localhost:5000/uploads/products/${product.image}` : 'https://placehold.co/100?text=No+Img'} 
-                                alt={product.name}
-                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/100?text=No+Img'; }}
-                              />
-                            </div>
-                          </td>
-                          <td className="py-4 align-middle text-sm font-bold text-slate-800">
-                            {product.name}
-                          </td>
-                          <td className="py-4 align-middle text-sm text-center font-semibold text-slate-700" style={{ textAlign: 'center' }}>
-                            Rp {product.price.toLocaleString('id-ID')}
-                          </td>
+              // 🚀 FIX CRITICAL: Amankan data string lokasi dari nilai NULL database dan spasi gaib
+              const safeLocation = (product.location || 'Kampus A').trim();
+
+              return (
+                <tr key={product.id} className="border-b border-gray-50 last:border-none hover:bg-slate-50">
+                  <td className="py-4 align-middle text-sm text-center font-medium text-slate-500" style={{ textAlign: 'center' }}>
+                    {(currentPage - 1) * itemsPerPage + index + 1} {/* Nomor urut dinamis antar halaman */}
+                  </td>
+                  <td className="py-4 align-middle">
+                    <div style={{ width: '50px', height: '50px', borderRadius: '8px', overflow: 'hidden', backgroundColor: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #e2e8f0' }}>
+                      <img 
+                        src={product.image ? `http://localhost:5000/uploads/products/${product.image}` : 'https://placehold.co/100?text=No+Img'} 
+                        alt={product.name}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/100?text=No+Img'; }}
+                      />
+                    </div>
+                  </td>
+                  <td className="py-4 align-middle text-sm font-bold text-slate-800">
+                    {product.name}
+                  </td>
+                  
+                  <td className="py-4 align-middle text-sm text-center font-semibold text-slate-700" style={{ textAlign: 'center' }}>
+                    Rp. {Math.trunc(Number(product.price || 0)).toLocaleString('id-ID')}
+                  </td>
+                  
+                  <td className="py-4 align-middle text-center" style={{ textAlign: 'center' }}>
+                    <span style={{ 
+                      backgroundColor: product.quantity > 5 ? '#ecfdf5' : '#fef2f2', 
+                      color: product.quantity > 5 ? '#065f46' : '#991b1b', 
+                      padding: '6px 12px', 
+                      borderRadius: '20px', 
+                      fontWeight: 'bold', 
+                      fontSize: '11px', 
+                      display: 'inline-block' 
+                    }}>
+                      {product.quantity} Pcs
+                    </span>
+                  </td>
+
+                  <td className="py-4 align-middle text-center text-sm font-bold text-blue-600" style={{ textAlign: 'center', minWidth: '140px' }}>
+                    {product.po_quota > 0 ? (
+                      <div className="whitespace-nowrap">
+                        <span className="text-slate-800">
+                          {product.po_quota - (product.sold_quantity || 0)} Pcs <span className="text-xs font-normal text-slate-400">sisa </span>
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-normal">
+                          dari {product.po_quota} Pcs
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-slate-400 font-normal">-</span>
+                    )}
+                  </td>
+
+                  <td className="py-4 align-middle text-center text-xs font-medium text-slate-600" style={{ textAlign: 'center' }}>
+                    {product.po_deadline ? (
+                      <span className="bg-amber-50 text-amber-700 px-2.5 py-1 rounded-md border border-amber-200 inline-block font-semibold">
+                        ⏳ {deadlineDisplay}
+                      </span>
+                    ) : (
+                      <span className="text-slate-400">-</span>
+                    )}
+                  </td>
+
+                  {/* 🚀 TD ALAMAT: WARNA BARU KHUSUS ALAMAT BEBAS/CUSTOM BIAR TETEP NYALA */}
+                      <td className="py-4 align-middle text-center" style={{ textAlign: 'center' }}>
+                        {(() => {
+                          // Bersihkan text dan pastikan aman dari nilai null
+                          const currentLoc = product.location ? String(product.location).trim() : 'Kampus A';
                           
-                          <td className="py-4 align-middle text-center" style={{ textAlign: 'center' }}>
+                          // Tentukan jenis lokasi berdasarkan kata kunci
+                          const isKampusB = currentLoc.toLowerCase().includes('kampus b');
+                          const isKampusA = currentLoc.toLowerCase().includes('kampus a');
+
+                          // 🎨 RACIKAN WARNA BARU:
+                          // Jika Kampus B = Biru
+                          // Jika Kampus A = Hijau
+                          // Jika Alamat Custom/Luar Kampus (Jl. Kesadaran, dll) = Oranye/Amber hangat biar gak pudar!
+                          const bgColor = isKampusB ? '#eff6ff' : isKampusA ? '#f0fdf4' : '#fffbeb';
+                          const textColor = isKampusB ? '#1d4ed8' : isKampusA ? '#166534' : '#b45309';
+                          const borderColor = isKampusB ? '#bfdbfe' : isKampusA ? '#bbf7d0' : '#fde68a';
+
+                          return (
                             <span style={{ 
-                              backgroundColor: product.quantity > 5 ? '#ecfdf5' : '#fef2f2', 
-                              color: product.quantity > 5 ? '#065f46' : '#991b1b', 
+                              backgroundColor: bgColor,
+                              color: textColor,
+                              borderColor: borderColor,
                               padding: '6px 12px', 
-                              borderRadius: '20px', 
+                              borderRadius: '6px', 
                               fontWeight: 'bold', 
-                              fontSize: '11px', 
-                              display: 'inline-block' 
+                              fontSize: '12px',
+                              border: '1px solid',
+                              display: 'inline-block',
+                              minWidth: '100px',
+                              whiteSpace: 'normal', 
+                              wordBreak: 'break-word',
+                              maxWidth: '180px'
                             }}>
-                              {product.quantity} Pcs
+                              📍 {currentLoc}
                             </span>
-                          </td>
-
-                          <td className="py-4 align-middle text-center text-sm font-bold text-blue-600" style={{ textAlign: 'center' }}>
-                            {product.po_quota > 0 ? (
-                              <div>
-                                <span className="block text-slate-800">
-                                  {product.po_quota - (product.sold_quantity || 0)} Pcs <span className="text-xs font-normal text-slate-400">sisa</span>
-                                </span>
-                                <span className="block text-[10px] text-slate-400 font-normal">
-                                  dari {product.po_quota} Pcs
-                                </span>
-                              </div>
-                            ) : (
-                              <span className="text-slate-400 font-normal">-</span>
-                            )}
-                          </td>
-
-                          <td className="py-4 align-middle text-center text-xs font-medium text-slate-600" style={{ textAlign: 'center' }}>
-                            {product.po_deadline ? (
-                              <span className="bg-amber-50 text-amber-700 px-2.5 py-1 rounded-md border border-amber-200 inline-block font-semibold">
-                                ⏳ {deadlineDisplay}
-                              </span>
-                            ) : (
-                              <span className="text-slate-400">-</span>
-                            )}
-                          </td>
-
-                          <td className="py-4 align-middle text-sm text-slate-500 max-w-xs truncate">
-                            {product.description || <span className="italic text-slate-300">Tidak ada deskripsi</span>}
-                          </td>
-                          <td className="py-4 align-middle text-center" style={{ textAlign: 'center' }}>
-                            <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-                              <button 
-                                onClick={() => openEditModal(product)}
-                                style={{ backgroundColor: '#f59e0b', color: '#ffffff', fontSize: '12px', fontWeight: 'bold', padding: '6px 14px', borderRadius: '6px', border: 'none', cursor: 'pointer' }}
-                              >
-                                ✏️ Edit
-                              </button>
-                              <button 
-                                onClick={() => handleDelete(product.id)}
-                                style={{ backgroundColor: '#ef4444', color: '#ffffff', fontSize: '12px', fontWeight: 'bold', padding: '6px 14px', borderRadius: '6px', border: 'none', cursor: 'pointer' }}
-                              >
-                                🗑️ Hapus
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })
-                  ) : (
-                    <tr>
-                      <td colSpan={9} className="p-6 text-center text-sm text-slate-400 font-medium">
-                        Belum ada katalog produk terdaftar.
+                          );
+                        })()}
                       </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+
+                  {/* 🚀 TD DESKRIPSI: FIX TEKS PANJANG OTOMATIS TURUN KE BAWAH */}
+                    <td className="py-4 align-middle text-sm text-slate-500">
+                      <div style={{ 
+                        whiteSpace: 'normal', 
+                        wordBreak: 'break-word', // Memotong kata di spasi yang normal
+                        overflowWrap: 'break-word',
+                        // Khusus buat teks dempet panjang tanpa spasi seperti 'sasasasaaaaa...', paksa patah pakai baris bawah ini:
+                        overflow: 'hidden',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 3, // 🔒 MAKSIMAL TAMPIL 3 BARIS: Biar kalau deskripsinya se-novel gak ngerusak tinggi tabel
+                        WebkitBoxOrient: 'vertical',
+                        maxWidth: '220px' // Batas lebar maksimal kolom deskripsi
+                      }}>
+                        {product.description || <span className="italic text-slate-300">Tidak ada deskripsi</span>}
+                      </div>
+                    </td>
+                  <td className="py-4 align-middle text-center" style={{ textAlign: 'center' }}>
+                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                      <button 
+                        onClick={() => openEditModal(product)}
+                        style={{ backgroundColor: '#f59e0b', color: '#ffffff', fontSize: '12px', fontWeight: 'bold', padding: '6px 14px', borderRadius: '6px', border: 'none', cursor: 'pointer' }}
+                      >
+                        ✏️ Edit
+                      </button>
+                      <button 
+                        onClick={() => handleDelete(product.id)}
+                        style={{ backgroundColor: '#ef4444', color: '#ffffff', fontSize: '12px', fontWeight: 'bold', padding: '6px 14px', borderRadius: '6px', border: 'none', cursor: 'pointer' }}
+                      >
+                        🗑️ Hapus
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })
+        ) : (
+          <tr>
+            <td colSpan={10} className="p-6 text-center text-sm text-slate-400 font-medium">
+              Belum ada katalog produk terdaftar.
+            </td>
+          </tr>
+        )}
+      </tbody>
+    </table>
+  </div>
+
+  {/* 🚀 TOMBOL NAVIGASI PAGINATION DI POJOK KANAN BAWAH */}
+  {products.length > itemsPerPage && (
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px', borderTop: '1px solid #f1f5f9', paddingTop: '12px' }}>
+      <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '500' }}>
+        Menampilkan {Math.min((currentPage - 1) * itemsPerPage + 1, products.length)} - {Math.min(currentPage * itemsPerPage, products.length)} dari {products.length} Produk
+      </span>
+      
+      <div style={{ display: 'flex', gap: '6px' }}>
+        <button
+          disabled={currentPage === 1}
+          onClick={() => setCurrentPage(prev => prev - 1)}
+          style={{
+            padding: '6px 12px', fontSize: '12px', fontWeight: 'bold', borderRadius: '6px', border: '1px solid #e2e8f0',
+            backgroundColor: currentPage === 1 ? '#f8fafc' : '#ffffff',
+            color: currentPage === 1 ? '#cbd5e1' : '#334155',
+            cursor: currentPage === 1 ? 'not-allowed' : 'pointer'
+          }}
+        >
+          ◀ Prev
+        </button>
+        
+        {Array.from({ length: Math.ceil(products.length / itemsPerPage) }).map((_, i) => (
+          <button
+            key={i}
+            onClick={() => setCurrentPage(i + 1)}
+            style={{
+              padding: '6px 12px', fontSize: '12px', fontWeight: 'bold', borderRadius: '6px',
+              border: currentPage === i + 1 ? '1px solid #10b981' : '1px solid #e2e8f0',
+              backgroundColor: currentPage === i + 1 ? '#10b981' : '#ffffff',
+              color: currentPage === i + 1 ? '#ffffff' : '#334155',
+              cursor: 'pointer'
+            }}
+          >
+            {i + 1}
+          </button>
+        ))}
+
+        <button
+          disabled={currentPage === Math.ceil(products.length / itemsPerPage)}
+          onClick={() => setCurrentPage(prev => prev + 1)}
+          style={{
+            padding: '6px 12px', fontSize: '12px', fontWeight: 'bold', borderRadius: '6px', border: '1px solid #e2e8f0',
+            backgroundColor: currentPage === Math.ceil(products.length / itemsPerPage) ? '#f8fafc' : '#ffffff',
+            color: currentPage === Math.ceil(products.length / itemsPerPage) ? '#cbd5e1' : '#334155',
+            cursor: currentPage === Math.ceil(products.length / itemsPerPage) ? 'not-allowed' : 'pointer'
+          }}
+        >
+          Next ▶
+        </button>
+      </div>
+    </div>
+  )}
+</div>
 
         </div>
       </main>
@@ -685,6 +848,40 @@ export default function ProductManagement() {
                   </div>
                 )}
               </div>
+              <div>
+  <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase', marginBottom: '4px' }}>
+    Alamat / Lokasi Stand
+  </label>
+  
+  {parseInt(poQuota) > 0 ? (
+    /* 🔒 JIKA PO: Dropdown */
+    <select
+      value={location || 'Kampus A'} // 👈 Kasih fallback 'Kampus A' jika state sempat null
+      onChange={(e) => {
+        console.log("Dropdown diganti ke:", e.target.value); // 💡 Debugger kecil biar keliatan di console
+        setLocation(e.target.value);
+      }}
+      required
+      style={{ width: '100%', boxSizing: 'border-box', padding: '8px 12px', fontSize: '13px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#ffffff' }}
+    >
+      <option value="Kampus A">📍 Kampus A</option>
+      <option value="Kampus B">📍 Kampus B</option>
+    </select>
+  ) : (
+    /* 🔓 JIKA READY STOCK: Input Text Bebas */
+    <input 
+      type="text" 
+      value={location || ''} 
+      onChange={(e) => {
+        console.log("Alamat diketik:", e.target.value); // 💡 Debugger kecil
+        setLocation(e.target.value);
+      }}
+      required 
+      placeholder="Contoh: Kantin Gedung C, Stand Utama Belakang" 
+      style={{ width: '100%', boxSizing: 'border-box', padding: '8px 12px', fontSize: '13px', borderRadius: '6px', border: '1px solid #cbd5e1' }} 
+    />
+  )}
+</div>
 
               <hr style={{ border: '0', borderTop: '1px dashed #e2e8f0', margin: '4px 0' }} />
 

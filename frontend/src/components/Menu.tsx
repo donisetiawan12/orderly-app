@@ -113,30 +113,27 @@ export default function Menu({ searchTerm, activeFilter, setActiveFilter, onOpen
                       style={{ width: '100%', height: '200px', objectFit: 'cover' }}
                       onError={(e) => { (e.target as HTMLImageElement).src = '/img/default.jpg'; }}
                     />
-                    {/* --- BADGE DEADLINE (Sesuai Screenshot) --- */}
-                        {item.po_deadline && (() => {
-                            const diffTime = new Date(item.po_deadline).getTime() - Date.now();
-                            const diffDays = Math.ceil(diffTime / (1000 * 3600 * 24));
+                    {/* --- BADGE DEADLINE --- */}
+                    {item.po_deadline && (() => {
+                        const diffTime = new Date(item.po_deadline).getTime() - Date.now();
+                        const diffDays = Math.ceil(diffTime / (1000 * 3600 * 24));
 
-                            // Hanya tampilkan jika deadline belum lewat
-                            if (diffDays < 0) return null; 
+                        if (diffDays < 0) return null; 
 
-                            return (
-                              <div style={{
-                                position: 'absolute', top: '10px', right: '10px',
-                                backgroundColor: diffDays <= 2 ? '#f59e0b' : '#ef4444', // Kuning/Oranye jika 2 hari, Merah jika lebih
-                                color: '#fff', padding: '4px 10px', borderRadius: '20px',
-                                fontSize: '0.75rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '5px'
-                              }}>
-                                {/* Logika Ikon: Warning jika <= 2 hari, Clock jika lebih */}
-                                <i className={diffDays <= 2 ? "fas fa-exclamation-triangle "  : "far fa-clock"}></i> 
-                                {diffDays} Hari Lagi
-                              </div>
-                            );
-                          })()}
-                      </div>
+                        return (
+                          <div style={{
+                            position: 'absolute', top: '10px', right: '10px',
+                            backgroundColor: diffDays <= 2 ? '#f59e0b' : '#ef4444', 
+                            color: '#fff', padding: '4px 10px', borderRadius: '20px',
+                            fontSize: '0.75rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '5px'
+                          }}>
+                            <i className={diffDays <= 2 ? "fas fa-exclamation-triangle "  : "far fa-clock"}></i> 
+                            {diffDays} Hari Lagi
+                          </div>
+                        );
+                      })()}
+                  </div>
               
-                  
                   <div className="mbody" style={{ padding: '15px' }}>
                     {/* Rating & Seller */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
@@ -146,39 +143,40 @@ export default function Menu({ searchTerm, activeFilter, setActiveFilter, onOpen
                       </div>
                     </div>
 
-                   {/* Location */}
-                      {/* Location dengan Border & Ikon Merah */}
+                    {/* Location */}
+                    <div style={{ 
+                      fontSize: '0.75rem', 
+                      fontWeight: 'bold', 
+                      marginBottom: '10px',
+                      display: 'inline-block'
+                    }}>
                       <div style={{ 
-                        fontSize: '0.75rem', 
-                        fontWeight: 'bold', 
-                        marginBottom: '10px',
-                        display: 'inline-block'
+                        color: '#6366f1',           
+                        backgroundColor: '#eef2ff', 
+                        border: '1px solid #6366f1',
+                        padding: '4px 10px',        
+                        borderRadius: '6px',        
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px'
                       }}>
-                        <div style={{ 
-                          color: '#6366f1',           // Warna teks utama (Indigo)
-                          backgroundColor: '#eef2ff', // Warna background terang
-                          border: '1px solid #6366f1',// Border Indigo
-                          padding: '4px 10px',        
-                          borderRadius: '6px',        
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '6px'
-                        }}>
-                          {/* Ikon Merah */}
-                          <i className="fas fa-map-marker-alt" style={{ color: '#ef4444' }}></i>
-                          <span>Lokasi: {item.location || 'Kampus A'}</span>
-                        </div>
+                        <i className="fas fa-map-marker-alt" style={{ color: '#ef4444' }}></i>
+                        <span>Lokasi: {item.location || 'Kampus A'}</span>
                       </div>
+                    </div>
                     
                     {/* Title & Desc */}
                     <div className="mtit" style={{ fontWeight: 'bold', fontSize: '1.1rem', marginBottom: '5px' }}>{item.name}</div>
                     <div className="mdesc" style={{ fontSize: '0.85rem', color: '#666', height: '2.8em', overflow: 'hidden' }}>{item.description}</div>
                     
-                    {/* --- BAGIAN KUOTA --- */}
+                    {/* --- 🚀 FIX BAGIAN KUOTA: Menghitung Berdasarkan po_quota DB Asli --- */}
+                    {item.po_quota > 0 && (
                       <div className="mt-3">
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '5px' }}>
-                          <span>Kuota Terisi</span>
-                          <span style={{ fontWeight: 'bold' }}>{item.sold_quantity}/{item.quantity}</span>
+                          <span>Kuota PO Terisi</span>
+                          <span style={{ fontWeight: 'bold' }}>
+                            {item.sold_quantity || 0}/{item.po_quota} Pcs
+                          </span>
                         </div>
                         
                         {/* Progress Bar Container */}
@@ -191,18 +189,23 @@ export default function Menu({ searchTerm, activeFilter, setActiveFilter, onOpen
                         }}>
                           {/* Progress Bar Fill */}
                           <div style={{ 
-                            width: `${(item.sold_quantity / item.quantity) * 100}%`, 
+                            width: `${Math.min(((item.sold_quantity || 0) / item.po_quota) * 100, 100)}%`, 
                             height: '100%', 
-                            backgroundColor: item.sold_quantity >= item.quantity ? '#4f46e5' : '#2ecc71', // Merah jika penuh, hijau jika belum
+                            backgroundColor: (item.sold_quantity || 0) >= item.po_quota ? '#ef4444' : '#10b981', // Merah jika Full, Hijau jika belum penuh
                             borderRadius: '4px',
                             transition: 'width 0.5s ease-in-out'
                           }}></div>
                         </div>
                       </div>
+                    )}
 
                     {/* Footer Price */}
                     <div className="mfoot" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
-                      <div className="mprice" style={{ fontWeight: 'bold' }}>Rp {Number(item.price).toLocaleString()}</div>
+                      {/* --- 🚀 FIX FORMAT HARGA JUAL: Rp. 100.000 (Pakai Spasi Setelah Titik) --- */}
+{/* 🚀 TERBARU: Potong desimal murni tanpa perkalian */}
+<div className="mprice" style={{ fontWeight: 'bold', color: '#1e293b' }}>
+  Rp. {Math.trunc(Number(item.price || 0)).toLocaleString('id-ID')}
+</div>
                       <button className="madd" style={{ padding: '5px 10px' }}><i className="fas fa-plus"></i></button>
                     </div>
                   </div>
@@ -212,7 +215,7 @@ export default function Menu({ searchTerm, activeFilter, setActiveFilter, onOpen
           ) : <div className="col-12 text-center"><p>Menu tidak ditemukan.</p></div>}
         </div>
 
-        {/* --- TOMBOL VIEW ALL (DITAMBAHKAN KEMBALI) --- */}
+        {/* --- TOMBOL VIEW ALL --- */}
         {!searchTerm && activeFilter === 'all' && products.length > 9 && (
           <div className="text-center mt-5">
             <button 
@@ -229,3 +232,5 @@ export default function Menu({ searchTerm, activeFilter, setActiveFilter, onOpen
     </section>
   );
 }
+
+      

@@ -40,11 +40,10 @@ router.get('/', async (req, res) => {
 });
 
 // ================= 2. POST: TAMBAH PRODUK BARU =================
-// FIXED: Tambahkan `upload.single('image')` sebagai middleware di sini!
 router.post('/', upload.single('image'), async (req, res) => {
     try {
-        // Sekarang req.body DIJAMIN gak bakal undefined lagi karena udah di-parse Multer
-        const { name, price, quantity, description, seller_id, po_quota, po_deadline, category_id } = req.body;
+        // 🚀 AMBIL VARIABEL 'location' DARI req.body
+        const { name, price, quantity, description, seller_id, po_quota, po_deadline, category_id, location } = req.body;
         
         const image = req.file ? req.file.filename : null; 
         
@@ -53,13 +52,15 @@ router.post('/', upload.single('image'), async (req, res) => {
         const finalCategory = (!category_id || category_id === "" || category_id === "undefined") ? null : parseInt(category_id);
         const finalQuota = (!po_quota || po_quota === "" || po_quota === "undefined") ? 0 : parseInt(po_quota);
         const finalStock = (!quantity || quantity === "" || quantity === "undefined") ? 0 : parseInt(quantity);
-
+        
+        // 🚀 DAFTARKAN KOLOM 'location' KE QUERY INSERT INTO
         const sql = `
-            INSERT INTO products (name, price, quantity, description, seller_id, image, po_quota, po_deadline, category_id, status) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')
+            INSERT INTO products (name, price, quantity, description, seller_id, image, po_quota, po_deadline, category_id, location, status) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')
         `;
         
-        await db.query(sql, [name, price, finalStock, description, seller_id, image, finalQuota, finalDeadline, finalCategory]);
+        // 🚀 MASUKKAN DATA LOCATION (fallback ke 'Kampus A' kalau kosong)
+        await db.query(sql, [name, price, finalStock, description, seller_id, image, finalQuota, finalDeadline, finalCategory, location || 'Kampus A']);
 
         res.status(201).json({
             status: "success",
@@ -72,19 +73,20 @@ router.post('/', upload.single('image'), async (req, res) => {
 });
 
 // ================= 3. PUT: EDIT DATA PRODUK =================
-// FIXED: Tambahkan juga `upload.single('image')` di sini!
 router.put('/:id', upload.single('image'), async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, price, quantity, description, po_quota, po_deadline, category_id } = req.body;
+        // 🚀 AMBIL VARIABEL 'location' DARI req.body SAAT UPDATE
+        const { name, price, quantity, description, po_quota, po_deadline, category_id, location } = req.body;
         
         const finalDeadline = (!po_deadline || po_deadline === "" || po_deadline === "undefined") ? null : po_deadline;
         const finalCategory = (!category_id || category_id === "" || category_id === "undefined") ? null : parseInt(category_id);
         const finalQuota = (!po_quota || po_quota === "" || po_quota === "undefined") ? 0 : parseInt(po_quota);
         const finalStock = (!quantity || quantity === "" || quantity === "undefined") ? 0 : parseInt(quantity);
 
-        let sql = `UPDATE products SET name = ?, price = ?, quantity = ?, description = ?, po_quota = ?, po_deadline = ?, category_id = ?`;
-        let params = [name, price, finalStock, description, finalQuota, finalDeadline, finalCategory];
+        // 🚀 MASUKKAN 'location = ?' KE DALAM STRING UPDATE SQL
+        let sql = `UPDATE products SET name = ?, price = ?, quantity = ?, description = ?, po_quota = ?, po_deadline = ?, category_id = ?, location = ?`;
+        let params = [name, price, finalStock, description, finalQuota, finalDeadline, finalCategory, location || 'Kampus A'];
 
         if (req.file) {
             sql += `, image = ?`;
@@ -118,6 +120,42 @@ router.delete('/:id', async (req, res) => {
     } catch (err) {
         console.error("Delete Error:", err);
         res.status(500).json({ message: 'Gagal menghapus produk' });
+    }
+});
+
+// =========================================================================
+// 🚀 5. GET: AMBIL SEMUA ULASAN PEMBELI KHUSUS UNTUK PRODUK MILIK SELLER
+// =========================================================================
+router.get('/seller/reviews/:seller_id', async (req, res) => {
+    try {
+        const { seller_id } = req.params;
+
+        // Query sakti JOIN 3 tabel menggunakan db.query() async/await
+        const sql = `
+            SELECT 
+                r.id AS review_id,
+                r.rating,
+                r.comment,
+                r.created_at,
+                p.name AS product_name,
+                p.image AS product_image,
+                u.name AS buyer_name
+            FROM reviews r
+            JOIN products p ON r.product_id = p.id
+            JOIN users u ON r.buyer_id = u.id
+            WHERE p.seller_id = ? 
+            ORDER BY r.created_at DESC
+        `;
+
+        const [results] = await db.query(sql, [seller_id]);
+
+        res.json({
+            status: "success",
+            data: results
+        });
+    } catch (err) {
+        console.error("🔥 GET REVIEWS ERROR ASLI:", err.message);
+        res.status(500).json({ message: 'Gagal memuat ulasan produk: ' + err.message });
     }
 });
 

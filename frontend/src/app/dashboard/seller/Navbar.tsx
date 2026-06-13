@@ -12,19 +12,15 @@ export default function Navbar() {
 
   return (
     <nav
-      // Menggunakan mx-4 agar presisi sejajar dengan kartu & tabel di bawahnya
       className="relative flex flex-wrap items-center justify-between px-0 py-2 mx-4 transition-all ease-in shadow-none duration-250 rounded-2xl lg:flex-nowrap lg:justify-start"
       navbar-main="true"
       navbar-scroll="false"
     >
-      {/* items-center menjaga hubungan vertikal antara grid kiri dan kanan */}
       <div className="flex items-center justify-between w-full px-0 py-1 mx-auto flex-wrap-inherit">
 
-        {/* ================= BREADCRUMB OTOMATIS (FIX TRULY CENTERED ALIGNED) ================= */}
-        {/* Kita injeksi inline style translateY buat maksa teks turun pas di garis tengah tombol marketplace */}
+        {/* ================= BREADCRUMB OTOMATIS ================= */}
         <nav className="block" style={{ transform: 'translateY(5px)' }}>
           <ol className="flex flex-wrap pt-0 bg-transparent rounded-lg items-center mb-0 list-none p-0">
-            {/* Jika path kosong (di halaman root atau /), default tampilkan Dashboard */}
             {pathSegments.length === 0 ? (
               <li
                 className="text-sm pl-2 capitalize leading-normal text-white font-bold before:float-left before:pr-2 before:text-white/60 before:content-['/']"
@@ -33,15 +29,11 @@ export default function Navbar() {
                 Dashboard
               </li>
             ) : (
-              // Looping segment URL untuk membuat breadcrumb otomatis
               pathSegments.map((segment, index) => {
                 const isLast = index === pathSegments.length - 1;
-                
-                // Mengganti tanda strip (-) atau underscore (_) jadi spasi agar rapi dibaca
                 const cleanSegmentName = segment.replace(/[-_]/g, ' ');
 
                 if (isLast) {
-                  // Segment terakhir (Halaman aktif sekarang): Teks tebal/bold murni
                   return (
                     <li
                       key={index}
@@ -52,7 +44,6 @@ export default function Navbar() {
                     </li>
                   );
                 } else {
-                  // Segment tengah/induk: Teks agak transparan (opacity)
                   return (
                     <li
                       key={index}

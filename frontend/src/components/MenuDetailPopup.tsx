@@ -47,8 +47,9 @@ export default function MenuDetailPopup({ product, onClose }: any) {
             {product.description}
           </div>
           
+     {/* 🚀 TERBARU: Di dalam pop-up detail */}
           <div id="mpPrice" style={{ fontSize: '24px', fontWeight: 'bold', color: '#ff4757', marginBottom: '20px' }}>
-            Rp {Number(product.price).toLocaleString()}
+            Rp. {Math.trunc(Number(product.price || 0)).toLocaleString('id-ID')}
           </div>
           
           <div className="mpqty" style={{ marginBottom: '20px' }}>

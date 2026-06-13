@@ -35,7 +35,6 @@ interface RecentOrder {
   created_at?: string; 
 }
 
-// 🔍 Interface baru untuk menampung data grafik penuh dari backend
 interface ChartOrder {
   total_price: number;
   quantity: number;
@@ -48,7 +47,7 @@ interface DashboardData {
   total_products: number;
   total_customers: number;
   recent_orders: RecentOrder[];
-  chart_orders?: ChartOrder[]; // 🔍 Didaftarkan di sini agar tidak merah lagi, bro
+  chart_orders?: ChartOrder[]; 
 }
 
 type TimeFilterType = '1w' | '1m' | '1y';
@@ -59,9 +58,7 @@ export default function DashboardCards() {
   const [loading, setLoading] = useState(true);
   const [currentSlide, setCurrentSlide] = useState(0);
   
-  // State Filter Periode (Dropdown di Kanan)
   const [timeFilter, setTimeFilter] = useState<TimeFilterType>('1y');
-  // State Filter Metrik (Berjejer di Kiri)
   const [activeMetric, setActiveMetric] = useState<MetricType>('revenue');
   
   const [chartLabels, setChartLabels] = useState<string[]>([]);
@@ -88,29 +85,39 @@ export default function DashboardCards() {
     }
   ];
 
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        if (!token) return;
+ useEffect(() => {
+  const fetchDashboardData = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
 
-        const res = await fetch('http://localhost:5000/api/orders/stats', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        const result = await res.json();
-        if (result.status === 'success') setData(result.data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
+      const res = await fetch('http://localhost:5000/api/orders/stats', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const result = await res.json();
+      if (result.status === 'success') setData(result.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 1. Jalankan fungsi pertama kali pas halaman di-load
+  fetchDashboardData();
+
+  // 2. 🔥 SAKTI: Set interval biar otomatis fetch ulang tiap 10 detik tanpa refresh halaman!
+  const interval = setInterval(() => {
     fetchDashboardData();
-  }, []);
+  }, 10000); // 10000 ms = 10 detik. Lu bisa ganti jadi 5000 (5 detik) kalau mau lebih cepet.
+
+  // 3. Bersihkan interval saat komponen mati biar gak memory leak
+  return () => clearInterval(interval);
+}, []);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -119,15 +126,12 @@ export default function DashboardCards() {
     return () => clearInterval(timer);
   }, []);
 
-  // ================= LOGIK KONTROL FILTER GRAFIK DINAMIS =================
   useEffect(() => {
     if (!data) return;
 
     const sekarang = new Date();
-    // 🔍 Mengambil chart_orders jika ada, jika tidak fallback ke recent_orders atau array kosong
     const orders = data.chart_orders || data.recent_orders || [];
 
-    // 🔍 Argumen menggunakan tipe 'any' agar fleksibel membaca item dari chart_orders maupun recent_orders
     const dapatkanNilaiMetrik = (order: any) => {
       if (activeMetric === 'revenue') return Number(order.total_price || 0);
       if (activeMetric === 'customers') return 1; 
@@ -197,7 +201,11 @@ export default function DashboardCards() {
 
   if (loading) return <p className="text-white opacity-80 animate-pulse text-sm px-4 py-2">Mengambil data transaksi...</p>;
 
-  // ================= CONFIG DATASET GRAFIK =================
+  // Hitung data pending/paid dari recent_orders
+  const pendingCount = data?.recent_orders
+    ? data.recent_orders.filter((o: RecentOrder) => o.status === 'paid' || o.status === 'pending').length
+    : 0;
+
   const labelNamaDataset = 
     activeMetric === 'revenue' ? 'Omset Penjualan (Rp)' :
     activeMetric === 'customers' ? 'Jumlah Pelanggan' :
@@ -265,25 +273,27 @@ export default function DashboardCards() {
       {/* ================= BARIS 1: 4 CARDS STATISTIK ATAS ================= */}
       <div className="flex flex-wrap -mx-3">
         {/* Card 1: Total Revenue */}
-         <div className="w-full max-w-full px-3 mb-6 sm:w-1/2 sm:flex-none xl:mb-0 xl:w-1/4">
+        {/* Card 1: Total Revenue */}
+        <div className="w-full max-w-full px-3 mb-6 sm:w-1/2 sm:flex-none xl:mb-0 xl:w-1/4">
           <div className="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 rounded-2xl">
             <div className="flex-auto p-4">
               <div className="flex flex-row -mx-3">
                 <div className="flex-none w-2/3 max-w-full px-3">
                   <div>
                     <p className="mb-0 font-sans text-xs font-bold uppercase text-slate-400">Pendapatan</p>
-                    <h5 className="mb-2 font-bold dark:text-white text-lg">
-                      Rp {(data?.total_revenue || 0).toLocaleString('id-ID')}
+                  <h5 className="mb-2 font-bold dark:text-white text-lg">
+                      {/* 🚀 FIX SAKTI: Dipaksa jadi Number dulu baru di-format ribuannya */}
+                      Rp {Number(data?.total_revenue || 0).toLocaleString('id-ID')}
                     </h5>
-                    <p className="mb-0 dark:text-white dark:opacity-60">
-                        Total Semua
-                        <span className="text-sm font-bold leading-normal text-emerald-500"> Pendapatan </span>
-                        Anda
-                      </p>
+                    <p className="mb-0 dark:text-white dark:opacity-60 text-xs">
+                      Total Semua
+                      <span className="font-bold text-emerald-500"> Pendapatan </span>
+                      Anda
+                    </p>
                   </div>
                 </div>
                 <div className="px-3 text-right basis-1/3">
-                  <div className="inline-block w-12 h-12 text-center rounded-circle bg-gradient-to-tl from-blue-500 to-violet-500">
+                  <div className="inline-block w-12 h-12 text-center rounded-circle bg-gradient-to-tl from-emerald-500 to-teal-400">
                     <i className="ni ni-money-coins text-lg relative top-3.5 text-white"></i>
                   </div>
                 </div>
@@ -292,22 +302,25 @@ export default function DashboardCards() {
           </div>
         </div>
 
-        {/* Card 2: Total Customers */}
+     {/* Card 2: Total Transaksi & Info Pelanggan */}
         <div className="w-full max-w-full px-3 mb-6 sm:w-1/2 sm:flex-none xl:mb-0 xl:w-1/4">
           <div className="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 rounded-2xl">
             <div className="flex-auto p-4">
               <div className="flex flex-row -mx-3">
                 <div className="flex-none w-2/3 max-w-full px-3">
                   <div>
-                    <p className="mb-0 font-sans text-xs font-bold uppercase text-slate-400">Pelanggan</p>
-                    <h5 className="mb-2 font-bold dark:text-white text-lg">
-                      {data?.total_customers || 0}
+                    {/* 🚀 JUDUL UTAMA DIGANTI JADI TOTAL TRANSAKSI */}
+                    <p className="mb-0 font-sans text-xs font-bold uppercase text-slate-400">PELANGGAN</p>
+                    <h5 className="mb-2 font-bold dark:text-white text-lg text-slate-800">
+                      {/* 🚀 VARIABEL DIGANTI JADI total_order BIAR JADI TRANSAKSI */}
+                      {data?.total_order || 0} Orang
                     </h5>
-                     <p className="mb-0 dark:text-white dark:opacity-60">
-                        Total Semua
-                        <span className="text-sm font-bold leading-normal text-emerald-500"> Pelanggan </span>
-                        Anda
-                      </p>
+                    {/* 💡 KETERANGAN DI BAWAH TETEP INFO PELANGGAN SESUAI REQUEST LU */}
+                    <p className="mb-0 dark:text-white dark:opacity-60 text-xs text-slate-400">
+                      Total Semua
+                      <span className="font-bold text-emerald-500"> Pelanggan </span>
+                      Anda
+                    </p>
                   </div>
                 </div>
                 <div className="px-3 text-right basis-1/3">
@@ -331,15 +344,15 @@ export default function DashboardCards() {
                     <h5 className="mb-2 font-bold dark:text-white text-lg">
                       {data?.total_products || 0} Items
                     </h5>
-                     <p className="mb-0 dark:text-white dark:opacity-60">
-                        Total Semua
-                        <span className="text-sm font-bold leading-normal text-emerald-500"> Produk </span>
-                        Anda
-                      </p>
+                    <p className="mb-0 dark:text-white dark:opacity-60 text-xs">
+                      Total Semua
+                      <span className="font-bold text-emerald-500"> Produk </span>
+                      Anda
+                    </p>
                   </div>
                 </div>
                 <div className="px-3 text-right basis-1/3">
-                  <div className="inline-block w-12 h-12 text-center rounded-circle bg-gradient-to-tl from-emerald-500 to-teal-400">
+                  <div className="inline-block w-12 h-12 text-center rounded-circle bg-gradient-to-tl from-blue-500 to-violet-500">
                     <i className="ni ni-paper-diploma text-lg relative top-3.5 text-white"></i>
                   </div>
                 </div>
@@ -348,22 +361,30 @@ export default function DashboardCards() {
           </div>
         </div>
 
-        {/* Card 4: Total Orders */}
+       {/* ================= CARD 4: PESANAN (TEKS BAWAH DINAMIS) ================= */}
+         
         <div className="w-full max-w-full px-3 sm:w-1/2 sm:flex-none xl:w-1/4">
           <div className="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 rounded-2xl">
             <div className="flex-auto p-4">
               <div className="flex flex-row -mx-3">
                 <div className="flex-none w-2/3 max-w-full px-3">
                   <div>
-                    <p className="mb-0 font-sans text-xs font-bold uppercase text-slate-400">Pesanan</p>
-                    <h5 className="mb-2 font-bold dark:text-white text-lg">
-                      {data?.total_order || 0}
-                    </h5>
-                     <p className="mb-0 dark:text-white dark:opacity-60">
-                        Total Semua 
-                        <span className="text-sm font-bold leading-normal text-emerald-500"> Pesanan </span>
-                        Anda
-                      </p>
+                    <p className="mb-0 font-sans text-xs font-bold uppercase text-slate-400">PESANAN</p>
+                    
+                    <div className="flex items-center gap-2 mt-0.5 mb-2">
+                      <h5 className={`mb-0 font-bold text-lg ${pendingCount > 0 ? 'text-red-500' : 'text-slate-700 dark:text-white'}`}>
+                        {pendingCount} Pesanan
+                      </h5>
+                     
+                    </div>
+
+                    <p className="mb-0 dark:text-white dark:opacity-60 text-xs text-slate-400">
+                      {pendingCount > 0 ? (
+                        <span className="text-red-500 font-bold animate-pulse">Perlu tindakan seller segera!</span>
+                      ) : (
+                        <span>Semua pesanan <span className="font-bold text-emerald-500">aman/clear</span></span>
+                      )}
+                    </p>
                   </div>
                 </div>
                 <div className="px-3 text-right basis-1/3">
@@ -377,83 +398,72 @@ export default function DashboardCards() {
         </div>
       </div>
 
-      {/* ================= BARIS 2: GRAFIK & CAROUSEL (DIPASANG BERDAMPINGAN) ================= */}
+      {/* ================= BARIS 2: GRAFIK & CAROUSEL ================= */}
       <div className="flex flex-wrap mt-6 -mx-3">
-        
-      {/* Kolom Kiri: Line Chart Container */}
-            <div className="w-full max-w-full px-3 mt-0 lg:w-7/12 lg:flex-none">
-            <div className="border-black/12.5 dark:bg-slate-850 dark:shadow-dark-xl shadow-xl relative z-20 flex min-w-0 flex-col break-words rounded-2xl border-0 border-solid bg-white bg-clip-border">
-                    
-                {/* Header Chart Utama */}
-                <div className="border-black/12.5 mb-0 rounded-t-2xl border-b-0 border-solid p-6 pt-4 pb-0 flex flex-col gap-4 flex-none">
-                    
-                {/* BARIS ATAS: Sales Overview (Kiri) Sejajar Pas dengan Dropdown Periode (Kanan) */}
-                <div className="flex flex-row justify-between items-start w-full">
-                    <div>
-                    <h6 className="capitalize dark:text-white font-bold text-slate-700 mb-1">Ringkasan Penjualan</h6>
-                    <p className="mb-0 text-xs leading-normal dark:text-white dark:opacity-60 flex items-center gap-1">
-                        <i className="fa fa-arrow-up text-emerald-500"></i>
-                        <i className="fa fa-arrow-down text-red-500"></i>
-                        <span className="text-slate-400">Pantau perkembangan performa toko secara berkala</span>
-                    </p>
-                    </div>
-
-                    {/* DROPDOWN PERIODE DI SEBELAH KANAN UJUNG */}
-                    <div className="flex-none">
-                    <select
-                        value={timeFilter}
-                        onChange={(e) => setTimeFilter(e.target.value as TimeFilterType)}
-                        className="bg-slate-50 border border-slate-200 dark:bg-slate-800 dark:border-slate-700 dark:text-white text-slate-700 text-xs font-bold px-3 py-2 rounded-xl cursor-pointer shadow-sm outline-none focus:border-blue-500 transition-all"
-                        style={{ width: '120px' }}
-                    >
-                        <option value="1w">📅 1 Minggu</option>
-                        <option value="1m">📅 1 Bulan</option>
-                        <option value="1y">📅 1 Tahun</option>
-                    </select>
-                    </div>
+        {/* Kolom Kiri: Line Chart Container */}
+        <div className="w-full max-w-full px-3 mt-0 lg:w-7/12 lg:flex-none">
+          <div className="border-black/12.5 dark:bg-slate-850 dark:shadow-dark-xl shadow-xl relative z-20 flex min-w-0 flex-col break-words rounded-2xl border-0 border-solid bg-white bg-clip-border">
+            {/* Header Chart Utama */}
+            <div className="border-black/12.5 mb-0 rounded-t-2xl border-b-0 border-solid p-6 pt-4 pb-0 flex flex-col gap-4 flex-none">
+              <div className="flex flex-row justify-between items-start w-full">
+                <div>
+                  <h6 className="capitalize dark:text-white font-bold text-slate-700 mb-1">Ringkasan Penjualan</h6>
+                  <p className="mb-0 text-xs leading-normal dark:text-white dark:opacity-60 flex items-center gap-1">
+                    <i className="fa fa-arrow-up text-emerald-500"></i>
+                    <i className="fa fa-arrow-down text-red-500"></i>
+                    <span className="text-slate-400">Pantau perkembangan performa toko secara berkala</span>
+                  </p>
                 </div>
-
-                {/* BARIS BAWAH: TOMBOL FILTER METRIK BERJEJER KE SAMPING */}
-                <div className="flex bg-slate-100 p-1 rounded-xl text-xs font-bold gap-1 flex-wrap self-start">
-                    <button 
-                    onClick={() => setActiveMetric('revenue')} 
-                    className={`px-3 py-2 rounded-lg border-none cursor-pointer transition-all ${activeMetric === 'revenue' ? 'bg-blue-500 text-white shadow-md' : 'text-slate-600 hover:bg-slate-200'}`}
-                    >
-                    Total Pendapatan
-                    </button>
-                    <button 
-                    onClick={() => setActiveMetric('customers')} 
-                    className={`px-3 py-2 rounded-lg border-none cursor-pointer transition-all ${activeMetric === 'customers' ? 'bg-blue-500 text-white shadow-md' : 'text-slate-600 hover:bg-slate-200'}`}
-                    >
-                    Pelanggan
-                    </button>
-                    <button 
-                    onClick={() => setActiveMetric('products')} 
-                    className={`px-3 py-2 rounded-lg border-none cursor-pointer transition-all ${activeMetric === 'products' ? 'bg-blue-500 text-white shadow-md' : 'text-slate-600 hover:bg-slate-200'}`}
-                    >
-                    Produk Aktif
-                    </button>
-                    <button 
-                    onClick={() => setActiveMetric('orders')} 
-                    className={`px-3 py-2 rounded-lg border-none cursor-pointer transition-all ${activeMetric === 'orders' ? 'bg-blue-500 text-white shadow-md' : 'text-slate-600 hover:bg-slate-200'}`}
-                    >
-                    Total Pesanan
-                    </button>
+                <div className="flex-none">
+                  <select
+                    value={timeFilter}
+                    onChange={(e) => setTimeFilter(e.target.value as TimeFilterType)}
+                    className="bg-slate-50 border border-slate-200 dark:bg-slate-800 dark:border-slate-700 dark:text-white text-slate-700 text-xs font-bold px-3 py-2 rounded-xl cursor-pointer shadow-sm outline-none focus:border-blue-500 transition-all"
+                    style={{ width: '120px' }}
+                  >
+                    <option value="1w">📅 1 Minggu</option>
+                    <option value="1m">📅 1 Bulan</option>
+                    <option value="1y">📅 1 Tahun</option>
+                  </select>
                 </div>
-
-                </div>
-
-                {/* Area Grafik Line Chart */}
-                <div className="flex-auto p-4 mt-2 flex-grow flex flex-col justify-end">
-                <div className="w-full" style={{ height: '410px' }}>
-                    <Line data={chartData} options={chartOptions} />
-                </div>
-                </div>
-
+              </div>
+              <div className="flex bg-slate-100 p-1 rounded-xl text-xs font-bold gap-1 flex-wrap self-start">
+                <button 
+                  onClick={() => setActiveMetric('revenue')} 
+                  className={`px-3 py-2 rounded-lg border-none cursor-pointer transition-all ${activeMetric === 'revenue' ? 'bg-blue-500 text-white shadow-md' : 'text-slate-600 hover:bg-slate-200'}`}
+                >
+                  Total Pendapatan
+                </button>
+                <button 
+                  onClick={() => setActiveMetric('customers')} 
+                  className={`px-3 py-2 rounded-lg border-none cursor-pointer transition-all ${activeMetric === 'customers' ? 'bg-blue-500 text-white shadow-md' : 'text-slate-600 hover:bg-slate-200'}`}
+                >
+                  Pelanggan
+                </button>
+                <button 
+                  onClick={() => setActiveMetric('products')} 
+                  className={`px-3 py-2 rounded-lg border-none cursor-pointer transition-all ${activeMetric === 'products' ? 'bg-blue-500 text-white shadow-md' : 'text-slate-600 hover:bg-slate-200'}`}
+                >
+                  Produk Aktif
+                </button>
+                <button 
+                  onClick={() => setActiveMetric('orders')} 
+                  className={`px-3 py-2 rounded-lg border-none cursor-pointer transition-all ${activeMetric === 'orders' ? 'bg-blue-500 text-white shadow-md' : 'text-slate-600 hover:bg-slate-200'}`}
+                >
+                  Total Pesanan
+                </button>
+              </div>
             </div>
+            {/* Area Grafik Line Chart */}
+            <div className="flex-auto p-4 mt-2 flex-grow flex flex-col justify-end">
+              <div className="w-full" style={{ height: '410px' }}>
+                <Line data={chartData} options={chartOptions} />
+              </div>
             </div>
+          </div>
+        </div>
 
-        {/* Kolom Kanan: Carousel Slider Banner (KEMBALI AKTIF DISAMPING) */}
+        {/* Kolom Kanan: Carousel Slider Banner */}
         <div className="w-full max-w-full px-3 mb-6 lg:w-5/12 lg:flex-none flex flex-col">
           <div className="relative w-full overflow-hidden rounded-2xl shadow-xl flex-grow min-h-[400px] lg:min-h-0">
             {carouselItems.map((slide, idx) => (
@@ -477,7 +487,6 @@ export default function DashboardCards() {
                 </div>
               </div>
             ))}
-
             <button
               onClick={() => setCurrentSlide((prev) => (prev - 1 + carouselItems.length) % carouselItems.length)}
               className="absolute z-20 w-10 h-10 left-4 top-4 text-white bg-black/20 hover:bg-black/40 rounded-full border-none cursor-pointer flex items-center justify-center transition-all"
@@ -492,7 +501,6 @@ export default function DashboardCards() {
             </button>
           </div>
         </div>
-
       </div>
     </>
   );
