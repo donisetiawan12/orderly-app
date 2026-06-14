@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Waktu pembuatan: 13 Jun 2026 pada 23.19
+-- Waktu pembuatan: 14 Jun 2026 pada 20.12
 -- Versi server: 10.4.28-MariaDB
 -- Versi PHP: 8.0.28
 
@@ -87,19 +87,6 @@ CREATE TABLE `orders` (
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data untuk tabel `orders`
---
-
-INSERT INTO `orders` (`id`, `payment_id_gateway`, `payment_status`, `buyer_id`, `product_id`, `seller_id`, `quantity`, `total_price`, `status`, `payment_method`, `payment_proof`, `notes`, `created_at`, `updated_at`) VALUES
-(1, NULL, 'pending', 2, 1, 1, 1, 15000.00, 'completed', NULL, NULL, NULL, '2026-06-13 16:17:07', '2026-06-13 18:17:07'),
-(2, NULL, 'pending', 2, 1, 1, 1, 12000.00, 'completed', NULL, NULL, NULL, '2026-06-13 13:17:07', '2026-06-13 19:10:40'),
-(3, NULL, 'pending', 2, 1, 1, 2, 30000.00, 'completed', NULL, NULL, NULL, '2026-06-12 18:17:07', '2026-06-13 18:36:52'),
-(4, NULL, 'pending', 2, 1, 1, 1, 12000.00, 'completed', NULL, NULL, NULL, '2026-06-11 18:17:07', '2026-06-13 19:10:43'),
-(5, NULL, 'pending', 2, 1, 1, 1, 15000.00, 'completed', NULL, NULL, NULL, '2026-06-10 18:17:07', '2026-06-13 18:17:07'),
-(6, NULL, 'pending', 2, 1, 1, 1, 15000.00, 'completed', NULL, NULL, NULL, '2026-06-09 18:17:07', '2026-06-13 18:36:57'),
-(7, NULL, 'pending', 2, 1, 1, 1, 12000.00, 'completed', NULL, NULL, NULL, '2026-06-08 18:17:07', '2026-06-13 19:10:45');
-
 -- --------------------------------------------------------
 
 --
@@ -129,7 +116,7 @@ CREATE TABLE `products` (
 --
 
 INSERT INTO `products` (`id`, `seller_id`, `category_id`, `name`, `description`, `price`, `quantity`, `image`, `po_quota`, `po_deadline`, `status`, `created_at`, `updated_at`, `location`, `sold_quantity`) VALUES
-(1, 1, 1, 'Ayam Katsu', 'Ayam KAtsu enak', 20000.00, 0, '1781375300982-_ (3).jpeg', 50, '2026-06-27 01:35:00', 'active', '2026-06-13 18:26:37', '2026-06-13 18:28:20', 'Kampus B', 0);
+(2, 5, 1, 'Ayam Katsu ', 'Ayam Katsu RiceBowl Paket Nasi dan Telur serta Sambal ', 10000.00, 0, '1781460655335-_ (8).jpeg', 50, '2026-06-22 09:00:00', 'active', '2026-06-14 18:10:55', '2026-06-14 18:10:55', 'Kampus B', 0);
 
 -- --------------------------------------------------------
 
@@ -147,19 +134,6 @@ CREATE TABLE `reviews` (
   `comment` text DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data untuk tabel `reviews`
---
-
-INSERT INTO `reviews` (`id`, `order_id`, `buyer_id`, `seller_id`, `product_id`, `rating`, `comment`, `created_at`) VALUES
-(1, 1, 2, 1, 1, 5, 'Gilaaa ini nasi goreng spesialnya enak banget! Bumbunya pas, porsinya juga ngebantu banget buat kantong mahasiswa. Fix bakal langganan sih bro!', '2026-06-13 16:17:07'),
-(2, 2, 2, 1, 1, 4, 'Mie ayamnya empuk dan baksonya berasa daging banget bray. Cuma sayang tadi kuahnya agak sedikit dingin pas dateng, tapi overall rasanya tetep oke.', '2026-06-13 13:17:07'),
-(3, 3, 2, 1, 1, 5, 'Nasi gorengnya mantap! Wanginya khas banget, porsinya kuli cocok buat nemenin nugas malem.', '2026-06-12 18:17:07'),
-(4, 4, 2, 1, 1, 5, 'Mie ayamnya seger parah bray! Manis gurihnya pas kagak bikin enek di tenggorokan. Pas banget dimakan pas kelar kelas siang bolong.', '2026-06-11 18:17:07'),
-(5, 5, 2, 1, 1, 3, 'Rasanya sih oke, cuma kerupuknya tadi agak memble alias mleemem bray. Semoga ke depannya bisa lebih diperhatikan bungkusnya.', '2026-06-10 18:17:07'),
-(6, 6, 2, 1, 1, 4, 'Repeat order nasi gorengnya bray, rasanya konsisten tetep enak kayak biasa. Pengiriman ke area Kampus A juga cepet gak pake lama.', '2026-06-09 18:17:07'),
-(7, 7, 2, 1, 1, 5, 'Mie ayam bakso terenak di area kampus sih ini! Kuahnya gurih, sambelnya pedes nampol abis. Rekomendasi buat yang bingung nyari makan siang.', '2026-06-08 18:17:07');
 
 -- --------------------------------------------------------
 
@@ -183,7 +157,7 @@ CREATE TABLE `seller_payments` (
 --
 
 INSERT INTO `seller_payments` (`id`, `user_id`, `bank_name`, `account_name`, `account_number`, `qris_image`, `created_at`, `updated_at`) VALUES
-(1, 1, 'MANDIRI ', 'DONI SETIAWANa', '121324324324', 'qris-1781384029157-297487991.jpeg', '2026-06-13 20:32:25', '2026-06-13 20:54:00');
+(1, 1, 'MANDIRI ', 'DONI SETIAWAN ', '121324324324', 'qris-1781444483297-661975626.jpg', '2026-06-13 20:32:25', '2026-06-14 13:41:23');
 
 -- --------------------------------------------------------
 
@@ -211,11 +185,15 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `name`, `email`, `password`, `role`, `verification_status`, `ktm_path`, `phone`, `address`, `profile_picture`, `created_at`, `updated_at`) VALUES
-(1, 'seller', 'seller@gmail.com', '$2b$10$dahPLwA5dT32AC3TmqjPp.7ujNSzw7ERMcYlsVeEv6U0u36X2iI7e', 'seller', 'approved', 'uploads/ktm/ktm-1781374839347.png', NULL, NULL, NULL, '2026-06-13 18:20:39', '2026-06-13 20:29:02'),
-(2, 'buyer', 'buyer@gmail.com', '$2b$10$qR7UnEEHdMz6tyb9bBsEOegcZLbOZhxuz/GaCKMhSdlT6oBpQo4AG', 'buyer', 'approved', NULL, NULL, NULL, NULL, '2026-06-13 18:17:07', '2026-06-13 18:17:07'),
-(6, 'tes3', 'tes3@gmail.com', '$2b$10$Eh9hOCKxEr7Pnkm3cHAyFOAd5dTeGtM1fAEVVGbYWi2JY6IQW3o6a', 'buyer', 'approved', NULL, NULL, NULL, NULL, '2026-06-13 18:17:07', '2026-06-13 18:17:07'),
-(9, 'buyer1', 'buyer1@gmail.com', '$2b$10$iLP48IxMpD9A0o3Ve96LsuokWPT2AmkY1ghcWqj.TBRYKh0zbFam.', 'buyer', 'approved', NULL, NULL, NULL, NULL, '2026-06-13 18:17:07', '2026-06-13 18:17:07'),
-(11, 'admin', 'admin@gmail.com', '$2b$10$3Pf2w53p0.MmmXWz5XBDp.cJlZl1RKaNmbLE8yyi7t6ywpFI3EHIm', 'admin', 'approved', 'uploads/ktm/ktm-1781374878329.png', NULL, NULL, NULL, '2026-06-13 18:21:18', '2026-06-13 18:21:34');
+(1, 'Administrator', 'admin@gmail.com', '$2b$10$yUm7eVimo2egdZJFYEivlOZ3QxcdouAe.sx5X4DV0f2/I34SkFNzC', 'admin', 'approved', NULL, NULL, NULL, NULL, '2026-06-14 16:27:27', '2026-06-14 16:27:39'),
+(2, 'seller', 'seller@gmail.com', '$2b$10$ujT3g/q27D5xubZrVKJe4umWy9n.GziwWsrYmUf1Vp9vH1bMCPPha', 'seller', 'rejected', 'uploads/ktm/ktm-1781455117062.jpeg', NULL, NULL, NULL, '2026-06-14 16:38:37', '2026-06-14 18:08:58'),
+(3, 'seller2', 'seller2@gmail.com', '$2b$10$zw1XMduQOXbPk8ctqNKGF.zdShVB7D6S9aoKKrkSR8EQyW41dpO3q', 'seller', 'approved', 'uploads/ktm/ktm-1781455369201.jpeg', NULL, NULL, NULL, '2026-06-14 16:42:49', '2026-06-14 17:56:46'),
+(4, 'buyer', 'buyer@gmail.com', '$2b$10$i81w1Qd5BTPfzb..v2gwCu2blskxjtBLujqpcsCPceW7b1Zl7jRHe', 'buyer', 'approved', NULL, NULL, NULL, NULL, '2026-06-14 17:00:14', '2026-06-14 17:56:48'),
+(5, 'seller 3', 'seller3@gmail.com', '$2b$10$rS8fA9vZuXeVkjQBeeRQ3ezLeZmWjp1BJoERMQDIpj0VBui6UOxrO', 'seller', 'approved', 'uploads/ktm/ktm-1781456455518.jpeg', NULL, NULL, NULL, '2026-06-14 17:00:55', '2026-06-14 17:56:50'),
+(6, 'dsd', 'dsd@gmail.com', '$2b$10$ndY1meu.ISPHYloXOC411eRczDrbFIWlaMZ1V7FGdKChVPV.B2bgW', 'buyer', 'approved', NULL, NULL, NULL, NULL, '2026-06-14 18:00:32', '2026-06-14 18:00:32'),
+(7, 'efdfdsf', 'dsdsf@gmail.com', '$2b$10$fiLuW790JhtnOWSyEUbx6ec2yjnuUH3TH6DfPFtM02lhoPX42B5gi', 'buyer', 'approved', NULL, NULL, NULL, NULL, '2026-06-14 18:00:43', '2026-06-14 18:00:43'),
+(8, 'dsadadfd', 'fdfd@gmail.com', '$2b$10$Q.ui8fnas1W.VsKBGEROKuCUWWtK92Y7d2Yu1vFm3sQRuOW5Xpioq', 'buyer', 'approved', NULL, NULL, NULL, NULL, '2026-06-14 18:00:57', '2026-06-14 18:00:57'),
+(9, 'dsdsds', 'dsdsd@gmail.com', '$2b$10$xsiIghdRaW5IoE9pJts1jOL4FCeA28pIQhAt/84.5S3CHIonBE9XW', 'buyer', 'approved', NULL, NULL, NULL, NULL, '2026-06-14 18:01:20', '2026-06-14 18:01:20');
 
 --
 -- Indexes for dumped tables
@@ -308,31 +286,31 @@ ALTER TABLE `categories`
 -- AUTO_INCREMENT untuk tabel `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT untuk tabel `products`
 --
 ALTER TABLE `products`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT untuk tabel `reviews`
 --
 ALTER TABLE `reviews`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT untuk tabel `seller_payments`
 --
 ALTER TABLE `seller_payments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT untuk tabel `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- Ketidakleluasaan untuk tabel pelimpahan (Dumped Tables)

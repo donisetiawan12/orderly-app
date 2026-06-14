@@ -53,7 +53,10 @@ router.get('/seller-only', verifyToken, verifyRole('seller', 'admin'), (req, res
 
 // Cuma admin yang bisa akses
 router.get('/admin/pending-sellers', verifyToken, verifyRole('admin'), authController.getPendingSellers);
-router.put('/admin/approve-seller/:id', verifyToken, verifyRole('admin'), authController.approveSeller);
+router.put('/admin/verify-seller/:id', verifyToken, verifyRole('admin'), authController.approveSeller);
+
+// 🔥 SEKARANG DI SINI SUDAH DIPANGGIL LEWAT authController AGAR TIDAK REFERENCE ERROR BRAY
+router.get('/admin/total-buyers', verifyToken, verifyRole('admin'), authController.getTotalBuyers);
 
 // 🚀 UPDATE ROUTE DI backend/routes/authRoutes.js (Bisa terima upload file bray!)
 router.put('/update-profile', verifyToken, uploadKTM, async (req, res) => {

@@ -79,22 +79,62 @@ exports.login = async (req, res) => {
 // ============ ADMIN: GET PENDING SELLERS ============
 exports.getPendingSellers = async (req, res) => {
     try {
-        const sql = "SELECT id, name, email, ktm_path FROM users WHERE role = 'seller' AND verification_status = 'pending'";
+        // 🔥 Ditambah ambil phone biar di tabel Next.js lu kagak kosong bray!
+        // Ganti baris query sql lama lu di backend dengan ini biar dapet semua status urut dari ID terbesar bray:
+        // 🔥 UPDATE DI BACKEND LU BRAY (Tambahin created_at)
+// 🔥 UPDATE DI BACKEND LU BRAY (Hapus filter role, biar buyer & seller ketarik semua)
+const sql = "SELECT id, name, email, phone, role, ktm_path, verification_status, created_at FROM users WHERE role IN ('seller', 'buyer') ORDER BY id DESC";
         const [rows] = await db.execute(sql);
-        res.status(200).json({ status: 200, data: rows });
+        
+        // Bersihkan string ktm_path dari nama folder (misal dari 'src/uploads/ktm/foto.png' jadi cuma 'foto.png')
+        // Biar di frontend manggilnya mulus tanpa double path bray!
+        const cleanedRows = rows.map(user => {
+            if (user.ktm_path && user.ktm_path.includes('/')) {
+                user.ktm_path = user.ktm_path.split('/').pop();
+            } else if (user.ktm_path && user.ktm_path.includes('\\')) {
+                user.ktm_path = user.ktm_path.split('\\').pop();
+            }
+            return user;
+        });
+
+        res.status(200).json({ status: 200, data: cleanedRows });
     } catch (error) {
+        console.error(error);
         res.status(500).json({ status: 500, message: "Gagal ambil data seller" });
     }
 };
 
-// ============ ADMIN: APPROVE SELLER ============
+// ============ ADMIN: VERIFY SELLER (ACC / TOLAK DINAMIS) ============
 exports.approveSeller = async (req, res) => {
     try {
         const { id } = req.params;
-        const sql = "UPDATE users SET verification_status = 'approved' WHERE id = ?";
-        await db.execute(sql, [id]);
-        res.status(200).json({ status: 200, message: "Seller berhasil diverifikasi!" });
+        const { status } = req.body; // 🔥 Mengambil status ('approved' / 'rejected') kiriman dari Next.js
+
+        const finalStatus = status === 'rejected' ? 'rejected' : 'approved';
+
+        const sql = "UPDATE users SET verification_status = ? WHERE id = ?";
+        await db.execute(sql, [finalStatus, id]);
+        
+        res.status(200).json({ status: 200, message: `Seller berhasil di-${finalStatus}!` });
     } catch (error) {
-        res.status(500).json({ status: 500, message: "Gagal update status" });
+        console.error(error);
+        res.status(500).json({ status: 500, message: "Gagal update status verifikasi bray" });
+    }
+};
+
+// ============ ADMIN: GET TOTAL BUYERS REAL-TIME ============
+exports.getTotalBuyers = async (req, res) => {
+    try {
+        // Hitung total user yang role-nya 'buyer'
+        const sql = "SELECT COUNT(*) as total FROM users WHERE role = 'buyer'";
+        const [rows] = await db.execute(sql);
+        
+        return res.status(200).json({ 
+            status: 'success', 
+            total_buyers: rows[0].total 
+        });
+    } catch (error) {
+        console.error('❌ Get Total Buyers Error:', error.message);
+        return res.status(500).json({ status: 500, message: "Gagal hitung buyer asli bray" });
     }
 };

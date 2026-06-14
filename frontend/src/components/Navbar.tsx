@@ -105,7 +105,7 @@ export default function Navbar({
                     style={{ textDecoration: 'none' }}
                   >
                     <i className="fas fa-shopping-bag me-2"></i>
-                    Pesanan Saya
+                    Keranjang Saya
                   </a>
                 )}
 
