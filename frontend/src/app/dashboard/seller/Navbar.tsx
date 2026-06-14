@@ -7,7 +7,7 @@ export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname(); // Ambil path URL aktif saat ini
 
-  // Pecah path URL (Contoh: "/seller/dashboard/orders" -> ["seller", "dashboard", "orders"])
+  // Pecah path URL (Contoh: "/dashboard/products" -> ["dashboard", "products"])
   const pathSegments = pathname.split('/').filter((segment) => segment !== '');
 
   return (
@@ -21,40 +21,47 @@ export default function Navbar() {
         {/* ================= BREADCRUMB OTOMATIS ================= */}
         <nav className="block" style={{ transform: 'translateY(5px)' }}>
           <ol className="flex flex-wrap pt-0 bg-transparent rounded-lg items-center mb-0 list-none p-0">
-            {pathSegments.length === 0 ? (
-              <li
-                className="text-sm pl-2 capitalize leading-normal text-white font-bold before:float-left before:pr-2 before:text-white/60 before:content-['/']"
-                aria-current="page"
-              >
-                Dashboard
-              </li>
-            ) : (
-              pathSegments.map((segment, index) => {
-                const isLast = index === pathSegments.length - 1;
-                const cleanSegmentName = segment.replace(/[-_]/g, ' ');
+            {/* Bagian Root Dashboard */}
+            <li className="text-sm capitalize leading-normal text-white font-semibold">
+              <Link href="/dashboard" className="text-white opacity-80 hover:opacity-100">
+                Home
+              </Link>
+            </li>
 
-                if (isLast) {
-                  return (
-                    <li
-                      key={index}
-                      className="text-sm pl-2 capitalize leading-normal text-white font-bold before:float-left before:pr-2 before:text-white/60 before:content-['/']"
-                      aria-current="page"
-                    >
+            {/* Bagian Anak Segmen URL-nya bray */}
+            {pathSegments.map((segment, index) => {
+              // Kita skip kata 'dashboard' di segmen pertama biar gak double Home / Dashboard bray
+              if (segment.toLowerCase() === 'dashboard' && index === 0) return null;
+
+              const isLast = index === pathSegments.length - 1;
+              const cleanSegmentName = segment.replace(/[-_]/g, ' ');
+
+              // Bikin path dinamis untuk link breadcrumb (misal klik 'products' balik ke halaman produk)
+              const pathLink = '/' + pathSegments.slice(0, index + 1).join('/');
+
+              if (isLast) {
+                return (
+                  <li
+                    key={index}
+                    className="text-sm pl-2 capitalize leading-normal text-white font-bold before:float-left before:pr-2 before:text-white/60 before:content-['/']"
+                    aria-current="page"
+                  >
+                    {cleanSegmentName}
+                  </li>
+                );
+              } else {
+                return (
+                  <li
+                    key={index}
+                    className="text-sm pl-2 capitalize leading-normal text-white opacity-60 before:float-left before:pr-2 before:text-white/60 before:content-['/']"
+                  >
+                    <Link href={pathLink} className="text-white hover:underline">
                       {cleanSegmentName}
-                    </li>
-                  );
-                } else {
-                  return (
-                    <li
-                      key={index}
-                      className="text-sm pl-2 capitalize leading-normal text-white opacity-60 before:float-left before:pr-2 before:text-white/60 before:content-['/']"
-                    >
-                      {cleanSegmentName}
-                    </li>
-                  );
-                }
-              })
-            )}
+                    </Link>
+                  </li>
+                );
+              }
+            })}
           </ol>
         </nav>
 
@@ -77,10 +84,10 @@ export default function Navbar() {
               </button>
             </li>
 
-            {/* Profile */}
+            {/* 👤 PROFILE BUTTON: SEKARANG UDAH BERFUNGSI AKTIF BRAY */}
             <li className="flex items-center">
               <Link
-                href="/sign-in"
+                href="/dashboard/profile" // 🔥 KUNCI: Arahkan ke link halaman edit profile kita yang tadi bray!
                 className="block px-0 py-2 text-sm font-semibold text-white transition-all ease-nav-brand hover:opacity-80"
               >
                 <i className="fa fa-user sm:mr-1"></i>

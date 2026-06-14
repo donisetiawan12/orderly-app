@@ -351,7 +351,7 @@ export default function ProductManagement() {
         <div className="px-6 py-6 mx-auto w-full max-w-full block box-border overflow-x-hidden">
           
         {/* ================= BARIS 1: 4 CARDS STATISTIK KILAS TOKO ================= */}
-          <div className="flex flex-wrap -mx-3 mb-6">
+          <div className="flex flex-wrap -mx-3 mb-6 flex-1">
             {/* Card 1: Total Revenue */}
             <div className="w-full max-w-full px-3 mb-6 sm:w-1/2 sm:flex-none xl:mb-0 xl:w-1/4">
               <div className="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 rounded-2xl">
@@ -683,61 +683,62 @@ export default function ProductManagement() {
     </table>
   </div>
 
-  {/* 🚀 TOMBOL NAVIGASI PAGINATION DI POJOK KANAN BAWAH */}
-  {products.length > itemsPerPage && (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px', borderTop: '1px solid #f1f5f9', paddingTop: '12px' }}>
-      <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '500' }}>
-        Menampilkan {Math.min((currentPage - 1) * itemsPerPage + 1, products.length)} - {Math.min(currentPage * itemsPerPage, products.length)} dari {products.length} Produk
-      </span>
-      
-      <div style={{ display: 'flex', gap: '6px' }}>
-        <button
-          disabled={currentPage === 1}
-          onClick={() => setCurrentPage(prev => prev - 1)}
-          style={{
-            padding: '6px 12px', fontSize: '12px', fontWeight: 'bold', borderRadius: '6px', border: '1px solid #e2e8f0',
-            backgroundColor: currentPage === 1 ? '#f8fafc' : '#ffffff',
-            color: currentPage === 1 ? '#cbd5e1' : '#334155',
-            cursor: currentPage === 1 ? 'not-allowed' : 'pointer'
-          }}
-        >
-          ◀ Prev
-        </button>
-        
-        {Array.from({ length: Math.ceil(products.length / itemsPerPage) }).map((_, i) => (
-          <button
-            key={i}
-            onClick={() => setCurrentPage(i + 1)}
-            style={{
-              padding: '6px 12px', fontSize: '12px', fontWeight: 'bold', borderRadius: '6px',
-              border: currentPage === i + 1 ? '1px solid #10b981' : '1px solid #e2e8f0',
-              backgroundColor: currentPage === i + 1 ? '#10b981' : '#ffffff',
-              color: currentPage === i + 1 ? '#ffffff' : '#334155',
-              cursor: 'pointer'
-            }}
-          >
-            {i + 1}
-          </button>
-        ))}
+            {/* 🚀 TOMBOL NAVIGASI PAGINATION DI POJOK KANAN BAWAH */}
+            {products.length > itemsPerPage && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px', borderTop: '1px solid #f1f5f9', paddingTop: '12px' }}>
+                <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '500' }}>
+                  Menampilkan {Math.min((currentPage - 1) * itemsPerPage + 1, products.length)} - {Math.min(currentPage * itemsPerPage, products.length)} dari {products.length} Produk
+                </span>
+                
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  <button
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage(prev => prev - 1)}
+                    style={{
+                      padding: '6px 12px', fontSize: '12px', fontWeight: 'bold', borderRadius: '6px', border: '1px solid #e2e8f0',
+                      backgroundColor: currentPage === 1 ? '#f8fafc' : '#ffffff',
+                      color: currentPage === 1 ? '#cbd5e1' : '#334155',
+                      cursor: currentPage === 1 ? 'not-allowed' : 'pointer'
+                    }}
+                  >
+                    ◀ Prev
+                  </button>
+                  
+                  {Array.from({ length: Math.ceil(products.length / itemsPerPage) }).map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setCurrentPage(i + 1)}
+                      style={{
+                        padding: '6px 12px', fontSize: '12px', fontWeight: 'bold', borderRadius: '6px',
+                        border: currentPage === i + 1 ? '1px solid #10b981' : '1px solid #e2e8f0',
+                        backgroundColor: currentPage === i + 1 ? '#10b981' : '#ffffff',
+                        color: currentPage === i + 1 ? '#ffffff' : '#334155',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
 
-        <button
-          disabled={currentPage === Math.ceil(products.length / itemsPerPage)}
-          onClick={() => setCurrentPage(prev => prev + 1)}
-          style={{
-            padding: '6px 12px', fontSize: '12px', fontWeight: 'bold', borderRadius: '6px', border: '1px solid #e2e8f0',
-            backgroundColor: currentPage === Math.ceil(products.length / itemsPerPage) ? '#f8fafc' : '#ffffff',
-            color: currentPage === Math.ceil(products.length / itemsPerPage) ? '#cbd5e1' : '#334155',
-            cursor: currentPage === Math.ceil(products.length / itemsPerPage) ? 'not-allowed' : 'pointer'
-          }}
-        >
-          Next ▶
-        </button>
-      </div>
-    </div>
-  )}
-</div>
+                  <button
+                    disabled={currentPage === Math.ceil(products.length / itemsPerPage)}
+                    onClick={() => setCurrentPage(prev => prev + 1)}
+                    style={{
+                      padding: '6px 12px', fontSize: '12px', fontWeight: 'bold', borderRadius: '6px', border: '1px solid #e2e8f0',
+                      backgroundColor: currentPage === Math.ceil(products.length / itemsPerPage) ? '#f8fafc' : '#ffffff',
+                      color: currentPage === Math.ceil(products.length / itemsPerPage) ? '#cbd5e1' : '#334155',
+                      cursor: currentPage === Math.ceil(products.length / itemsPerPage) ? 'not-allowed' : 'pointer'
+                    }}
+                  >
+                    Next ▶
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
 
         </div>
+       
       </main>
 
       {/* ================= MODAL DIALOG POP-UP (TAMBAH / EDIT) ================= */}
@@ -849,39 +850,39 @@ export default function ProductManagement() {
                 )}
               </div>
               <div>
-  <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase', marginBottom: '4px' }}>
-    Alamat / Lokasi Stand
-  </label>
-  
-  {parseInt(poQuota) > 0 ? (
-    /* 🔒 JIKA PO: Dropdown */
-    <select
-      value={location || 'Kampus A'} // 👈 Kasih fallback 'Kampus A' jika state sempat null
-      onChange={(e) => {
-        console.log("Dropdown diganti ke:", e.target.value); // 💡 Debugger kecil biar keliatan di console
-        setLocation(e.target.value);
-      }}
-      required
-      style={{ width: '100%', boxSizing: 'border-box', padding: '8px 12px', fontSize: '13px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#ffffff' }}
-    >
-      <option value="Kampus A">📍 Kampus A</option>
-      <option value="Kampus B">📍 Kampus B</option>
-    </select>
-  ) : (
-    /* 🔓 JIKA READY STOCK: Input Text Bebas */
-    <input 
-      type="text" 
-      value={location || ''} 
-      onChange={(e) => {
-        console.log("Alamat diketik:", e.target.value); // 💡 Debugger kecil
-        setLocation(e.target.value);
-      }}
-      required 
-      placeholder="Contoh: Kantin Gedung C, Stand Utama Belakang" 
-      style={{ width: '100%', boxSizing: 'border-box', padding: '8px 12px', fontSize: '13px', borderRadius: '6px', border: '1px solid #cbd5e1' }} 
-    />
-  )}
-</div>
+              <label style={{ display: 'block', fontSize: '11px', fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase', marginBottom: '4px' }}>
+                Alamat / Lokasi Stand
+              </label>
+              
+              {parseInt(poQuota) > 0 ? (
+                /* 🔒 JIKA PO: Dropdown */
+                <select
+                  value={location || 'Kampus A'} // 👈 Kasih fallback 'Kampus A' jika state sempat null
+                  onChange={(e) => {
+                    console.log("Dropdown diganti ke:", e.target.value); // 💡 Debugger kecil biar keliatan di console
+                    setLocation(e.target.value);
+                  }}
+                  required
+                  style={{ width: '100%', boxSizing: 'border-box', padding: '8px 12px', fontSize: '13px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#ffffff' }}
+                >
+                  <option value="Kampus A">📍 Kampus A</option>
+                  <option value="Kampus B">📍 Kampus B</option>
+                </select>
+              ) : (
+                /* 🔓 JIKA READY STOCK: Input Text Bebas */
+                <input 
+                  type="text" 
+                  value={location || ''} 
+                  onChange={(e) => {
+                    console.log("Alamat diketik:", e.target.value); // 💡 Debugger kecil
+                    setLocation(e.target.value);
+                  }}
+                  required 
+                  placeholder="Contoh: Kantin Gedung C, Stand Utama Belakang" 
+                  style={{ width: '100%', boxSizing: 'border-box', padding: '8px 12px', fontSize: '13px', borderRadius: '6px', border: '1px solid #cbd5e1' }} 
+                />
+              )}
+            </div>
 
               <hr style={{ border: '0', borderTop: '1px dashed #e2e8f0', margin: '4px 0' }} />
 

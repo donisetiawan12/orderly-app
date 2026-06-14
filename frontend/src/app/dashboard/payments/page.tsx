@@ -134,10 +134,10 @@ export default function PaymentsPage() {
       });
       if (res.data.success) {
         setIsNewUser(false); // Kunci form jadi read-only bray
-        showToast('DATA REKENING BERHASIL DISIMPAN ABANGKUH! 🔥', 'success');
+        showToast('DATA REKENING BERHASIL DISIMPAN! 🔥', 'success');
       }
     } catch (err) {
-      showToast('Gagal simpan data bank bray! Cek koneksi backend lu.', 'error');
+      showToast('Gagal simpan data bank bray! Cek koneksi backend.', 'error');
     } finally {
       setBtnLoading(false);
     }

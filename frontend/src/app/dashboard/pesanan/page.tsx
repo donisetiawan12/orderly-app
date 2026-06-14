@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Sidebar from '../seller/Sidebar';
 import Navbar from '../seller/Navbar';
+// import Footer from '../seller/Footer';
 import Swal from 'sweetalert2';
 
 interface RecentOrder {
@@ -461,6 +462,7 @@ const handleUpdateStatus = async (orderId: number, nextStatus: string, buyerName
 </div>
 
         </div>
+        {/* <Footer /> */}
       </main>
 
       {/* LIGHTBOX POP-UP */}

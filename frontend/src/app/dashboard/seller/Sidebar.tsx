@@ -161,16 +161,17 @@ export default function Sidebar() {
             </h6>
           </li>
 
-          <li className="mt-0.5 w-full">
-            <a className={getLinkClass('/dashboard/settings')} href="#">
-              <div className="flex items-center">
-                <div className="mr-2 flex h-8 w-8 items-center justify-center">
-                  <i className="ni ni-settings-gear-65 text-orange-500"></i>
-                </div>
-                <span className="ml-1">Pengaturan Akun</span>
+         <li className="mt-0.5 w-full">
+          {/* 🔥 KUNCI: href DAN getLinkClass WAJIB SAMA-SAMA KE /dashboard/profile BIAR AKTIF SINKRON BRAY! */}
+          <Link href="/dashboard/profile" className={getLinkClass('/dashboard/profile')}>
+            <div className="flex items-center">
+              <div className="mr-2 flex h-8 w-8 items-center justify-center">
+                <i className="ni ni-settings-gear-65 text-orange-500"></i>
               </div>
-            </a>
-          </li>
+              <span className="ml-1">Pengaturan Akun</span>
+            </div>
+          </Link>
+        </li>
 
          <li className="mt-0.5 w-full">
   <a 

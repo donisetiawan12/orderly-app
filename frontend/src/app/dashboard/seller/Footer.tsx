@@ -2,7 +2,8 @@
 
 export default function Footer() {
   return (
-    <footer className="pt-4 pb-4 mt-6 bg-transparent w-full">
+    // 🔥 KUNCI 1: Tambahkan mt-auto agar footer otomatis terdorong ke paling bawah dalam container flex
+    <footer className="pt-4 pb-4 mt-auto bg-transparent w-full">
       <div className="w-full px-6 mx-auto">
         <div className="flex flex-wrap items-center -mx-3 lg:justify-between border-t border-slate-100 dark:border-slate-700 pt-4">
           

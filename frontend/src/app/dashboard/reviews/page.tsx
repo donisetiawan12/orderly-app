@@ -223,7 +223,7 @@ export default function SellerReviewsPage() {
                 {/* Header Title */}
                 <div className="mb-6">
                     <h6 className="dark:text-white font-bold text-base text-slate-800">💬 Ulasan dan Feedback Pembeli</h6>
-                    <p className="text-xs text-slate-400 font-medium">Dengarkan apa kata pelanggan tentang kualitas produk lu bro</p>
+                    <p className="text-xs text-slate-400 font-medium">Dengarkan apa kata pelanggan tentang kualitas produk Kamu.</p>
                 </div>
 
                 {/* =========================================================================
@@ -290,7 +290,7 @@ export default function SellerReviewsPage() {
                         ))
                     ) : (
                     <div className="w-full p-8 text-center text-sm text-slate-400 font-medium bg-slate-50 dark:bg-slate-900/20 rounded-xl border border-dashed border-gray-200 mx-3">
-                        📭 Belum ada ulasan masuk bray.
+                        📭 Belum ada ulasan masuk.
                     </div>
                     )}
                 </div>
