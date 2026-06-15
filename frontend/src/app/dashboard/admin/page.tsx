@@ -235,97 +235,99 @@ export default function AdminDashboard() {
         <div className="px-6 py-6 mx-auto w-full mt-20 flex-1">
           <DashboardCardsAdmin allSellers={pureSellersOnly} />
           
-          <div className="flex flex-wrap mt-6 -mx-3">
-            <div className="w-full max-w-full px-3 mt-0 lg:w-7/12 lg:flex-none">
-              <div className="border-black/12.5 dark:bg-slate-850 dark:shadow-dark-xl shadow-xl relative z-20 flex min-w-0 flex-col break-words rounded-2xl border-0 border-solid bg-white bg-clip-border">
-                
-                <div className="border-black/12.5 mb-0 rounded-t-2xl border-b-0 border-solid p-6 pt-4 pb-0 flex flex-col gap-4 flex-none">
-                  <div className="flex flex-row justify-between items-start w-full">
-                    <div>
-                      <h6 className="capitalize dark:text-white font-bold text-slate-700 mb-1">Analisis Pertumbuhan Pengguna</h6>
-                      <p className="mb-0 text-xs leading-normal dark:text-white dark:opacity-60 flex items-center gap-1">
-                        <i className="fa fa-arrow-up text-emerald-500"></i>
-                        <span className="text-slate-400">Data grafik murni sinkron terhubung dengan database</span>
-                      </p>
-                    </div>
-                    
-                    {/* 🔥 SELECT TIME FILTER SEKARANG SUDAH AKTIF RESPONSIF BRAY */}
-                    <div className="flex-none">
-                      <select
-                        value={timeFilter}
-                        onChange={(e) => setTimeFilter(e.target.value as any)}
-                        className="bg-slate-50 border border-slate-200 dark:bg-slate-800 dark:border-slate-700 dark:text-white text-slate-700 text-xs font-bold px-3 py-2 rounded-xl cursor-pointer shadow-sm outline-none focus:border-blue-500 transition-all"
-                        style={{ width: '120px' }}
-                      >
-                        <option value="1w">📅 1 Minggu</option>
-                        <option value="1m">📅 1 Bulan</option>
-                        <option value="1y">📅 1 Tahun</option>
-                      </select>
-                    </div>
-                  </div>
-                  
-               <div className="flex p-1 text-xs font-bold gap-1 flex-wrap self-start" style={{ backgroundColor: 'transparent' }}>
-                    
-                    <button 
-                      type="button"
-                      onClick={() => setActiveMetric('all')} 
-                      className="px-3 py-2 rounded-lg border-none cursor-pointer font-bold text-xs transition-all shadow-none"
-                      style={{ 
-                        backgroundColor: activeMetric === 'all' ? '#3b82f6' : 'transparent',
-                        color: activeMetric === 'all' ? '#ffffff' : '#475569',
-                      }}
-                    >
-                      Semua Pengguna
-                    </button>
-                    
-                    <button 
-                      type="button"
-                      onClick={() => setActiveMetric('buyer')} 
-                      className="px-3 py-2 rounded-lg border-none cursor-pointer font-bold text-xs transition-all shadow-none"
-                      style={{ 
-                        backgroundColor: activeMetric === 'buyer' ? '#06b6d4' : 'transparent',
-                        color: activeMetric === 'buyer' ? '#ffffff' : '#475569',
-                      }}
-                    >
-                      Khusus Buyer ({buyersFromDB.length})
-                    </button>
-                    
-                    <button 
-                      type="button"
-                      onClick={() => setActiveMetric('seller')} 
-                      className="px-3 py-2 rounded-lg border-none cursor-pointer font-bold text-xs transition-all shadow-none"
-                      style={{ 
-                        backgroundColor: activeMetric === 'seller' ? '#10b981' : 'transparent',
-                        color: activeMetric === 'seller' ? '#ffffff' : '#475569',
-                      }}
-                    >
-                      Khusus Seller ({activeSellersFromDB.length})
-                    </button>
-                    
-                    <button 
-                      type="button"
-                      onClick={() => setActiveMetric('rejected')} 
-                      className="px-3 py-2 rounded-lg border-none cursor-pointer font-bold text-xs transition-all shadow-none"
-                      style={{ 
-                        backgroundColor: activeMetric === 'rejected' ? '#ef4444' : 'transparent',
-                        color: activeMetric === 'rejected' ? '#ffffff' : '#475569',
-                      }}
-                    >
-                      Sellers Ditolak ({rejectedSellersFromDB.length})
-                    </button>
-
-                  </div>
-                </div>
-
-                <div className="flex-auto p-4 mt-2 flex-grow flex flex-col justify-end">
-                  <div className="w-full" style={{ height: '410px' }}>
-                    <Line data={chartData} options={chartOptions} />
-                  </div>
-                </div>
-
+        {/* 🔥 GRID PEMBUNGKUS UTAMA SEKARANG DIBIKIN FULL WIDTH W-FULL BRAY */}
+    <div className="flex flex-wrap mt-6 -mx-3">
+      <div className="w-full max-w-full px-3 mt-0"> 
+        <div className="border-black/12.5 dark:bg-slate-850 dark:shadow-dark-xl shadow-xl relative z-20 flex min-w-0 flex-col break-words rounded-2xl border-0 border-solid bg-white bg-clip-border w-full">
+          
+          <div className="border-black/12.5 mb-0 rounded-t-2xl border-b-0 border-solid p-6 pt-4 pb-0 flex flex-col gap-4 flex-none">
+            <div className="flex flex-row justify-between items-start w-full">
+              <div>
+                <h6 className="capitalize dark:text-white font-bold text-slate-700 mb-1">Analisis Pertumbuhan Pengguna</h6>
+                <p className="mb-0 text-xs leading-normal dark:text-white dark:opacity-60 flex items-center gap-1">
+                  <i className="fa fa-arrow-up text-emerald-500"></i>
+                  <span className="text-slate-400">Data grafik murni sinkron terhubung dengan database</span>
+                </p>
+              </div>
+              
+              {/* SELECT TIME FILTER */}
+              <div className="flex-none">
+                <select
+                  value={timeFilter}
+                  onChange={(e) => setTimeFilter(e.target.value as any)}
+                  className="bg-slate-50 border border-slate-200 dark:bg-slate-800 dark:border-slate-700 dark:text-white text-slate-700 text-xs font-bold px-3 py-2 rounded-xl cursor-pointer shadow-sm outline-none focus:border-blue-500 transition-all"
+                  style={{ width: '120px' }}
+                >
+                  <option value="1w">📅 1 Minggu</option>
+                  <option value="1m">📅 1 Bulan</option>
+                  <option value="1y">📅 1 Tahun</option>
+                </select>
               </div>
             </div>
+            
+            {/* BUTTON METRIC TABS */}
+            <div className="flex p-1 text-xs font-bold gap-1 flex-wrap self-start" style={{ backgroundColor: 'transparent' }}>
+              <button 
+                type="button"
+                onClick={() => setActiveMetric('all')} 
+                className="px-3 py-2 rounded-lg border-none cursor-pointer font-bold text-xs transition-all shadow-none"
+                style={{ 
+                  backgroundColor: activeMetric === 'all' ? '#3b82f6' : 'transparent',
+                  color: activeMetric === 'all' ? '#ffffff' : '#475569',
+                }}
+              >
+                Semua Pengguna
+              </button>
+              
+              <button 
+                type="button"
+                onClick={() => setActiveMetric('buyer')} 
+                className="px-3 py-2 rounded-lg border-none cursor-pointer font-bold text-xs transition-all shadow-none"
+                style={{ 
+                  backgroundColor: activeMetric === 'buyer' ? '#06b6d4' : 'transparent',
+                  color: activeMetric === 'buyer' ? '#ffffff' : '#475569',
+                }}
+              >
+                Khusus Buyer ({buyersFromDB.length})
+              </button>
+              
+              <button 
+                type="button"
+                onClick={() => setActiveMetric('seller')} 
+                className="px-3 py-2 rounded-lg border-none cursor-pointer font-bold text-xs transition-all shadow-none"
+                style={{ 
+                  backgroundColor: activeMetric === 'seller' ? '#10b981' : 'transparent',
+                  color: activeMetric === 'seller' ? '#ffffff' : '#475569',
+                }}
+              >
+                Khusus Seller ({activeSellersFromDB.length})
+              </button>
+              
+              <button 
+                type="button"
+                onClick={() => setActiveMetric('rejected')} 
+                className="px-3 py-2 rounded-lg border-none cursor-pointer font-bold text-xs transition-all shadow-none"
+                style={{ 
+                  backgroundColor: activeMetric === 'rejected' ? '#ef4444' : 'transparent',
+                  color: activeMetric === 'rejected' ? '#ffffff' : '#475569',
+                }}
+              >
+                Sellers Ditolak ({rejectedSellersFromDB.length})
+              </button>
+            </div>
           </div>
+
+          {/* 🔥 CANVAS GRAFIK / CHART SEKARANG JADI MAKIN LUAS BRAY */}
+          <div className="flex-auto p-4 mt-2 w-full">
+            {/* responsiveContainer atau canvas chart.js butuh relative pembungkus biar responsif */}
+            <div className="w-full relative" style={{ height: '450px' }}>
+              <Line data={chartData} options={chartOptions} />
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
 
         </div>
 
