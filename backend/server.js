@@ -10,17 +10,23 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// ============ IMPORT ROUTES ============
-const authRoutes = require('./routes/authRoutes');
-const productRoutes = require('./routes/productRoutes');
-const cartRoutes = require('./routes/cartRoutes');
-const categoryRoutes = require('./routes/categoryRoutes');
-const orderRoutes = require('./routes/orderRoutes'); // <--- Nanti kita buat file ini jika belum ada
-const paymentRoutes = require('./routes/payments'); // 🚀 IMPOR ROUTE PAYMENT UTAMA
+// ============ MIDDLEWARE CORS (DINAMIS VERCEL & LOCALHOST) ============
+const allowedOrigins = [
+    'http://localhost:3000',
+    'http://localhost:5173', // Jaga-jaga kalau pake Vite lokal
+    process.env.FRONTEND_URL  // Mengizinkan website Vercel kamu secara otomatis
+];
 
-// ============ MIDDLEWARE ============
 app.use(cors({
-    origin: 'http://localhost:3000',
+    origin: function (origin, callback) {
+        // Mengizinkan request tanpa origin (seperti Postman atau aplikasi mobile)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes('*')) {
+            return callback(null, true);
+        } else {
+            return callback(new Error('Akses diblokir oleh kebijakan CORS bray!'));
+        }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization']
@@ -31,17 +37,30 @@ app.use(express.urlencoded({ extended: true }));
 
 // Serve folder uploads agar gambar QRIS/produk bisa diakses dari browser/frontend bray
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // ============ REGISTER APPS ROUTES ============
+// Taruh rute ping di paling atas buat cek apakah backend nyala polos
+app.get('/', (req, res) => {
+    return res.status(200).json({ message: "Server orderly-app aktif!", status: "OK" });
+});
+
 app.get('/ping', (req, res) => {
     return res.status(200).json({ message: "pong", timestamp: new Date().toISOString() });
 });
+
+const authRoutes = require('./routes/authRoutes');
+const productRoutes = require('./routes/productRoutes');
+const cartRoutes = require('./routes/cartRoutes');
+const categoryRoutes = require('./routes/categoryRoutes');
+const orderRoutes = require('./routes/orderRoutes'); 
+const paymentRoutes = require('./routes/payments'); 
 
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/categories', categoryRoutes);
-app.use('/api/payments', paymentRoutes); // 🚀 JALUR UTAMA PEMBAYARAN SUDAH AKTIF
+app.use('/api/payments', paymentRoutes); 
 
 // ============ ERROR HANDLING MIDDLEWARE ============
 app.use((err, req, res, next) => {
@@ -54,11 +73,11 @@ app.use((err, req, res, next) => {
 
 // ============ 404 HANDLER ============
 app.use((req, res) => {
-    res.status(404).json({ message: 'Route tidak ditemukan' });
+    res.status(404).json({ message: 'Route tidak ditemukan di server backend bray' });
 });
 
 // ============ START SERVER ============
 app.listen(PORT, () => {
-    console.log(`✅ Server berjalan di http://localhost:${PORT}`);
+    console.log(`✅ Server berjalan di port ${PORT}`);
     console.log(`📦 Environment: ${process.env.NODE_ENV || 'development'}`);
 });
