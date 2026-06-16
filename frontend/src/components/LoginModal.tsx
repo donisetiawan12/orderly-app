@@ -25,7 +25,7 @@ export default function LoginModal({ show, onClose, onOpenRegister, setUser }: L
 
     try {
       // 🔄 LOGIKA DINAMIS: Deteksi ENV Vercel, kalau gak ada fallback ke localhost laptop bray
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || '/api/api';
       
       // Bersihkan jika ada double slash akibat salah ketik env
       const cleanUrl = `${baseUrl.replace(/\/$/, '')}/auth/login`;

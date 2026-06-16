@@ -53,7 +53,7 @@ export default function MenuDetailPopup({ product, onClose }: any) {
       const fetchReviews = async () => {
         setLoadingReviews(true);
         try {
-          const res = await fetch(`http://localhost:5000/api/products/${product.id}/reviews`);
+          const res = await fetch(`/api/api/products/${product.id}/reviews`);
           const result = await res.json();
           if (result.status === 'success' || result.data) {
             const dataUlasan: Review[] = result.data || [];
@@ -96,7 +96,7 @@ export default function MenuDetailPopup({ product, onClose }: any) {
         return;
       }
 
-      const response = await fetch('http://localhost:5000/api/cart', {
+      const response = await fetch('/api/api/cart', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -244,7 +244,7 @@ export default function MenuDetailPopup({ product, onClose }: any) {
         
         <div className="mpimg" style={{ position: 'relative', width: '100%', height: '250px', flexShrink: 0 }}>
           <img 
-            src={product.image ? `http://localhost:5000/uploads/products/${product.image}` : '/img/default.jpg'} 
+            src={product.image ? `/api/uploads/products/${product.image}` : '/img/default.jpg'} 
             alt={product.name} 
             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             onError={(e) => { (e.target as HTMLImageElement).src = '/img/default.jpg'; }}

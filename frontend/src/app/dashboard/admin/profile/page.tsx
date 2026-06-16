@@ -43,7 +43,7 @@ export default function AdminProfilePage() {
           return;
         }
 
-        const res = await fetch('http://localhost:5000/api/auth/me', {
+        const res = await fetch('/api/api/auth/me', {
           method: 'GET',
           headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -100,7 +100,7 @@ export default function AdminProfilePage() {
         data.append('ktm', selectedFile); // Sinkron dengan key upload backend lu
       }
 
-      const res = await fetch('http://localhost:5000/api/auth/update-profile', {
+      const res = await fetch('/api/api/auth/update-profile', {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -174,7 +174,7 @@ export default function AdminProfilePage() {
     if (previewUrl) return previewUrl;
     if (!formData.profile_picture) return defaultAvatar;
     if (formData.profile_picture.startsWith('http')) return formData.profile_picture;
-    return `http://localhost:5000/uploads/ktm/${formData.profile_picture}`;
+    return `/api/uploads/ktm/${formData.profile_picture}`;
   };
 
   return (
