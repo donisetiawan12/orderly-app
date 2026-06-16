@@ -103,7 +103,7 @@ npm run dev
 Buka browser:
 
 ```
-/api
+http://localhost:5000
 ```
 
 ---

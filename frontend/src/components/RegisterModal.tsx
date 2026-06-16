@@ -43,15 +43,7 @@ export default function RegisterModal({
         formData.append('ktm', ktm);
       }
 
-      // 🔄 LOGIKA DINAMIS: Deteksi ENV Vercel, kalau gak ada fallback ke localhost laptop bray
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || '/api/api';
-      
-      // Bersihkan jika ada double slash akibat salah ketik env
-      const cleanUrl = `${baseUrl.replace(/\/$/, '')}/auth/register`;
-
-      console.log('🚀 Nembak API Register ke:', cleanUrl);
-
-      const response = await fetch(cleanUrl, {
+      const response = await fetch('http://localhost:5000/api/auth/register', {
         method: 'POST',
         body: formData, // Mengirim data multipart/form-data
       });
@@ -166,10 +158,10 @@ export default function RegisterModal({
                   className="form-control"
                   placeholder="Masukkan nama lengkap"
                   style={{
-                    borderRadius: '14px',
-                    height: '55px',
-                    border: '1px solid #e5e7eb',
-                  }}
+                  borderRadius: '14px',
+                  height: '55px',
+                  border: '1px solid #e5e7eb',
+                }}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
@@ -183,10 +175,10 @@ export default function RegisterModal({
                   className="form-control"
                   placeholder="Masukkan email resmi"
                   style={{
-                    borderRadius: '14px',
-                    height: '55px',
-                    border: '1px solid #e5e7eb',
-                  }}
+                  borderRadius: '14px',
+                  height: '55px',
+                  border: '1px solid #e5e7eb',
+                }}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -200,10 +192,10 @@ export default function RegisterModal({
                   className="form-control "
                   placeholder="Masukkan password"
                   style={{
-                    borderRadius: '14px',
-                    height: '55px',
-                    border: '1px solid #e5e7eb',
-                  }}
+                  borderRadius: '14px',
+                  height: '55px',
+                  border: '1px solid #e5e7eb',
+                }}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -218,25 +210,27 @@ export default function RegisterModal({
                   className="form-control "
                   placeholder="Contoh: 0812345678xx"
                   style={{
-                    borderRadius: '14px',
-                    height: '55px',
-                    border: '1px solid #e5e7eb',
-                  }}
+                  borderRadius: '14px',
+                  height: '55px',
+                  border: '1px solid #e5e7eb',
+                }}
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   required
                 />
               </div>
 
+             
+
               <div className="mb-3">
                 <label className="form-label fw-semibold">Daftar Sebagai</label>
                 <select
                   className="form-select"
                   style={{
-                    borderRadius: '14px',
-                    height: '55px',
-                    border: '1px solid #e5e7eb',
-                  }}
+                  borderRadius: '14px',
+                  height: '55px',
+                  border: '1px solid #e5e7eb',
+                }}
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
                 >

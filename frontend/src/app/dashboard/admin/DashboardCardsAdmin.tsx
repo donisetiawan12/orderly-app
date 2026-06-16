@@ -19,7 +19,7 @@ export default function DashboardCardsAdmin({ allSellers }: DashboardCardsAdminP
     const fetchTotalBuyers = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch('/api/api/auth/admin/total-buyers', {
+        const res = await fetch('http://localhost:5000/api/auth/admin/total-buyers', {
           method: 'GET',
           headers: { 'Authorization': `Bearer ${token}` }
         });

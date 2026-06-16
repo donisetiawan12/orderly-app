@@ -67,7 +67,7 @@ export default function ProductManagement() {
       const token = localStorage.getItem('token');
       if (!token) return;
 
-      const res = await fetch('/api/api/orders/stats', {
+      const res = await fetch('http://localhost:5000/api/orders/stats', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -87,7 +87,7 @@ export default function ProductManagement() {
   const fetchProducts = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/api/products', {
+      const res = await fetch('http://localhost:5000/api/products', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -112,7 +112,7 @@ export default function ProductManagement() {
   const fetchCategories = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/api/categories', {
+      const res = await fetch('http://localhost:5000/api/categories', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -194,8 +194,8 @@ export default function ProductManagement() {
     }
 
     const url = isEditMode 
-      ? `/api/api/products/${currentProductId}`
-      : '/api/api/products';
+      ? `http://localhost:5000/api/products/${currentProductId}`
+      : 'http://localhost:5000/api/products';
       
     const method = isEditMode ? 'PUT' : 'POST';
 
@@ -278,7 +278,7 @@ export default function ProductManagement() {
       if (result.isConfirmed) {
         const token = localStorage.getItem('token');
         try {
-          const res = await fetch(`/api/api/products/${id}`, {
+          const res = await fetch(`http://localhost:5000/api/products/${id}`, {
             method: 'DELETE',
             headers: {
               'Authorization': `Bearer ${token}`
@@ -541,7 +541,7 @@ export default function ProductManagement() {
                   <td className="py-4 align-middle">
                     <div style={{ width: '50px', height: '50px', borderRadius: '8px', overflow: 'hidden', backgroundColor: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #e2e8f0' }}>
                       <img 
-                        src={product.image ? `/api/uploads/products/${product.image}` : 'https://placehold.co/100?text=No+Img'} 
+                        src={product.image ? `http://localhost:5000/uploads/products/${product.image}` : 'https://placehold.co/100?text=No+Img'} 
                         alt={product.name}
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                         onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/100?text=No+Img'; }}

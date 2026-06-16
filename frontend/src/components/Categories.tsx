@@ -7,7 +7,7 @@ export default function Categories({ activeFilter, setActiveFilter }: any) {
   useEffect(() => {
     async function fetchCategories() {
       try {
-        const response = await fetch('/api/api/categories');
+        const response = await fetch('http://localhost:5000/api/categories');
         const json = await response.json();
         if (json && json.data) {
           const allOption = { id: 'all', name: 'All Items', image: null };
@@ -43,7 +43,7 @@ export default function Categories({ activeFilter, setActiveFilter }: any) {
               // Jika tidak, gabungkan dengan URL upload backend.
               imageUrl = cat.image.startsWith('http') 
                 ? cat.image 
-                : `/api/uploads/categories/${cat.image}`;
+                : `http://localhost:5000/uploads/categories/${cat.image}`;
             }
 
             return (
