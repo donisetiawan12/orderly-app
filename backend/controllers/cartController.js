@@ -5,29 +5,46 @@ const { sendResponse } = require('../utils/response'); // Sesuaikan path helper 
 exports.addToCart = async (req, res) => {
     try {
         const { product_id, quantity } = req.body;
-        const user_id = req.user.id;
+        const buyer_id = req.user.id;
 
-        // Cek apakah produk sudah ada di keranjang
-        const [existing] = await db.execute(
-            "SELECT id, quantity FROM cart WHERE user_id = ? AND product_id = ?",
-            [user_id, product_id]
+        // 1. Ambil data po_quota dan sold_quantity asli dari DB saat ini
+        const [productCheck] = await db.execute(
+            'SELECT name, po_quota, sold_quantity FROM products WHERE id = ?', 
+            [product_id]
         );
 
-        if (existing.length > 0) {
-            await db.execute(
-                "UPDATE cart SET quantity = quantity + ? WHERE id = ?",
-                [quantity, existing[0].id]
-            );
-        } else {
-            await db.execute(
-                "INSERT INTO cart (user_id, product_id, quantity) VALUES (?, ?, ?)",
-                [user_id, product_id, quantity]
-            );
+        if (productCheck.length === 0) {
+            return res.status(404).json({ status: 'error', message: 'Produk tidak ditemukan bray!' });
         }
 
-        sendResponse(res, 200, "success", "Berhasil ditambahkan ke keranjang");
+        const product = productCheck[0];
+
+        // 2. 🔥 VALIDASI SAKTI: Jika ini produk PO dan kuotanya sudah terpenuhi/habis
+        if (Number(product.po_quota) > 0) {
+            const sisaKuota = product.po_quota - (product.sold_quantity || 0);
+            
+            if (sisaKuota <= 0) {
+                return res.status(400).json({ 
+                    status: 'error', 
+                    message: `❌ Waduh bray, Kuota PO untuk ${product.name} sudah penuh! Gak bisa dipesan lagi.` 
+                });
+            }
+
+            // Validasi tambahan: Kalau buyer maksa beli qty melebihi sisa kuota yang ada
+            if (quantity > sisaKuota) {
+                return res.status(400).json({ 
+                    status: 'error', 
+                    message: `⚠️ Sisa kuota PO tinggal ${sisaKuota} Pcs bray, lu gak bisa borong sampai ${quantity} Pcs.` 
+                });
+            }
+        }
+
+        // 3. JIKA LOLOS VALIDASI, BARU JALANKAN PROSES MASUK KERANJANG SEPERTI BIASA...
+        // (Lanjutkan kode query INSERT INTO cart lu di bawah sini bray)
+
     } catch (error) {
-        sendResponse(res, 500, "error", "Gagal menambah ke keranjang");
+        console.error(error);
+        return res.status(500).json({ status: 'error', message: 'Gagal memproses keranjang' });
     }
 };
 
