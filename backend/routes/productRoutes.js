@@ -159,37 +159,4 @@ router.get('/seller/reviews/:seller_id', async (req, res) => {
     }
 });
 
-// =========================================================================
-// 🚀 6. GET: AMBIL ULASAN PER PRODUK UNTUK NESTED POP-UP BUYER (TERBARU)
-// =========================================================================
-router.get('/:id/reviews', async (req, res) => {
-    try {
-        const { id } = req.params;
-
-        const sql = `
-            SELECT 
-                r.id,
-                r.rating,
-                r.comment,
-                r.created_at,
-                u.name AS buyer_name
-            FROM reviews r
-            JOIN users u ON r.buyer_id = u.id
-            WHERE r.product_id = ?
-            ORDER BY r.created_at DESC
-        `;
-
-        const [results] = await db.query(sql, [id]);
-
-        // Mengikuti standard response object file lu: { status: "success", data: ... }
-        res.json({
-            status: "success",
-            data: results
-        });
-    } catch (err) {
-        console.error("🔥 GET PRODUCT REVIEWS ERROR:", err.message);
-        res.status(500).json({ message: 'Gagal memuat ulasan produk bray: ' + err.message });
-    }
-});
-
 module.exports = router;

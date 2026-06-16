@@ -207,33 +207,3 @@ exports.getSellerReviews = async (req, res) => {
         sendResponse(res, 500, "error", "Gagal memuat ulasan produk");
     }
 };
-
-// =========================================================================
-// 🚀 TAMBAHAN BARU: FETCH DATA REVIEW PER PRODUK SESUAI STRUKTUR TABEL REVIEWS LU
-// =========================================================================
-exports.getProductReviews = async (req, res) => {
-    try {
-        const { id } = req.params; // mengambil ID produk dari parameter URL
-
-        const sql = `
-            SELECT 
-                r.id,
-                r.rating,
-                r.comment,
-                r.created_at,
-                u.name AS buyer_name
-            FROM reviews r
-            JOIN users u ON r.buyer_id = u.id
-            WHERE r.product_id = ?
-            ORDER BY r.created_at DESC
-        `;
-
-        const [reviews] = await db.execute(sql, [id]);
-        
-        // Memakai format standar helper sendResponse bawaan file lu bro
-        sendResponse(res, 200, "success", "Ulasan produk berhasil dimuat", reviews);
-    } catch (error) {
-        console.error("Get Product Reviews Error:", error);
-        sendResponse(res, 500, "error", "Gagal memuat ulasan produk bray");
-    }
-};
