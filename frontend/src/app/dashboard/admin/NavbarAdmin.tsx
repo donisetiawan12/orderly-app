@@ -65,7 +65,7 @@ export default function NavbarAdmin() {
 
             <li className="flex items-center">
               <Link
-                href="/dashboard/profile"
+                href="/dashboard/admin/profile"
                 className="block px-0 py-2 text-sm font-semibold text-white transition-all hover:opacity-80"
               >
                 <i className="fa fa-user sm:mr-1"></i>

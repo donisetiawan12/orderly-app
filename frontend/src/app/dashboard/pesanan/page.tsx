@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Sidebar from '../seller/Sidebar';
 import Navbar from '../seller/Navbar';
-// import Footer from '../seller/Footer';
 import Swal from 'sweetalert2';
 
 interface RecentOrder {
@@ -32,7 +31,7 @@ export default function PesananPage() {
   const [activeProof, setActiveProof] = useState<string | null>(null);
 
   const [orderPage, setOrderPage] = useState(1);
-  const ordersPerPage = 5; // Batasan maksimal 5 baris per halaman
+  const ordersPerPage = 5; 
 
   const fetchOrders = async () => {
     try {
@@ -66,15 +65,13 @@ export default function PesananPage() {
 
   useEffect(() => {
     fetchOrders();
-    
-    // Auto-polling tiap 10 detik biar notifikasi & data langsung sinkron otomatis tanpa refresh!
     const interval = setInterval(() => {
       fetchOrders();
     }, 10000);
     return () => clearInterval(interval);
   }, []);
 
-const handleUpdateStatus = async (orderId: number, nextStatus: string, buyerName: string) => {
+  const handleUpdateStatus = async (orderId: number, nextStatus: string, buyerName: string) => {
     let kataAksi = '';
     let warnaAksi = '#3085d6'; 
     
@@ -85,7 +82,6 @@ const handleUpdateStatus = async (orderId: number, nextStatus: string, buyerName
 
     Swal.fire({
       title: nextStatus === 'cancelled' ? 'Tolak Pesanan?' : 'Proses Pesanan?',
-      // 🚀 TAMPILAN TEXT: Full pake nama pembeli biar ramah di mata seller
       text: nextStatus === 'cancelled' 
         ? `Yakin ingin MENOLAK pembayaran dari ${buyerName}? Bukti dianggap tidak sah!` 
         : `Yakin ingin merubah status pesanan milik ${buyerName} menjadi ${nextStatus.toUpperCase()}?`,
@@ -118,7 +114,6 @@ const handleUpdateStatus = async (orderId: number, nextStatus: string, buyerName
           const token = localStorage.getItem('token');
           if (!token) return;
 
-          // 🔒 BACKEND SAFETY: Endpoint URL wajib tetep pake orderId biar database ga pusing nyari data!
           const res = await fetch(`http://localhost:5000/api/orders/${orderId}/status`, {
             method: 'PUT',
             headers: {
@@ -132,7 +127,6 @@ const handleUpdateStatus = async (orderId: number, nextStatus: string, buyerName
           if (result.status === 'success') {
             Swal.fire({
               title: nextStatus === 'cancelled' ? 'Pesanan Ditolak!' : 'Berhasil Diupdate!',
-              // 🚀 MODAL SUKSES: Juga informatif pake nama pembeli
               text: nextStatus === 'cancelled' 
                 ? `Pesanan milik ${buyerName} telah ditolak. Bukti Transfer Tidak Valid.`
                 : `Pesanan milik ${buyerName} sekarang berstatus: ${nextStatus.toUpperCase()}`,
@@ -173,10 +167,8 @@ const handleUpdateStatus = async (orderId: number, nextStatus: string, buyerName
         <div className="px-6 py-6 mx-auto w-full max-w-full block box-border overflow-x-hidden">
           
           {/* ================= BARIS CARDS STATISTIK ATAS PESANAN ================= */}
-         {/* ================= BARIS CARDS STATISTIK ATAS PESANAN (100% SINKRON DB) ================= */}
           <div className="flex flex-wrap -mx-3 mb-6">
-
-             {/* Card 1: Total Omset Sukses */}
+            {/* Card 1: Pendapatan */}
             <div className="w-full max-w-full px-3 mb-6 sm:w-1/2 sm:flex-none xl:mb-0 xl:w-1/4">
               <div className="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 rounded-2xl">
                 <div className="flex-auto p-4">
@@ -185,9 +177,9 @@ const handleUpdateStatus = async (orderId: number, nextStatus: string, buyerName
                       <div>
                         <p className="mb-0 font-sans text-xs font-bold uppercase text-slate-400">Pendapatan</p>
                         <h5 className="mb-2 font-bold dark:text-white text-lg text-slate-800">
-                            Rp {Number(stats?.total_revenue || 0).toLocaleString('id-ID')}
-                          </h5>
-                         <p className="mb-0 dark:text-white dark:opacity-60 text-xs text-slate-400">
+                          Rp {Number(stats?.total_revenue || 0).toLocaleString('id-ID')}
+                        </h5>
+                        <p className="mb-0 dark:text-white dark:opacity-60 text-xs text-slate-400">
                           Total Semua <span className="font-bold text-emerald-500">Pendapatan</span> Anda
                         </p>
                       </div>
@@ -202,7 +194,7 @@ const handleUpdateStatus = async (orderId: number, nextStatus: string, buyerName
               </div>
             </div>
 
-            {/* Card 2: Total Pelanggan Unik (FIXED: Pake total_customers dari DB!) */}
+            {/* Card 2: Pelanggan */}
             <div className="w-full max-w-full px-3 sm:w-1/2 sm:flex-none xl:w-1/4 mb-6 xl:mb-0">
               <div className="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 rounded-2xl">
                 <div className="flex-auto p-4">
@@ -211,7 +203,6 @@ const handleUpdateStatus = async (orderId: number, nextStatus: string, buyerName
                       <div>
                         <p className="mb-0 font-sans text-xs font-bold uppercase text-slate-400">Pelanggan</p>
                         <h5 className="mb-2 font-bold dark:text-white text-lg text-slate-800">
-                          {/* 🚀 FIX: Sekarang beneran nampilin jumlah pelanggan unik dari DB, bukan total order */}
                           {stats?.total_customers || 0} Orang
                         </h5>
                         <p className="mb-0 dark:text-white dark:opacity-60 text-xs text-slate-400">
@@ -229,7 +220,7 @@ const handleUpdateStatus = async (orderId: number, nextStatus: string, buyerName
               </div>
             </div>
 
-            {/* Card 3: Perlu Validasi Pembayaran (Pending) */}
+            {/* Card 3: Pesanan Masuk */}
             <div className="w-full max-w-full px-3 mb-6 sm:w-1/2 sm:flex-none xl:mb-0 xl:w-1/4">
               <div className="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 rounded-2xl">
                 <div className="flex-auto p-4">
@@ -261,7 +252,7 @@ const handleUpdateStatus = async (orderId: number, nextStatus: string, buyerName
               </div>
             </div>
 
-            {/* Card 4: Pesanan Dibatalkan (Menggantikan Card Produk Lama) */}
+            {/* Card 4: Dibatalkan */}
             <div className="w-full max-w-full px-3 mb-6 sm:w-1/2 sm:flex-none xl:mb-0 xl:w-1/4">
               <div className="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 rounded-2xl">
                 <div className="flex-auto p-4">
@@ -278,16 +269,12 @@ const handleUpdateStatus = async (orderId: number, nextStatus: string, buyerName
                       </div>
                     </div>
                     <div className="px-3 text-right basis-1/3 flex justify-end items-center">
-                      {/* 🚀 FIX BORDER BULETAN: Ditambahkan border putih halus + shadow biar makin glowing */}
                       <div 
                         className="bg-gradient-to-tl from-red-500 to-pink-500 flex items-center justify-center"
                         style={{ 
-                          width: '48px', 
-                          height: '48px', 
-                          borderRadius: '50%', 
-                          minWidth: '48px',
-                          border: '2px solid rgba(239, 68, 68, 0.2)', // Border halus transparan di luar buletan
-                          boxShadow: '0 4px 6px -1px rgba(244, 63, 94, 0.4), 0 2px 4px -1px rgba(244, 63, 94, 0.2)' // Efek shadow merah menyala
+                          width: '48px', height: '48px', borderRadius: '50%', minWidth: '48px',
+                          border: '2px solid rgba(239, 68, 68, 0.2)',
+                          boxShadow: '0 4px 6px -1px rgba(244, 63, 94, 0.4), 0 2px 4px -1px rgba(244, 63, 94, 0.2)'
                         }}
                       >
                         <span className="text-lg" style={{ lineHeight: '1' }}>❌</span>
@@ -297,10 +284,9 @@ const handleUpdateStatus = async (orderId: number, nextStatus: string, buyerName
                 </div>
               </div>
             </div>
-
           </div>
 
-         {/* ================= AREA UTAMA: TABEL VALIDASI PESANAN MASUK ================= */}
+          {/* ================= AREA UTAMA: TABEL VALIDASI PESANAN MASUK ================= */}
           <div className="flex flex-wrap mt-6 -mx-3">
             <div className="w-full max-w-full px-3 mt-0 mb-6 lg:w-12/12">
               <div className="relative flex flex-col min-w-0 break-words bg-white border-0 shadow-xl dark:bg-slate-850 rounded-2xl bg-clip-border p-4">
@@ -319,7 +305,6 @@ const handleUpdateStatus = async (orderId: number, nextStatus: string, buyerName
                     </thead>
                     <tbody>
                       {recentOrders.length > 0 ? (
-                        /* 🚀 FIX PAGINATION: Membalikkan data terlebih dahulu, baru kemudian dipotong per 5 data */
                         recentOrders
                           .slice()
                           .reverse()
@@ -329,7 +314,6 @@ const handleUpdateStatus = async (orderId: number, nextStatus: string, buyerName
 
                             return (
                               <tr key={order.id} className="border-b border-gray-50 dark:border-white/5 last:border-none hover:bg-slate-50 dark:hover:bg-slate-800/30 text-center">
-                                {/* Nomor urut dinamis agar tidak reset kembali ke 1 saat pindah ke halaman 2 */}
                                 <td className="py-4 align-middle text-sm text-center font-medium text-slate-500">
                                   {(orderPage - 1) * ordersPerPage + index + 1}
                                 </td>
@@ -357,7 +341,12 @@ const handleUpdateStatus = async (orderId: number, nextStatus: string, buyerName
                                 </td>
                                 <td className="py-4 align-middle text-sm text-center">
                                   {order.payment_proof ? (
-                                    <button type="button" onClick={() => setActiveProof(`http://localhost:5000/uploads/payments/${order.payment_proof}`)} style={{ display: 'inline-block', border: 'none', backgroundColor: '#eff6ff', color: '#3b82f6', fontWeight: 'bold', fontSize: '11px', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer' }}>
+                                    /* 🔥 FIX: Mengarahkan folder asset image sesuai dengan isi folder database lu bray */
+                                    <button 
+                                      type="button" 
+                                      onClick={() => setActiveProof(`http://localhost:5000/uploads/payments/${order.payment_proof}`)} 
+                                      style={{ display: 'inline-block', border: 'none', backgroundColor: '#eff6ff', color: '#3b82f6', fontWeight: 'bold', fontSize: '11px', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer' }}
+                                    >
                                       Lihat Foto 👁️
                                     </button>
                                   ) : (
@@ -367,37 +356,13 @@ const handleUpdateStatus = async (orderId: number, nextStatus: string, buyerName
                                 <td className="py-4 align-middle text-center">
                                   {(currentStatus === 'pending' || currentStatus === 'paid') ? (
                                     <div className="flex items-center justify-center gap-2">
-                                      <button 
-                                        type="button" 
-                                        onClick={() => handleUpdateStatus(order.id, 'confirmed', order.buyer_name)} 
-                                        style={{ backgroundColor: '#10b981', color: '#ffffff', fontWeight: 'bold', fontSize: '11px', padding: '8px 12px', borderRadius: '6px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}
-                                      >
-                                        Terima 
-                                      </button>
-                                      <button 
-                                        type="button" 
-                                        onClick={() => handleUpdateStatus(order.id, 'cancelled', order.buyer_name)} 
-                                        style={{ backgroundColor: '#ef4444', color: '#ffffff', fontWeight: 'bold', fontSize: '11px', padding: '8px 12px', borderRadius: '6px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}
-                                      >
-                                        Tolak 
-                                      </button>
+                                      <button type="button" onClick={() => handleUpdateStatus(order.id, 'confirmed', order.buyer_name)} style={{ backgroundColor: '#10b981', color: '#ffffff', fontWeight: 'bold', fontSize: '11px', padding: '8px 12px', borderRadius: '6px', border: 'none', cursor: 'pointer' }}>Terima</button>
+                                      <button type="button" onClick={() => handleUpdateStatus(order.id, 'cancelled', order.buyer_name)} style={{ backgroundColor: '#ef4444', color: '#ffffff', fontWeight: 'bold', fontSize: '11px', padding: '8px 12px', borderRadius: '6px', border: 'none', cursor: 'pointer' }}>Tolak</button>
                                     </div>
                                   ) : currentStatus === 'confirmed' ? (
-                                    <button 
-                                      type="button" 
-                                      onClick={() => handleUpdateStatus(order.id, 'shipped', order.buyer_name)} 
-                                      style={{ backgroundColor: '#06b6d4', color: '#ffffff', fontWeight: 'bold', fontSize: '12px', padding: '8px 14px', borderRadius: '6px', border: 'none', cursor: 'pointer' }}
-                                    >
-                                      Kirim/Siapkan Produk 
-                                    </button>
+                                    <button type="button" onClick={() => handleUpdateStatus(order.id, 'shipped', order.buyer_name)} style={{ backgroundColor: '#06b6d4', color: '#ffffff', fontWeight: 'bold', fontSize: '12px', padding: '8px 14px', borderRadius: '6px', border: 'none', cursor: 'pointer' }}>Kirim/Siapkan Produk</button>
                                   ) : currentStatus === 'shipped' ? (
-                                    <button 
-                                      type="button" 
-                                      onClick={() => handleUpdateStatus(order.id, 'completed', order.buyer_name)} 
-                                      style={{ backgroundColor: '#4f46e5', color: '#ffffff', fontWeight: 'bold', fontSize: '12px', padding: '8px 14px', borderRadius: '6px', border: 'none', cursor: 'pointer' }}
-                                    >
-                                      Selesaikan Pesanan 
-                                    </button>
+                                    <button type="button" onClick={() => handleUpdateStatus(order.id, 'completed', order.buyer_name)} style={{ backgroundColor: '#4f46e5', color: '#ffffff', fontWeight: 'bold', fontSize: '12px', padding: '8px 14px', borderRadius: '6px', border: 'none', cursor: 'pointer' }}>Selesaikan Pesanan</button>
                                   ) : (
                                     <span className="text-emerald-600 bg-emerald-50 font-bold text-xs px-3 py-1.5 rounded-md inline-block">✨ Selesai</span>
                                   )}
@@ -414,55 +379,18 @@ const handleUpdateStatus = async (orderId: number, nextStatus: string, buyerName
                   </table>
                 </div>
 
-                {/* 🚀 TOMBOL NAVIGASI PAGINATION PESANAN DI POJOK KANAN BAWAH */}
+                {/* PAGINATION */}
                 {recentOrders.length > ordersPerPage && (
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px', borderTop: '1px solid #f1f5f9', paddingTop: '12px' }}>
                     <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '500' }}>
                       Menampilkan {Math.min((orderPage - 1) * ordersPerPage + 1, recentOrders.length)} - {Math.min(orderPage * ordersPerPage, recentOrders.length)} dari {recentOrders.length} Pesanan
                     </span>
-                    
                     <div style={{ display: 'flex', gap: '6px' }}>
-                      <button
-                        disabled={orderPage === 1}
-                        onClick={() => setOrderPage(prev => prev - 1)}
-                        style={{
-                          padding: '6px 12px', fontSize: '12px', fontWeight: 'bold', borderRadius: '6px', border: '1px solid #e2e8f0',
-                          backgroundColor: orderPage === 1 ? '#f8fafc' : '#ffffff',
-                          color: orderPage === 1 ? '#cbd5e1' : '#334155',
-                          cursor: orderPage === 1 ? 'not-allowed' : 'pointer'
-                        }}
-                      >
-                        ◀ Prev
-                      </button>
-                      
+                      <button disabled={orderPage === 1} onClick={() => setOrderPage(prev => prev - 1)} style={{ padding: '6px 12px', fontSize: '12px', fontWeight: 'bold', borderRadius: '6px', border: '1px solid #e2e8f0', backgroundColor: orderPage === 1 ? '#f8fafc' : '#ffffff', color: orderPage === 1 ? '#cbd5e1' : '#334155', cursor: orderPage === 1 ? 'not-allowed' : 'pointer' }}>◀ Prev</button>
                       {Array.from({ length: Math.ceil(recentOrders.length / ordersPerPage) }).map((_, i) => (
-                        <button
-                          key={i}
-                          onClick={() => setOrderPage(i + 1)}
-                          style={{
-                            padding: '6px 12px', fontSize: '12px', fontWeight: 'bold', borderRadius: '6px',
-                            border: orderPage === i + 1 ? '1px solid #10b981' : '1px solid #e2e8f0',
-                            backgroundColor: orderPage === i + 1 ? '#10b981' : '#ffffff',
-                            color: orderPage === i + 1 ? '#ffffff' : '#334155',
-                            cursor: 'pointer'
-                          }}
-                        >
-                          {i + 1}
-                        </button>
+                        <button key={i} onClick={() => setOrderPage(i + 1)} style={{ padding: '6px 12px', fontSize: '12px', fontWeight: 'bold', borderRadius: '6px', border: orderPage === i + 1 ? '1px solid #10b981' : '1px solid #e2e8f0', backgroundColor: orderPage === i + 1 ? '#10b981' : '#ffffff', color: orderPage === i + 1 ? '#ffffff' : '#334155', cursor: 'pointer' }}>{i + 1}</button>
                       ))}
-
-                      <button
-                        disabled={orderPage === Math.ceil(recentOrders.length / ordersPerPage)}
-                        onClick={() => setOrderPage(prev => prev + 1)}
-                        style={{
-                          padding: '6px 12px', fontSize: '12px', fontWeight: 'bold', borderRadius: '6px', border: '1px solid #e2e8f0',
-                          backgroundColor: orderPage === Math.ceil(recentOrders.length / ordersPerPage) ? '#f8fafc' : '#ffffff',
-                          color: orderPage === Math.ceil(recentOrders.length / ordersPerPage) ? '#cbd5e1' : '#334155',
-                          cursor: orderPage === Math.ceil(recentOrders.length / ordersPerPage) ? 'not-allowed' : 'pointer'
-                        }}
-                      >
-                        Next ▶
-                      </button>
+                      <button disabled={orderPage === Math.ceil(recentOrders.length / ordersPerPage)} onClick={() => setOrderPage(prev => prev + 1)} style={{ padding: '6px 12px', fontSize: '12px', fontWeight: 'bold', borderRadius: '6px', border: '1px solid #e2e8f0', backgroundColor: orderPage === Math.ceil(recentOrders.length / ordersPerPage) ? '#f8fafc' : '#ffffff', color: orderPage === Math.ceil(recentOrders.length / ordersPerPage) ? '#cbd5e1' : '#334155', cursor: orderPage === Math.ceil(recentOrders.length / ordersPerPage) ? 'not-allowed' : 'pointer' }}>Next ▶</button>
                     </div>
                   </div>
                 )}
@@ -471,10 +399,9 @@ const handleUpdateStatus = async (orderId: number, nextStatus: string, buyerName
           </div>
 
         </div>
-        {/* <Footer /> */}
       </main>
 
-      {/* LIGHTBOX POP-UP */}
+      {/* LIGHTBOX POP-UP MODAL */}
       {activeProof && typeof window !== 'undefined' && createPortal(
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(4px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} onClick={() => setActiveProof(null)}></div>
@@ -484,7 +411,16 @@ const handleUpdateStatus = async (orderId: number, nextStatus: string, buyerName
               <button type="button" onClick={() => setActiveProof(null)} style={{ background: 'transparent', border: 'none', color: '#94a3b8', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>✕</button>
             </div>
             <div style={{ width: '100%', height: '330px', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#f1f5f9', borderRadius: '8px', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
-              <img src={activeProof} alt="Bukti Transfer" style={{ maxWidth: '100%', maxHeight: '320px', objectFit: 'contain' }} onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/300?text=Error+Load+Gambar'; }} />
+              <img 
+                src={activeProof} 
+                alt="Bukti Transfer" 
+                style={{ maxWidth: '100%', maxHeight: '320px', objectFit: 'contain' }} 
+                // 🔥 TIPS UTAMA: Kalau gambar pecah / 404, dia bakal nge-log URL aslinya ke console browser biar lu gampang debug bray!
+                onError={(e) => { 
+                  console.error("Gagal load gambar dari URL ini bray:", activeProof);
+                  (e.target as HTMLImageElement).src = 'https://placehold.co/300?text=Error+Load+Gambar'; 
+                }} 
+              />
             </div>
             <button type="button" onClick={() => setActiveProof(null)} style={{ width: '100%', height: '35px', backgroundColor: '#f1f5f9', color: '#1e293b', fontWeight: 'bold', fontSize: '12px', borderRadius: '8px', border: 'none', cursor: 'pointer' }}>Tutup Dokumen</button>
           </div>
