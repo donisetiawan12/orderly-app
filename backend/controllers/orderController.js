@@ -78,38 +78,91 @@ exports.createOrder = async (req, res) => {
     }
 };
 
-// Lihat Riwayat Order (Buyer atau Seller)
+// =========================================================================
+// 🛒 AMBIL DATA PESANAN BUYER + JOIN DETAIL REKENING + JOIN DATA REVIEWS (FIXED)
+// =========================================================================
 exports.getMyOrders = async (req, res) => {
     try {
-        const userId = req.user.id;
-        const role = req.user.role;
-        let sql = "";
+        const buyer_id = req.user.id; 
 
-        if (role === 'seller') {
-            sql = "SELECT * FROM orders WHERE seller_id = ?";
-        } else {
-            sql = "SELECT * FROM orders WHERE buyer_id = ?";
-        }
+        // 🔥 QUERY SUPER: Sekarang kita join juga ke tabel reviews berdasarkan order_id
+        const sql = `
+          SELECT o.*, p.name as product_name, 
+                 sp.bank_name as seller_bank_name, 
+                 sp.account_name as seller_account_name, 
+                 sp.account_number as seller_account_number, 
+                 sp.qris_image as seller_qris_image,
+                 r.rating as review_rating,
+                 r.comment as review_comment,
+                 r.created_at as review_created_at
+          FROM orders o
+          JOIN products p ON o.product_id = p.id
+          LEFT JOIN seller_payments sp ON o.seller_id = sp.user_id
+          LEFT JOIN reviews r ON o.id = r.order_id
+          WHERE o.buyer_id = ?
+          ORDER BY o.created_at DESC
+        `;
 
-        const [orders] = await db.execute(sql, [userId]);
-        sendResponse(res, 200, "success", "Data pesanan dimuat", orders);
+        // Eksekusi query ke database MySQL lu bray
+        const [rows] = await db.execute(sql, [buyer_id]);
+
+        return res.status(200).json({
+            status: "success",
+            data: rows
+        });
+
     } catch (error) {
-        console.error("Get Orders Error:", error);
-        sendResponse(res, 500, "error", "Gagal memuat data pesanan");
+        console.error("Error pas fetch order bray:", error);
+        return res.status(500).json({ status: "error", message: "Gagal ambil data" });
     }
 };
 
-// Tambahkan fungsi ini di orderController.js
+// 🔥 FUNGSI UPDATE CATATAN (NOTES) PESANAN BUYER SEBELUM DI-BAYAR
+exports.updateOrderNotes = async (req, res) => {
+    try {
+        const orderId = req.params.id;
+        const { notes } = req.body;
+        const buyer_id = req.user.id; // Keamanan agar buyer gak ngedit pesanan orang lain
+
+        // 1. Cek dulu apakah orderan ini valid milik si buyer dan statusnya masih 'pending'
+        const [orderCheck] = await db.execute(
+            'SELECT * FROM orders WHERE id = ? AND buyer_id = ?',
+            [orderId, buyer_id]
+        );
+
+        if (orderCheck.length === 0) {
+            return sendResponse(res, 404, "error", "Data pesanan lu kaga ketemu bray!");
+        }
+
+        if (orderCheck[0].status !== 'pending') {
+            return sendResponse(res, 400, "error", "Gak bisa diubah bray, pesanan udah diproses seller!");
+        }
+
+        // 2. Lakukan update pada kolom notes di database
+        const sqlUpdateNotes = `UPDATE orders SET notes = ?, updated_at = NOW() WHERE id = ?`;
+        await db.execute(sqlUpdateNotes, [notes, orderId]);
+
+        return sendResponse(res, 200, "success", "Catatan pesanan berhasil diperbarui bray!");
+
+    } catch (error) {
+        console.error("Error pas update catatan bray:", error);
+        return sendResponse(res, 500, "error", "Gagal memperbarui catatan di server.");
+    }
+};
+
+// Tambahkan fungsi ini di orderController.js (VERSI REVISI SUPER AKURAT)
 exports.uploadPaymentProof = async (req, res) => {
     try {
         const { id } = req.params; // ID Order
-        const payment_proof = req.file ? req.file.path : null;
+
+        // 🔥 FIX UTAMA: Ambil req.file.filename (NAMA FILENYA AJA BRAY, BIAR GAK DOUBLE FOLDER)
+        const payment_proof = req.file ? req.file.filename : null;
 
         if (!payment_proof) {
             return sendResponse(res, 400, "error", "Bukti pembayaran wajib diupload!");
         }
 
-        // Update database: set path foto dan ubah status jadi 'paid'
+        // Update database: set nama file foto dan ubah status jadi 'paid'
         const sql = `UPDATE orders SET payment_proof = ?, status = 'paid' WHERE id = ?`;
         const [result] = await db.execute(sql, [payment_proof, id]);
 
@@ -117,7 +170,8 @@ exports.uploadPaymentProof = async (req, res) => {
             return sendResponse(res, 404, "error", "Order tidak ditemukan!");
         }
 
-        sendResponse(res, 200, "success", "Bukti pembayaran berhasil diupload!");
+        // Kita return data nama filenya buat frontend kalau butuh bray
+        sendResponse(res, 200, "success", "Bukti pembayaran berhasil diupload!", { payment_proof });
     } catch (error) {
         console.error("Upload Payment Error:", error);
         sendResponse(res, 500, "error", "Gagal mengupload bukti pembayaran");
@@ -153,7 +207,6 @@ exports.getSellerStats = async (req, res) => {
         );
 
         // 5. 🔥 UTAMA: Ambil data order TANPA batasan status ketat agar data dummy/pending lu langsung kelihatan di grafik!
-        // Kita gunakan DATE_FORMAT atau biarkan JavaScript frontend yang mengonversi tanggalnya
         const [chartOrders] = await db.execute(
             `SELECT total_price, quantity, status, buyer_id, created_at 
              FROM orders 
@@ -223,7 +276,6 @@ exports.updateOrderStatus = async (req, res) => {
         }
 
         // 🔥 4. LOGIKA ANTI-JAIL (FIXED): Jika status berubah jadi 'cancelled', balikin kuota/stok produknya!
-        // Menggunakan db.execute agar sinkron dengan koneksi utama database lu
         if (status === 'cancelled' && oldStatus !== 'cancelled') {
             const sqlRestoreProductSold = `
                 UPDATE products 
@@ -244,33 +296,115 @@ exports.updateOrderStatus = async (req, res) => {
     }
 };
 
+// =========================================================================
+// ⭐️ TAMBAH REVIEW PRODUK SETELAH COMPLETED (MYSQL EXECUTE)
+// =========================================================================
 exports.addReview = async (req, res) => {
     try {
         const { order_id, rating, comment } = req.body;
-        const buyer_id = req.user.id;
+        const buyer_id = req.user.id; // ID buyer dari token login
 
-        // 1. Ambil detail order untuk dapatkan product_id & seller_id
-        const [orders] = await db.execute(
+        // 1. Validasi: Cek apakah orderan ini beneran milik si buyer dan statusnya udah 'completed'
+        const [orderCheck] = await db.execute(
             "SELECT product_id, seller_id, status FROM orders WHERE id = ? AND buyer_id = ?", 
             [order_id, buyer_id]
         );
 
-        if (orders.length === 0) return sendResponse(res, 404, "error", "Order tidak ditemukan!");
-        if (orders[0].status !== 'completed') return sendResponse(res, 400, "error", "Ulasan hanya bisa dibuat untuk pesanan yang sudah selesai!");
+        if (orderCheck.length === 0) {
+            return res.status(404).json({ status: "error", message: "Data pesanan kaga ketemu bray!" });
+        }
 
-        // 2. Simpan ulasan
-        await db.execute(
-            "INSERT INTO reviews (order_id, buyer_id, seller_id, product_id, rating, comment) VALUES (?, ?, ?, ?, ?, ?)",
-            [order_id, buyer_id, orders[0].seller_id, orders[0].product_id, rating, comment]
+        const { product_id, seller_id, status } = orderCheck[0];
+
+        if (status !== 'completed') {
+            return res.status(400).json({ 
+                status: "error", 
+                message: "Gak bisa kasih review bray, pesanan lu belum berstatus selesai (completed)!" 
+            });
+        }
+
+        // 2. Validasi input rating (misal wajib 1 - 5)
+        if (!rating || rating < 1 || rating > 5) {
+            return res.status(400).json({ status: "error", message: "Rating wajib diisi antara 1 sampai 5 bray!" });
+        }
+
+        // 3. Eksekusi INSERT ke tabel reviews milik lu bray
+        const sqlInsertReview = `
+            INSERT INTO reviews (order_id, buyer_id, seller_id, product_id, rating, comment, created_at) 
+            VALUES (?, ?, ?, ?, ?, ?, NOW())
+        `;
+        
+        await db.execute(sqlInsertReview, [
+            order_id, 
+            buyer_id, 
+            seller_id, 
+            product_id, 
+            rating, 
+            comment || null // Kalau gak isi komen, set jadi NULL sesuai struktur tabel lu
+        ]);
+
+        return res.status(201).json({
+            status: "success",
+            message: "🎉 Terima kasih bray! Ulasan produk berhasil disimpan."
+        });
+
+    } catch (error) {
+        console.error("🔥 ERROR PAS ADD REVIEW:", error.message);
+        // Handle jika buyer mencoba duplikat review (jika order_id di-set UNIQUE di database)
+        if (error.code === 'ER_DUP_ENTRY') {
+            return res.status(400).json({ status: "error", message: "Lu udah pernah ngasih ulasan buat pesanan ini bray!" });
+        }
+        return res.status(500).json({ status: "error", message: "Gagal mengirim ulasan di server backend." });
+    }
+};
+// Tambahin ini di paling bawah file orderController.js bray!
+// =========================================================================
+// 🛑 PROSES PEMBATALAN MANDIRI OLEH BUYER (FIXED & AKURAT)
+// =========================================================================
+exports.cancelMyOrder = async (req, res) => {
+    try {
+        const orderId = req.params.id;
+        const buyerId = req.user.id; // Ambil ID dari verifyToken
+
+        // 1. Cek dulu apakah pesanan ini beneran ada, milik si buyer, dan statusnya masih 'pending'
+        const [orderCheck] = await db.execute(
+            "SELECT product_id, quantity, status FROM orders WHERE id = ? AND buyer_id = ?",
+            [orderId, buyerId]
         );
 
-        sendResponse(res, 201, "success", "Ulasan berhasil dikirim!");
-    } catch (error) {
-        console.error("Add Review Error:", error);
-        // Error code 1062 = Duplicate entry (sudah pernah direview)
-        if (error.code === 'ER_DUP_ENTRY') {
-            return sendResponse(res, 400, "error", "Anda sudah memberikan ulasan untuk pesanan ini!");
+        if (orderCheck.length === 0) {
+            return sendResponse(res, 404, "error", "Data pesanan lu kaga ketemu bray!");
         }
-        sendResponse(res, 500, "error", "Gagal mengirim ulasan");
+
+        const { product_id, quantity, status } = orderCheck[0];
+
+        if (status !== 'pending') {
+            return sendResponse(res, 400, "error", "Gak bisa dibatalkan bray, pesanan lu udah diproses seller!");
+        }
+
+        // 2. Eksekusi UPDATE status pesanan jadi 'cancelled'
+        const [updateResult] = await db.execute(
+            "UPDATE orders SET status = 'cancelled', updated_at = NOW() WHERE id = ? AND buyer_id = ?",
+            [orderId, buyerId]
+        );
+
+        if (updateResult.affectedRows === 0) {
+            return sendResponse(res, 400, "error", "Gagal memperbarui status pembatalan.");
+        }
+
+        // 3. 🔥 LOGIKA KUOTA: Balikin angka sold_quantity produk biar slot PO-nya kebuka lagi
+        const sqlRestoreProductSold = `
+            UPDATE products 
+            SET sold_quantity = GREATEST(0, sold_quantity - ?) 
+            WHERE id = ?
+        `;
+        await db.execute(sqlRestoreProductSold, [quantity, product_id]);
+
+        // 4. Kirim respon sukses pake helper bawaan lu
+        return sendResponse(res, 200, "success", "🛑 Pre-order lu berhasil dibatalkan bray! Kuota produk dikembalikan.");
+
+    } catch (error) {
+        console.error("🔥 ERROR PAS BUYER CANCEL ORDER:", error.message);
+        return sendResponse(res, 500, "error", "Terjadi kesalahan sistem pada server backend bray!: " + error.message);
     }
 };

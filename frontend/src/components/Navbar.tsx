@@ -34,6 +34,9 @@ export default function Navbar({
   const [loadingCart, setLoadingCart] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // 🔥 STATE JUMLAH NOTIFIKASI ITEM DI KERANJANG
+  const [cartCount, setCartCount] = useState<number>(0);
+
   // 🚀 STATE UNTUK NOTIFIKASI POP-UP DI TENGAH LAYAR
   const [customAlert, setCustomAlert] = useState<AlertState>({
     show: false,
@@ -60,7 +63,10 @@ export default function Navbar({
       const result = await res.json();
       
       if (res.ok) {
-        setCartItems(result.data || []);
+        const items = result.data || [];
+        setCartItems(items);
+        // Hitung total item unik di keranjang untuk badge notifikasi
+        setCartCount(items.length);
       }
     } catch (err) {
       console.error("Gagal mengambil data keranjang :", err);
@@ -69,11 +75,27 @@ export default function Navbar({
     }
   };
 
+  // 🔥 FETCH JUMLAH KERANJANG SECARA SILENT PAS USER PERTAMA KALI LOGIN / LOAD
   useEffect(() => {
-    if (showCartPop) {
+    if (user && user.role === 'buyer') {
       fetchCartData();
     }
-  }, [showCartPop]);
+  }, [user]);
+
+// 🔥 DENGERIN EVENT BIAR BADGE UPDATE REALTIME TANPA REFRESH
+useEffect(() => {
+  const handleCartUpdateEvent = () => {
+    fetchCartData(); // Ambil data baru otomatis pas ada kode di atas teriak
+  };
+
+  // Pasang kuping buat dengerin event 'cartUpdated'
+  window.addEventListener('cartUpdated', handleCartUpdateEvent);
+
+  // Bersihin kuping pas komponen gak dipake biar gak bocor memorinya
+  return () => {
+    window.removeEventListener('cartUpdated', handleCartUpdateEvent);
+  };
+}, []);
 
   // 🚀 FUNGSI HAPUS ITEM 
   const handleDeleteItem = async (cartId: number) => {
@@ -100,7 +122,7 @@ export default function Navbar({
     }
   };
 
-  // 🚀 FUNGSI PROSES CHECKOUT PRE-ORDER
+// 🚀 FUNGSI PROSES CHECKOUT PRE-ORDER
   const handleCheckout = async () => {
     const token = localStorage.getItem('token');
     if (!token) return;
@@ -134,8 +156,14 @@ export default function Navbar({
       const result = await res.json();
 
       if (res.ok) {
+        // =========================================================================
+        // 🔥 TERIAK BIAR HALAMAN "PESANAN SAYA" LANGSUNG UPDATE DATA TANPA REFRESH!
+        // =========================================================================
+        window.dispatchEvent(new Event('orderUpdated'));
+
         triggerAlert("🎉 Selamat ! Pre-Order Anda berhasil dibuat. Silakan Lanjutkan Pembayaran Di Pesanan Saya Untuk Melanjutkan Pesanan Anda!", "success");
         setCartItems([]); 
+        setCartCount(0); // Reset notifikasi jadi nol bray
         setShowCartPop(false); 
       } else {
         triggerAlert(`Gagal checkout: ${result.message || 'Ada masalah di server'}`, "error");
@@ -167,10 +195,9 @@ export default function Navbar({
               backgroundColor: '#ffffff', borderRadius: '24px', padding: '32px',
               maxWidth: '380px', width: '100%', textAlign: 'center',
               boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-              animation: 'popUpScale 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
+              animation: 'navPopScale 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
             }}
           >
-            {/* Ikon Bulat Besar Sesuai Status */}
             <div 
               style={{
                 width: '72px', height: '72px', borderRadius: '50%',
@@ -184,17 +211,14 @@ export default function Navbar({
               {customAlert.type === 'success' ? '✓' : customAlert.type === 'error' ? '✕' : 'ℹ'}
             </div>
 
-            {/* Judul Status */}
             <h4 style={{ margin: '0 0 10px 0', fontSize: '20px', fontWeight: '800', color: '#0f172a' }}>
               {customAlert.type === 'success' ? 'Berhasil!' : customAlert.type === 'error' ? 'Ups, Gagal!' : 'Informasi'}
             </h4>
 
-            {/* Pesan Alert */}
             <p style={{ margin: '0 0 24px 0', fontSize: '14px', color: '#64748b', lineHeight: '1.5', fontWeight: '500' }}>
               {customAlert.message}
             </p>
 
-            {/* Tombol Oke Siap */}
             <button
               onClick={() => setCustomAlert(prev => ({ ...prev, show: false }))}
               style={{
@@ -202,24 +226,14 @@ export default function Navbar({
                 backgroundColor: customAlert.type === 'success' ? '#06b6d4' : customAlert.type === 'error' ? '#ef4444' : '#3b82f6',
                 color: '#ffffff', border: 'none', borderRadius: '14px',
                 fontSize: '14px', fontWeight: '700', cursor: 'pointer',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.1)', transition: 'transform 0.1s'
+                boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
               }}
-              onMouseDown={(e) => (e.currentTarget.style.transform = 'scale(0.98)')}
-              onMouseUp={(e) => (e.currentTarget.style.transform = 'scale(1)')}
             >
               Oke, Siap !
             </button>
           </div>
         </div>
       )}
-
-      {/* Style Animasi Pop-up Muncul Mentul */}
-      <style>{`
-        @keyframes popUpScale {
-          from { transform: scale(0.85); opacity: 0; }
-          to { transform: scale(1); opacity: 1; }
-        }
-      `}</style>
 
       {/* -- START NAVBAR HTML -- */}
       <nav className="navbar navbar-expand-lg" id="nav">
@@ -261,10 +275,35 @@ export default function Navbar({
                       style={{
                         borderRadius: '50px', padding: '8px 16px', fontSize: '0.85rem',
                         fontWeight: '600', cursor: 'pointer', display: 'flex',
-                        alignItems: 'center', backgroundColor: '#10b981', color: '#ffffff'
+                        alignItems: 'center', backgroundColor: '#10b981', color: '#ffffff',
+                        position: 'relative'
                       }}
                     >
                       <i className="fas fa-shopping-bag me-2"></i>Keranjang Saya
+
+                      {/* Bulatan Merah Angka Notifikasi Keranjang */}
+                      {cartCount > 0 && (
+                        <span style={{
+                          position: 'absolute',
+                          top: '-6px',
+                          right: '-4px',
+                          backgroundColor: '#ef4444',
+                          color: '#ffffff',
+                          fontSize: '11px',
+                          fontWeight: '800',
+                          width: '20px',
+                          height: '20px',
+                          borderRadius: '50%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          border: '2px solid #ffffff',
+                          boxShadow: '0 4px 6px rgba(0,0,0,0.15)',
+                          animation: 'pulseCartNotify 2s infinite'
+                        }}>
+                          {cartCount}
+                        </span>
+                      )}
                     </button>
                   )}
 
@@ -311,7 +350,8 @@ export default function Navbar({
               position: 'relative', width: '100%', maxWidth: '440px', maxHeight: '80vh',
               backgroundColor: '#ffffff', borderRadius: '24px', padding: '20px',
               boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', display: 'flex',
-              flexDirection: 'column', boxSizing: 'border-box'
+              flexDirection: 'column', boxSizing: 'border-box',
+              animation: 'navPopScale 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
             }}
           >
             {/* Header */}
@@ -392,7 +432,7 @@ export default function Navbar({
                     width: '100%', padding: '14px', backgroundColor: isSubmitting ? '#94a3b8' : '#2563eb', color: '#ffffff',
                     border: 'none', borderRadius: '14px', fontWeight: '700', fontSize: '14px',
                     cursor: isSubmitting ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                    boxShadow: '0 10px 15px -3px rgba(37,99,235,0.25)', transition: 'background-color 0.2s'
+                    boxShadow: '0 10px 15px -3px rgba(37,99,235,0.25)'
                   }}
                 >
                   <i className="fas fa-shopping-bag"></i> 
@@ -403,6 +443,19 @@ export default function Navbar({
           </div>
         </div>
       )}
+
+      {/* Style Global Efek Denyut & Scale Pop-up */}
+      <style>{`
+        @keyframes navPopScale { 
+          from { transform: scale(0.88); opacity: 0; } 
+          to { transform: scale(1); opacity: 1; } 
+        }
+        @keyframes pulseCartNotify {
+          0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+          70% { transform: scale(1.1); box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+          100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+      `}</style>
     </>
   );
 }

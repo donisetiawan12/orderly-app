@@ -22,6 +22,10 @@ export default function MenuDetailPopup({ product, onClose }: any) {
   const [loadingReviews, setLoadingReviews] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // 🔥 STATE TAMBAHAN UNTUK SINKRONISASI DATA RATING REALTIME
+  const [liveTotalReviews, setLiveTotalReviews] = useState(Number(product?.total_reviews || 0));
+  const [liveAvgRating, setLiveAvgRating] = useState(Number(product?.avg_rating || 0));
+
   // 🚀 STATE UNTUK POP-UP MODAL ALERT DI TENGAH LAYAR
   const [customAlert, setCustomAlert] = useState<AlertState>({
     show: false,
@@ -31,20 +35,38 @@ export default function MenuDetailPopup({ product, onClose }: any) {
 
   const mainBoxRef = useRef<HTMLDivElement>(null);
 
+  // 🔥 VALIDASI KUOTA PO SECARA LOKAL
+  const isPoProduct = Number(product?.po_quota) > 0;
+  const soldQty = Number(product?.sold_quantity || 0);
+  const maxQuota = Number(product?.po_quota || 0);
+  const sisaKuota = maxQuota - soldQty;
+  const isQuotaFull = isPoProduct && soldQty >= maxQuota;
+
   // Fungsi memicu Custom Alert Box 
   const triggerAlert = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
     setCustomAlert({ show: true, message, type });
   };
 
+  // 🔥 FITUR AUTOMATIC SYNC: Fetch ulasan langsung jalan pas modal detail menu ini terbuka
   useEffect(() => {
-    if (showReviewsPop && product?.id) {
+    if (product?.id) {
       const fetchReviews = async () => {
         setLoadingReviews(true);
         try {
           const res = await fetch(`http://localhost:5000/api/products/${product.id}/reviews`);
           const result = await res.json();
           if (result.status === 'success' || result.data) {
-            setReviews(result.data || []);
+            const dataUlasan: Review[] = result.data || [];
+            setReviews(dataUlasan);
+            
+            // 🌟 Hitung total dan rata-rata rating secara live dari database!
+            setLiveTotalReviews(dataUlasan.length);
+            if (dataUlasan.length > 0) {
+              const totalBintang = dataUlasan.reduce((acc, curr) => acc + Number(curr.rating), 0);
+              setLiveAvgRating(totalBintang / dataUlasan.length);
+            } else {
+              setLiveAvgRating(0);
+            }
           }
         } catch (err) {
           console.error("Gagal mengambil data ulasan:", err);
@@ -54,10 +76,16 @@ export default function MenuDetailPopup({ product, onClose }: any) {
       };
       fetchReviews();
     }
-  }, [showReviewsPop, product?.id]);
+  }, [product?.id]);
 
   // 🚀 FUNGSI ADD TO CART DENGAN NOTIFIKASI MODAL SAKTI
   const handleAddToCart = async () => {
+    // Validasi double-check di frontend sebelum melempar API
+    if (isPoProduct && qty > sisaKuota) {
+      triggerAlert(`⚠️ Waduh, sisa kuota PO tinggal ${sisaKuota} Pcs, Kamu gak bisa pesan sampai ${qty} Pcs.`, "error");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const token = localStorage.getItem('token'); 
@@ -83,6 +111,11 @@ export default function MenuDetailPopup({ product, onClose }: any) {
       const result = await response.json();
 
       if (response.ok) {
+        // =========================================================================
+        // 🔥 TERIAK KE SELURUH PENJURU WEB BIAR NAVBAR UPDATE ANGKA SECARA REALTIME!
+        // =========================================================================
+        window.dispatchEvent(new Event('cartUpdated'));
+
         triggerAlert(`🎉 Mantap ! ${qty} ${product.name} berhasil masuk keranjang.`, "success");
       } else {
         triggerAlert(`Gagal masuk keranjang: ${result.message || 'Ada masalah '}`, "error");
@@ -122,9 +155,9 @@ export default function MenuDetailPopup({ product, onClose }: any) {
             position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
             backgroundColor: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(8px)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            zIndex: 1500, padding: '16px' // Z-Index dipasang paling tinggi biar numpuk di atas modal ulasan/detail
+            zIndex: 1500, padding: '16px' 
           }}
-          onClick={(e) => e.stopPropagation()} // Cegah trigger close overlay luar 
+          onClick={(e) => e.stopPropagation()} 
         >
           <div 
             style={{
@@ -134,7 +167,6 @@ export default function MenuDetailPopup({ product, onClose }: any) {
               animation: 'popUpScale 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
             }}
           >
-            {/* Ikon Bulat Besar Sesuai Status */}
             <div 
               style={{
                 width: '72px', height: '72px', borderRadius: '50%',
@@ -148,22 +180,19 @@ export default function MenuDetailPopup({ product, onClose }: any) {
               {customAlert.type === 'success' ? '✓' : customAlert.type === 'error' ? '✕' : 'ℹ'}
             </div>
 
-            {/* Judul Status */}
             <h4 style={{ margin: '0 0 10px 0', fontSize: '20px', fontWeight: '800', color: '#0f172a' }}>
               {customAlert.type === 'success' ? 'Berhasil!' : customAlert.type === 'error' ? 'Ups, Gagal!' : 'Informasi'}
             </h4>
 
-            {/* Pesan Alert */}
             <p style={{ margin: '0 0 24px 0', fontSize: '14px', color: '#64748b', lineHeight: '1.5', fontWeight: '500' }}>
               {customAlert.message}
             </p>
 
-            {/* Tombol Konfirmasi */}
             <button
               onClick={() => {
                 setCustomAlert(prev => ({ ...prev, show: false }));
                 if (customAlert.type === 'success') {
-                  onClose(); // Jika sukses tambah keranjang, otomatis tutup detail utamanya 
+                  onClose(); 
                 }
               }}
               style={{
@@ -182,7 +211,6 @@ export default function MenuDetailPopup({ product, onClose }: any) {
         </div>
       )}
 
-      {/* Style Animasi Pop-up */}
       <style>{`
         @keyframes popUpScale {
           from { transform: scale(0.85); opacity: 0; }
@@ -201,7 +229,6 @@ export default function MenuDetailPopup({ product, onClose }: any) {
           maxHeight: '92vh', boxSizing: 'border-box'
         }}
       >
-        {/* Tombol Close Pojok Atas [X] */}
         <button 
           className="mpclose" 
           onClick={onClose}
@@ -215,7 +242,6 @@ export default function MenuDetailPopup({ product, onClose }: any) {
           <i className="fas fa-times" style={{ fontSize: '14px' }}></i>
         </button>
         
-        {/* Gambar Produk */}
         <div className="mpimg" style={{ position: 'relative', width: '100%', height: '250px', flexShrink: 0 }}>
           <img 
             src={product.image ? `http://localhost:5000/uploads/products/${product.image}` : '/img/default.jpg'} 
@@ -232,17 +258,17 @@ export default function MenuDetailPopup({ product, onClose }: any) {
           </span>
         </div>
         
-        {/* Konten Tengah */}
         <div className="mpbody" style={{ padding: '24px 20px 12px 20px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', width: '100%', boxSizing: 'border-box' }}>
           <h2 id="mpTitle" style={{ fontSize: '24px', fontWeight: '800', color: '#0f172a', margin: '0 0 12px 0', lineHeight: '1.2', width: '100%' }}>
             {product.name}
           </h2>
           
-          {/* Baris Rating & Tombol Ulasan */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', width: '100%' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: '#fef3c7', padding: '4px 10px', borderRadius: '12px', flexShrink: 0 }}>
               <i className="fas fa-star" style={{ color: '#f59e0b', fontSize: '13px' }}></i> 
-              <span style={{ color: '#78350f', fontWeight: '700', fontSize: '13px' }}>{Number(product.avg_rating || 0).toFixed(1)}</span>
+              <span style={{ color: '#78350f', fontWeight: '700', fontSize: '13px' }}>
+                {liveAvgRating.toFixed(1)}
+              </span>
             </div>
             
             <span 
@@ -259,22 +285,34 @@ export default function MenuDetailPopup({ product, onClose }: any) {
               onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#dbeafe'; }}
               onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#eff6ff'; }}
             > 
-              ({product.total_reviews || 0} Ulasan Pembeli - Lihat 👁️)
+              ({liveTotalReviews} Ulasan Pembeli - Lihat 👁️)
             </span>
           </div>
+
+          {/* DISPLAY LIVE KUOTA PO DI POP-UP BIAR CLEAR */}
+          {isPoProduct && (
+            <div style={{ marginBottom: '16px', backgroundColor: isQuotaFull ? '#fef2f2' : '#f0fdf4', padding: '12px 16px', borderRadius: '14px', border: `1px solid ${isQuotaFull ? '#fee2e2' : '#dcfce7'}`, width: '100%', boxSizing: 'border-box' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '6px' }}>
+                <span style={{ fontWeight: '700', color: isQuotaFull ? '#ef4444' : '#15803d' }}>
+                  {isQuotaFull ? '🚫 Status Kuota: Tunggu Minggu Berikutnya!' : '📦 Status Kuota: Masih Open PO'}
+                </span>
+                <span style={{ fontWeight: '800', color: '#1e293b' }}>{soldQty} / {maxQuota} Pcs</span>
+              </div>
+              <div style={{ width: '100%', height: '6px', backgroundColor: '#e2e8f0', borderRadius: '3px', overflow: 'hidden' }}>
+                <div style={{ width: `${Math.min((soldQty / maxQuota) * 100, 100)}%`, height: '100%', backgroundColor: isQuotaFull ? '#ef4444' : '#22c55e', transition: 'width 0.4s' }}></div>
+              </div>
+            </div>
+          )}
           
-          {/* Penjual */}
           <div style={{ fontSize: '0.87rem', color: '#64748b', marginBottom: '16px', backgroundColor: '#f8fafc', padding: '12px 16px', borderRadius: '14px', border: '1px solid #f1f5f9', width: '100%', boxSizing: 'border-box' }}>
             🧑‍🍳 Dijual oleh: <strong style={{ color: '#334155' }}>{product.seller_name || 'Merchant'}</strong>
           </div>
           
-          {/* Deskripsi */}
           <p id="mpDesc" style={{ fontSize: '0.95rem', color: '#475569', margin: '0', lineHeight: '1.6', width: '100%', boxSizing: 'border-box' }}>
             {product.description || 'Gak ada deskripsi untuk menu ini .'}
           </p>
         </div>
 
-        {/* AREA KONTROL BAWAH (FIXED) */}
         <div style={{ padding: '16px 20px 20px 20px', borderTop: '1px solid #f1f5f9', backgroundColor: '#ffffff', flexShrink: 0 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
             <div>
@@ -287,26 +325,51 @@ export default function MenuDetailPopup({ product, onClose }: any) {
               </div>
             </div>
 
-            {/* Stepper Quantity */}
+            {/* Stepper Quantity (Otomatis Lock jika Kuota Habis) */}
             <div className="mpqty" style={{ display: 'flex', alignItems: 'center', backgroundColor: '#f1f5f9', padding: '4px', borderRadius: '14px' }}>
-              <button onClick={() => setQty(q => Math.max(1, q - 1))} style={{ width: '32px', height: '32px', borderRadius: '10px', backgroundColor: '#ffffff', border: 'none', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>-</button>
-              <span className="mpqnum" style={{ minWidth: '36px', textAlign: 'center', fontWeight: '800', fontSize: '15px', color: '#1e293b' }}>{qty}</span>
-              <button onClick={() => setQty(q => q + 1)} style={{ width: '32px', height: '32px', borderRadius: '10px', backgroundColor: '#ffffff', border: 'none', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>+</button>
+              <button 
+                onClick={() => setQty(q => Math.max(1, q - 1))} 
+                disabled={isQuotaFull}
+                style={{ width: '32px', height: '32px', borderRadius: '10px', backgroundColor: isQuotaFull ? '#e2e8f0' : '#ffffff', border: 'none', fontWeight: 'bold', cursor: isQuotaFull ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}
+              >
+                -
+              </button>
+              <span className="mpqnum" style={{ minWidth: '36px', textAlign: 'center', fontWeight: '800', fontSize: '15px', color: isQuotaFull ? '#94a3b8' : '#1e293b' }}>
+                {isQuotaFull ? 0 : qty}
+              </span>
+              <button 
+                onClick={() => setQty(q => isPoProduct ? Math.min(sisaKuota, q + 1) : q + 1)} 
+                disabled={isQuotaFull || (isPoProduct && qty >= sisaKuota)}
+                style={{ width: '32px', height: '32px', borderRadius: '10px', backgroundColor: (isQuotaFull || (isPoProduct && qty >= sisaKuota)) ? '#e2e8f0' : '#ffffff', border: 'none', fontWeight: 'bold', cursor: (isQuotaFull || (isPoProduct && qty >= sisaKuota)) ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}
+              >
+                +
+              </button>
             </div>
           </div>
 
-          {/* Tombol Add To Cart */}
-          <button 
-            className="mpaddcart" 
-            onClick={handleAddToCart} 
-            disabled={isSubmitting}
-            style={{ 
-              width: '100%', padding: '15px', backgroundColor: isSubmitting ? '#a7f3d0' : '#10b981', color: '#ffffff', border: 'none', borderRadius: '14px', fontWeight: '700', fontSize: '15px', cursor: isSubmitting ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 10px 15px -3px rgba(16,185,129,0.25)' 
-            }}
-          >
-            <i className="fas fa-shopping-cart"></i> 
-            {isSubmitting ? 'Memproses...' : `Tambah Ke Keranjang (Rp ${(Math.trunc(Number(product.price || 0)) * qty).toLocaleString('id-ID')})`}
-          </button>
+          {/* 🔥 DAH DI-FIX: Tombol Utama Add To Cart Otomatis Nge-block Skenario Kuota Penuh */}
+          {isQuotaFull ? (
+            <button 
+              disabled={true}
+              style={{ 
+                width: '100%', padding: '15px', backgroundColor: '#94a3b8', color: '#ffffff', border: 'none', borderRadius: '14px', fontWeight: '700', fontSize: '15px', cursor: 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
+              }}
+            >
+              ❌ Kuota PO Sudah Penuh!
+            </button>
+          ) : (
+            <button 
+              className="mpaddcart" 
+              onClick={handleAddToCart} 
+              disabled={isSubmitting}
+              style={{ 
+                width: '100%', padding: '15px', backgroundColor: isSubmitting ? '#a7f3d0' : '#10b981', color: '#ffffff', border: 'none', borderRadius: '14px', fontWeight: '700', fontSize: '15px', cursor: isSubmitting ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 10px 15px -3px rgba(16,185,129,0.25)' 
+              }}
+            >
+              <i className="fas fa-shopping-cart"></i> 
+              {isSubmitting ? 'Memproses...' : `Tambah Ke Keranjang (Rp ${(Math.trunc(Number(product.price || 0)) * qty).toLocaleString('id-ID')})`}
+            </button>
+          )}
         </div>
       </div>
 
@@ -320,35 +383,12 @@ export default function MenuDetailPopup({ product, onClose }: any) {
             zIndex: 1100, padding: '16px'
           }}
         >
-          <div 
-            style={{ position: 'absolute', width: '100%', height: '100%' }} 
-            onClick={(e) => {
-              e.stopPropagation(); 
-              setShowReviewsPop(false);
-            }}
-          ></div>
+          <div style={{ position: 'absolute', width: '100%', height: '100%' }} onClick={(e) => { e.stopPropagation(); setShowReviewsPop(false); }}></div>
           
-          <div 
-            style={{
-              position: 'relative', width: '100%', maxWidth: '400px', maxHeight: '480px',
-              backgroundColor: '#ffffff', borderRadius: '24px', padding: '20px',
-              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.25)', display: 'flex',
-              flexDirection: 'column', boxSizing: 'border-box'
-            }}
-          >
+          <div style={{ position: 'relative', width: '100%', maxWidth: '400px', maxHeight: '480px', backgroundColor: '#ffffff', borderRadius: '24px', padding: '20px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.25)', display: 'flex', flexDirection: 'column', boxSizing: 'border-box' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f1f5f9', paddingBottom: '14px', marginBottom: '14px' }}>
-              <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '800', color: '#0f172a' }}>
-                ⭐ Ulasan ({product.name})
-              </h3>
-              <button 
-                onClick={(e) => {
-                  e.stopPropagation(); 
-                  setShowReviewsPop(false);
-                }}
-                style={{ background: '#f1f5f9', border: 'none', color: '#64748b', width: '26px', height: '26px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}
-              >
-                ✕
-              </button>
+              <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '800', color: '#0f172a' }}>⭐ Ulasan ({product.name})</h3>
+              <button onClick={(e) => { e.stopPropagation(); setShowReviewsPop(false); }} style={{ background: '#f1f5f9', border: 'none', color: '#64748b', width: '26px', height: '26px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>✕</button>
             </div>
 
             <div style={{ overflowY: 'auto', flex: 1, paddingRight: '4px' }}>
@@ -359,16 +399,10 @@ export default function MenuDetailPopup({ product, onClose }: any) {
                   <div key={review.id} style={{ padding: '12px', borderBottom: '1px solid #f1f5f9', backgroundColor: '#f8fafc', borderRadius: '14px', marginBottom: '10px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
                       <strong style={{ fontSize: '13px', color: '#1e293b', fontWeight: '700' }}>{review.buyer_name}</strong>
-                      <span style={{ fontSize: '11px', color: '#d97706', backgroundColor: '#fef3c7', padding: '2px 6px', borderRadius: '8px', fontWeight: '700' }}>
-                        ⭐ {Number(review.rating).toFixed(0)}
-                      </span>
+                      <span style={{ fontSize: '11px', color: '#d97706', backgroundColor: '#fef3c7', padding: '2px 6px', borderRadius: '8px', fontWeight: '700' }}>⭐ {Number(review.rating).toFixed(0)}</span>
                     </div>
-                    <p style={{ margin: 0, fontSize: '12px', color: '#475569', lineHeight: '1.4' }}>
-                      {review.comment || <em style={{ color: '#94a3b8' }}>Gak ada komentar tekstual.</em>}
-                    </p>
-                    <span style={{ fontSize: '10px', color: '#94a3b8', display: 'block', marginTop: '6px', textAlign: 'right' }}>
-                      {new Date(review.created_at).toLocaleDateString('id-ID')}
-                    </span>
+                    <p style={{ margin: 0, fontSize: '12px', color: '#475569', lineHeight: '1.4' }}>{review.comment || <em style={{ color: '#94a3b8' }}>Gak ada komentar tekstual.</em>}</p>
+                    <span style={{ fontSize: '10px', color: '#94a3b8', display: 'block', marginTop: '6px', textAlign: 'right' }}>{new Date(review.created_at).toLocaleDateString('id-ID')}</span>
                   </div>
                 ))
               ) : (
@@ -379,15 +413,7 @@ export default function MenuDetailPopup({ product, onClose }: any) {
               )}
             </div>
 
-            <button 
-              onClick={(e) => {
-                e.stopPropagation(); 
-                setShowReviewsPop(false);
-              }}
-              style={{ width: '100%', padding: '12px', backgroundColor: '#f1f5f9', color: '#64748b', border: 'none', borderRadius: '10px', fontWeight: '700', fontSize: '13px', cursor: 'pointer', marginTop: '14px' }}
-            >
-              Kembali ke Detail
-            </button>
+            <button onClick={(e) => { e.stopPropagation(); setShowReviewsPop(false); }} style={{ width: '100%', padding: '12px', backgroundColor: '#f1f5f9', color: '#64748b', border: 'none', borderRadius: '10px', fontWeight: '700', fontSize: '13px', cursor: 'pointer', marginTop: '14px' }}>Kembali ke Detail</button>
           </div>
         </div>
       )}
