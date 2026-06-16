@@ -10,17 +10,26 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// ============ MIDDLEWARE CORS (BUKA TOTAL BIAR VERCEL GA BLOCKED) ============
+// ============ MIDDLEWARE CORS (VERSI AMAN ANTI-CRASH) ============
 app.use(cors({
-    // 🔓 Mengizinkan semua origin (*) agar proxy Vercel dan lokal bisa masuk lancar jaya bray
-    origin: '*', 
+    origin: '*', // 🔓 Mengizinkan semua origin agar proxy Vercel dan lokal bisa masuk lancar bray
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Handle preflight OPTIONS request secara manual biar mantap
-app.options('*', cors());
+// Ganti penanganan OPTIONS manual pake middleware standar biar ga crash di path-to-regexp
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    
+    // Kalau request tipe preflight (OPTIONS), langsung potong kompas kasih status 200 OK
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(200);
+    }
+    next();
+});
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
