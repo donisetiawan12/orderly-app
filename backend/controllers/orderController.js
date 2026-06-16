@@ -130,16 +130,16 @@ exports.getSellerStats = async (req, res) => {
             [seller_id]
         );
 
-        // 5. Ambil SEMUA data order khusus untuk grafik tahun ini
+        // 5. 🔥 UTAMA: Ambil data order TANPA batasan status ketat agar data dummy/pending lu langsung kelihatan di grafik!
+        // Kita gunakan DATE_FORMAT atau biarkan JavaScript frontend yang mengonversi tanggalnya
         const [chartOrders] = await db.execute(
-            `SELECT total_price, quantity, created_at 
+            `SELECT total_price, quantity, status, buyer_id, created_at 
              FROM orders 
-             WHERE seller_id = ? AND status IN ('paid', 'confirmed', 'shipped', 'completed')`,
+             WHERE seller_id = ?`,
             [seller_id]
         );
 
-        // 6. 🔥 KITA UPDATE DI SINI, BRO: Ubah LIMIT dari 5 menjadi 50 (atau hapus LIMIT-nya)
-        // Biar data pending yang posisinya di bawah / pesanan lama tetep ketarik ke frontend!
+        // 6. Ambil data order terbaru untuk tabel list pesanan
         const [recentOrders] = await db.execute(
             `SELECT o.id, o.status, o.total_price, o.quantity, o.payment_proof, o.notes, 
                     u.name as buyer_name, p.name as product_name, o.created_at
@@ -147,13 +147,13 @@ exports.getSellerStats = async (req, res) => {
             JOIN users u ON o.buyer_id = u.id 
             JOIN products p ON o.product_id = p.id
             WHERE o.seller_id = ? 
-            ORDER BY o.created_at DESC LIMIT 50`, // 👈 Gua naikin ke 50 biar aman terkendali buat testing
+            ORDER BY o.created_at DESC LIMIT 50`,
             [seller_id]
         );
 
         // Kirim data gabungan ke frontend
         sendResponse(res, 200, "success", "Data statistik berhasil dimuat", {
-            total_order: totalOrder[0].total,
+            total_order: totalOrder[0].total || 0,
             total_revenue: totalRevenue[0].revenue || 0,
             total_products: totalProducts[0].total || 0,     
             total_customers: totalCustomers[0].total || 0,   
@@ -175,7 +175,7 @@ exports.updateOrderStatus = async (req, res) => {
         // 🔥 1. Izinkan status 'cancelled' masuk ke whitelist backend
         const validStatuses = ['confirmed', 'shipped', 'completed', 'cancelled'];
         if (!validStatuses.includes(status)) {
-            return sendResponse(res, 400, "error", "Status tidak valid");
+            return sendResponse(res, 400, "error", "Status tidak valid bray!");
         }
 
         // 2. Ambil data order dulu untuk tahu jumlah barang & id produknya (buat balikin stok)
@@ -184,34 +184,41 @@ exports.updateOrderStatus = async (req, res) => {
             [id, seller_id]
         );
 
-        if (currentOrder.length === 0) return sendResponse(res, 404, "error", "Order tidak ditemukan");
+        if (currentOrder.length === 0) {
+            return sendResponse(res, 404, "error", "Order tidak ditemukan!");
+        }
         
         const { product_id, quantity, status: oldStatus } = currentOrder[0];
 
-        // 3. Update status order menjadi 'cancelled'
+        // 3. Update status order menjadi status baru di database
         const [result] = await db.execute(
             "UPDATE orders SET status = ? WHERE id = ? AND seller_id = ?", 
             [status, id, seller_id]
         );
 
-        // 🔥 4. LOGIKA ANTI-JAIL: Jika status berubah jadi 'cancelled', balikin kuota/stok produknya!
+        if (result.affectedRows === 0) {
+            return sendResponse(res, 400, "error", "Gagal memperbarui status pesanan.");
+        }
+
+        // 🔥 4. LOGIKA ANTI-JAIL (FIXED): Jika status berubah jadi 'cancelled', balikin kuota/stok produknya!
+        // Menggunakan db.execute agar sinkron dengan koneksi utama database lu
         if (status === 'cancelled' && oldStatus !== 'cancelled') {
             const sqlRestoreProductSold = `
                 UPDATE products 
                 SET sold_quantity = GREATEST(0, sold_quantity - ?) 
                 WHERE id = ?
             `;
-            await db.query(sqlRestoreProductSold, [quantity, product_id]);
+            await db.execute(sqlRestoreProductSold, [quantity, product_id]);
         }
 
         const msgText = status === 'cancelled' 
             ? "Pesanan berhasil ditolak & dibatalkan permanen. Stok produk dikembalikan!" 
-            : `Status pesanan diupdate menjadi ${status}`;
+            : `Status pesanan diupdate menjadi ${status.toUpperCase()}`;
 
         sendResponse(res, 200, "success", msgText);
     } catch (error) {
-        console.error("Update Status Error:", error);
-        sendResponse(res, 500, "error", "Gagal update status");
+        console.error("❌ Update Status Error:", error);
+        sendResponse(res, 500, "error", "Gagal update status pesanan");
     }
 };
 

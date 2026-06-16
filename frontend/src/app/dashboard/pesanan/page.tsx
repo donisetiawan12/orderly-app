@@ -173,9 +173,10 @@ const handleUpdateStatus = async (orderId: number, nextStatus: string, buyerName
         <div className="px-6 py-6 mx-auto w-full max-w-full block box-border overflow-x-hidden">
           
           {/* ================= BARIS CARDS STATISTIK ATAS PESANAN ================= */}
+         {/* ================= BARIS CARDS STATISTIK ATAS PESANAN (100% SINKRON DB) ================= */}
           <div className="flex flex-wrap -mx-3 mb-6">
 
-             {/* Card 3: Total Omset Sukses */}
+             {/* Card 1: Total Omset Sukses */}
             <div className="w-full max-w-full px-3 mb-6 sm:w-1/2 sm:flex-none xl:mb-0 xl:w-1/4">
               <div className="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 rounded-2xl">
                 <div className="flex-auto p-4">
@@ -200,20 +201,19 @@ const handleUpdateStatus = async (orderId: number, nextStatus: string, buyerName
                 </div>
               </div>
             </div>
-{/* Card 4: Total Transaksi & Info Pelanggan */}
-            <div className="w-full max-w-full px-3 sm:w-1/2 sm:flex-none xl:w-1/4">
+
+            {/* Card 2: Total Pelanggan Unik (FIXED: Pake total_customers dari DB!) */}
+            <div className="w-full max-w-full px-3 sm:w-1/2 sm:flex-none xl:w-1/4 mb-6 xl:mb-0">
               <div className="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 rounded-2xl">
                 <div className="flex-auto p-4">
                   <div className="flex flex-row -mx-3">
                     <div className="flex-none w-2/3 max-w-full px-3">
                       <div>
-                        {/* 🚀 JUDUL UTAMA DIGANTI JADI TOTAL TRANSAKSI */}
                         <p className="mb-0 font-sans text-xs font-bold uppercase text-slate-400">Pelanggan</p>
-                        <h5 className="mb-2 font-bold dark:text-white text-lg">
-                          {/* 🚀 VARIABEL DIGANTI JADI total_order BIAR SINKRON */}
-                          {stats?.total_order || 0} Orang
+                        <h5 className="mb-2 font-bold dark:text-white text-lg text-slate-800">
+                          {/* 🚀 FIX: Sekarang beneran nampilin jumlah pelanggan unik dari DB, bukan total order */}
+                          {stats?.total_customers || 0} Orang
                         </h5>
-                        {/* 💡 KETERANGAN DI BAWAH TETEP INFO PELANGGAN */}
                         <p className="mb-0 dark:text-white dark:opacity-60 text-xs text-slate-400">
                           Total Semua <span className="font-bold text-emerald-500">Pelanggan</span> Anda
                         </p>
@@ -229,53 +229,24 @@ const handleUpdateStatus = async (orderId: number, nextStatus: string, buyerName
               </div>
             </div>
 
-          {/* Card 1: Active Products (Diubah dari Total Transaksi) */}
+            {/* Card 3: Perlu Validasi Pembayaran (Pending) */}
             <div className="w-full max-w-full px-3 mb-6 sm:w-1/2 sm:flex-none xl:mb-0 xl:w-1/4">
               <div className="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 rounded-2xl">
                 <div className="flex-auto p-4">
                   <div className="flex flex-row -mx-3">
                     <div className="flex-none w-2/3 max-w-full px-3">
                       <div>
-                        {/* 🚀 LABEL UTAMA */}
-                        <p className="mb-0 font-sans text-xs font-bold uppercase text-slate-400">Produk</p>
-                        <h5 className="mb-2 font-bold dark:text-white text-lg text-slate-800">
-                          {/* 🔒 SINKRONISASI: Pakai stats sesuai state di PesananPage */}
-                          {stats?.total_products || 0} Items
-                        </h5>
-                        {/* 🚀 KETERANGAN DI BAWAHNYA */}
-                        <p className="mb-0 dark:text-white dark:opacity-60 text-xs text-slate-400">
-                          Total Semua <span className="font-bold text-emerald-500">Produk</span> Anda
-                        </p>
-                      </div>
-                    </div>
-                    <div className="px-3 text-right basis-1/3">
-                      <div className="inline-block w-12 h-12 text-center rounded-circle bg-gradient-to-tl from-blue-500 to-violet-500">
-                        <i className="ni ni-paper-diploma text-lg relative top-3.5 text-white"></i>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Card 2: Perlu Validasi Pembayaran */}
-            <div className="w-full max-w-full px-3 mb-6 sm:w-1/2 sm:flex-none xl:mb-0 xl:w-1/4">
-              <div className="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 rounded-2xl">
-                <div className="flex-auto p-4">
-                  <div className="flex flex-row -mx-3">
-                    <div className="flex-none w-2/3 max-w-full px-3">
-                      <div>
-                        <p className="mb-0 font-sans text-xs font-bold uppercase text-slate-400">PESANAN</p>
+                        <p className="mb-0 font-sans text-xs font-bold uppercase text-slate-400">PESANAN MASUK</p>
                         <div className="flex items-center gap-2 mt-0.5 mb-2">
-                          <h5 className={`mb-0 font-bold text-lg ${pendingCount > 0 ? 'text-red-500' : 'text-slate-700 dark:text-white'}`}>
+                          <h5 className={`mb-0 font-bold text-lg ${pendingCount > 0 ? 'text-blue-500' : 'text-slate-700 dark:text-white'}`}>
                             {pendingCount} Pesanan
                           </h5>
                         </div>
                         <p className="mb-0 dark:text-white dark:opacity-60 text-xs">
                           {pendingCount > 0 ? (
-                            <span className="text-red-500 font-bold animate-pulse">{pendingCount} Pesanan Masuk, Perlu Validasi</span>
+                            <span className="text-blue-500 font-bold animate-pulse">Perlu tindakan validasi</span>
                           ) : (
-                            "Total Semua Pesanan Anda"
+                            <span className="text-emerald-500 font-bold">Semua pesanan clear</span>
                           )}
                         </p>
                       </div>
@@ -289,177 +260,215 @@ const handleUpdateStatus = async (orderId: number, nextStatus: string, buyerName
                 </div>
               </div>
             </div>
+
+            {/* Card 4: Pesanan Dibatalkan (Menggantikan Card Produk Lama) */}
+            <div className="w-full max-w-full px-3 mb-6 sm:w-1/2 sm:flex-none xl:mb-0 xl:w-1/4">
+              <div className="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 rounded-2xl">
+                <div className="flex-auto p-4">
+                  <div className="flex flex-row -mx-3">
+                    <div className="flex-none w-2/3 max-w-full px-3">
+                      <div>
+                        <p className="mb-0 font-sans text-xs font-bold uppercase text-slate-400">DIBATALKAN</p>
+                        <h5 className={`mb-2 font-bold text-lg ${recentOrders.filter(o => o.status?.trim().toLowerCase().startsWith('cancel')).length > 0 ? 'text-red-500' : 'text-slate-700 dark:text-white'}`}>
+                          {recentOrders.filter(o => o.status?.trim().toLowerCase().startsWith('cancel')).length} Pesanan
+                        </h5>
+                        <p className="mb-0 dark:text-white dark:opacity-60 text-xs text-slate-400">
+                          Total Pesanan yang <span className="font-bold text-red-500">Ditolak</span>
+                        </p>
+                      </div>
+                    </div>
+                    <div className="px-3 text-right basis-1/3 flex justify-end items-center">
+                      {/* 🚀 FIX BORDER BULETAN: Ditambahkan border putih halus + shadow biar makin glowing */}
+                      <div 
+                        className="bg-gradient-to-tl from-red-500 to-pink-500 flex items-center justify-center"
+                        style={{ 
+                          width: '48px', 
+                          height: '48px', 
+                          borderRadius: '50%', 
+                          minWidth: '48px',
+                          border: '2px solid rgba(239, 68, 68, 0.2)', // Border halus transparan di luar buletan
+                          boxShadow: '0 4px 6px -1px rgba(244, 63, 94, 0.4), 0 2px 4px -1px rgba(244, 63, 94, 0.2)' // Efek shadow merah menyala
+                        }}
+                      >
+                        <span className="text-lg" style={{ lineHeight: '1' }}>❌</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
           </div>
 
          {/* ================= AREA UTAMA: TABEL VALIDASI PESANAN MASUK ================= */}
-<div className="flex flex-wrap mt-6 -mx-3">
-  <div className="w-full max-w-full px-3 mt-0 mb-6 lg:w-12/12">
-    <div className="relative flex flex-col min-w-0 break-words bg-white border-0 shadow-xl dark:bg-slate-850 rounded-2xl bg-clip-border p-4">
-      <h6 className="mb-4 dark:text-white font-bold text-base text-slate-800">📋 Daftar Validasi Pesanan Masuk</h6>
-      <div className="overflow-x-auto px-2">
-        <table className="items-center w-full mb-4 align-top border-collapse">
-          <thead>
-            <tr className="text-slate-400 text-xs uppercase border-b border-gray-100 dark:border-white/10 text-center">
-              <th className="py-3 font-bold text-center" style={{ width: '50px' }}>No</th>
-              <th className="py-3 font-bold text-left">Info Pembeli & Produk</th>
-              <th className="py-3 text-center font-bold">Total Belanja</th>
-              <th className="py-3 text-center font-bold">Status Sekarang</th>
-              <th className="py-3 text-center font-bold">Bukti Bayar</th>
-              <th className="py-3 text-center font-bold">Aksi Seller</th>
-            </tr>
-          </thead>
-          <tbody>
-            {recentOrders.length > 0 ? (
-              /* 🚀 FIX PAGINATION: Membalikkan data terlebih dahulu, baru kemudian dipotong per 5 data */
-              recentOrders
-                .slice()
-                .reverse()
-                .slice((orderPage - 1) * ordersPerPage, orderPage * ordersPerPage)
-                .map((order, index) => {
-                  const currentStatus = (order.status || 'pending').trim().toLowerCase();
+          <div className="flex flex-wrap mt-6 -mx-3">
+            <div className="w-full max-w-full px-3 mt-0 mb-6 lg:w-12/12">
+              <div className="relative flex flex-col min-w-0 break-words bg-white border-0 shadow-xl dark:bg-slate-850 rounded-2xl bg-clip-border p-4">
+                <h6 className="mb-4 dark:text-white font-bold text-base text-slate-800">📋 Daftar Validasi Pesanan Masuk</h6>
+                <div className="overflow-x-auto px-2">
+                  <table className="items-center w-full mb-4 align-top border-collapse">
+                    <thead>
+                      <tr className="text-slate-400 text-xs uppercase border-b border-gray-100 dark:border-white/10 text-center">
+                        <th className="py-3 font-bold text-center" style={{ width: '50px' }}>No</th>
+                        <th className="py-3 font-bold text-left">Info Pembeli & Produk</th>
+                        <th className="py-3 text-center font-bold">Total Belanja</th>
+                        <th className="py-3 text-center font-bold">Status Sekarang</th>
+                        <th className="py-3 text-center font-bold">Bukti Bayar</th>
+                        <th className="py-3 text-center font-bold">Aksi Seller</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {recentOrders.length > 0 ? (
+                        /* 🚀 FIX PAGINATION: Membalikkan data terlebih dahulu, baru kemudian dipotong per 5 data */
+                        recentOrders
+                          .slice()
+                          .reverse()
+                          .slice((orderPage - 1) * ordersPerPage, orderPage * ordersPerPage)
+                          .map((order, index) => {
+                            const currentStatus = (order.status || 'pending').trim().toLowerCase();
 
-                  return (
-                    <tr key={order.id} className="border-b border-gray-50 dark:border-white/5 last:border-none hover:bg-slate-50 dark:hover:bg-slate-800/30 text-center">
-                      {/* Nomor urut dinamis agar tidak reset kembali ke 1 saat pindah ke halaman 2 */}
-                      <td className="py-4 align-middle text-sm text-center font-medium text-slate-500">
-                        {(orderPage - 1) * ordersPerPage + index + 1}
-                      </td>
-                      <td className="py-4 align-middle text-sm text-left">
-                        <div className="font-bold dark:text-white text-slate-800">{order.buyer_name}</div>
-                        <div className="text-xs text-slate-500 font-medium dark:text-slate-400">
-                          {order.product_name} <span className="text-slate-400 font-normal">(x{order.quantity})</span>
-                        </div>
-                      </td>
-                      <td className="py-4 align-middle text-sm text-center dark:text-white font-semibold text-slate-700">
-                        Rp. {Math.trunc(Number(order.total_price || 0)).toLocaleString('id-ID')}
-                      </td>
-                      <td className="py-4 align-middle text-center">
-                        <span style={{ 
-                          display: 'inline-block', padding: '6px 14px', borderRadius: '30px', color: '#ffffff', fontSize: '11px', fontWeight: 'bold', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', border: '1px solid rgba(0,0,0,0.1)',
-                          backgroundColor: 
-                            currentStatus === 'pending' ? '#f59e0b' : 
-                            currentStatus === 'paid' ? '#3b82f6' :    
-                            currentStatus === 'confirmed' ? '#a855f7' : 
-                            currentStatus === 'shipped' ? '#06b6d4' : 
-                            currentStatus === 'cancelled' ? '#ef4444' : '#10b981'                                  
-                        }}>
-                          {currentStatus.toUpperCase()}
-                        </span>
-                      </td>
-                      <td className="py-4 align-middle text-sm text-center">
-                        {order.payment_proof ? (
-                          <button type="button" onClick={() => setActiveProof(`http://localhost:5000/uploads/payments/${order.payment_proof}`)} style={{ display: 'inline-block', border: 'none', backgroundColor: '#eff6ff', color: '#3b82f6', fontWeight: 'bold', fontSize: '11px', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer' }}>
-                            Lihat Foto 👁️
-                          </button>
-                        ) : (
-                          <span style={{ display: 'inline-block', fontSize: '11px', color: '#94a3b8', backgroundColor: '#f8fafc', padding: '6px 12px', borderRadius: '6px', fontStyle: 'italic' }}>Belum Upload</span>
-                        )}
-                      </td>
-                      <td className="py-4 align-middle text-center">
-                        {(currentStatus === 'pending' || currentStatus === 'paid') ? (
-                          <div className="flex items-center justify-center gap-2">
-                            <button 
-                              type="button" 
-                              onClick={() => handleUpdateStatus(order.id, 'confirmed', order.buyer_name)} 
-                              style={{ backgroundColor: '#10b981', color: '#ffffff', fontWeight: 'bold', fontSize: '11px', padding: '8px 12px', borderRadius: '6px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}
-                            >
-                              Terima 
-                            </button>
-                            <button 
-                              type="button" 
-                              onClick={() => handleUpdateStatus(order.id, 'cancelled', order.buyer_name)} 
-                              style={{ backgroundColor: '#ef4444', color: '#ffffff', fontWeight: 'bold', fontSize: '11px', padding: '8px 12px', borderRadius: '6px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}
-                            >
-                              Tolak 
-                            </button>
-                          </div>
-                        ) : currentStatus === 'confirmed' ? (
-                          <button 
-                            type="button" 
-                            onClick={() => handleUpdateStatus(order.id, 'shipped', order.buyer_name)} 
-                            style={{ backgroundColor: '#06b6d4', color: '#ffffff', fontWeight: 'bold', fontSize: '12px', padding: '8px 14px', borderRadius: '6px', border: 'none', cursor: 'pointer' }}
-                          >
-                            Kirim/Siapkan Produk 
-                          </button>
-                        ) : currentStatus === 'shipped' ? (
-                          <button 
-                            type="button" 
-                            onClick={() => handleUpdateStatus(order.id, 'completed', order.buyer_name)} 
-                            style={{ backgroundColor: '#4f46e5', color: '#ffffff', fontWeight: 'bold', fontSize: '12px', padding: '8px 14px', borderRadius: '6px', border: 'none', cursor: 'pointer' }}
-                          >
-                            Selesaikan Pesanan 
-                          </button>
-                        ) : (
-                          <span className="text-emerald-600 bg-emerald-50 font-bold text-xs px-3 py-1.5 rounded-md inline-block">✨ Selesai</span>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })
-            ) : (
-              <tr>
-                <td colSpan={6} className="p-6 text-center text-sm text-slate-400 font-medium">Belum ada pesanan masuk.</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+                            return (
+                              <tr key={order.id} className="border-b border-gray-50 dark:border-white/5 last:border-none hover:bg-slate-50 dark:hover:bg-slate-800/30 text-center">
+                                {/* Nomor urut dinamis agar tidak reset kembali ke 1 saat pindah ke halaman 2 */}
+                                <td className="py-4 align-middle text-sm text-center font-medium text-slate-500">
+                                  {(orderPage - 1) * ordersPerPage + index + 1}
+                                </td>
+                                <td className="py-4 align-middle text-sm text-left">
+                                  <div className="font-bold dark:text-white text-slate-800">{order.buyer_name}</div>
+                                  <div className="text-xs text-slate-500 font-medium dark:text-slate-400">
+                                    {order.product_name} <span className="text-slate-400 font-normal">(x{order.quantity})</span>
+                                  </div>
+                                </td>
+                                <td className="py-4 align-middle text-sm text-center dark:text-white font-semibold text-slate-700">
+                                  Rp. {Math.trunc(Number(order.total_price || 0)).toLocaleString('id-ID')}
+                                </td>
+                                <td className="py-4 align-middle text-center">
+                                  <span style={{ 
+                                    display: 'inline-block', padding: '6px 14px', borderRadius: '30px', color: '#ffffff', fontSize: '11px', fontWeight: 'bold', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', border: '1px solid rgba(0,0,0,0.1)',
+                                    backgroundColor: 
+                                      currentStatus === 'pending' ? '#f59e0b' : 
+                                      currentStatus === 'paid' ? '#3b82f6' :    
+                                      currentStatus === 'confirmed' ? '#a855f7' : 
+                                      currentStatus === 'shipped' ? '#06b6d4' : 
+                                      currentStatus === 'cancelled' ? '#ef4444' : '#10b981'                                  
+                                  }}>
+                                    {currentStatus.toUpperCase()}
+                                  </span>
+                                </td>
+                                <td className="py-4 align-middle text-sm text-center">
+                                  {order.payment_proof ? (
+                                    <button type="button" onClick={() => setActiveProof(`http://localhost:5000/uploads/payments/${order.payment_proof}`)} style={{ display: 'inline-block', border: 'none', backgroundColor: '#eff6ff', color: '#3b82f6', fontWeight: 'bold', fontSize: '11px', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer' }}>
+                                      Lihat Foto 👁️
+                                    </button>
+                                  ) : (
+                                    <span style={{ display: 'inline-block', fontSize: '11px', color: '#94a3b8', backgroundColor: '#f8fafc', padding: '6px 12px', borderRadius: '6px', fontStyle: 'italic' }}>Belum Upload</span>
+                                  )}
+                                </td>
+                                <td className="py-4 align-middle text-center">
+                                  {(currentStatus === 'pending' || currentStatus === 'paid') ? (
+                                    <div className="flex items-center justify-center gap-2">
+                                      <button 
+                                        type="button" 
+                                        onClick={() => handleUpdateStatus(order.id, 'confirmed', order.buyer_name)} 
+                                        style={{ backgroundColor: '#10b981', color: '#ffffff', fontWeight: 'bold', fontSize: '11px', padding: '8px 12px', borderRadius: '6px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}
+                                      >
+                                        Terima 
+                                      </button>
+                                      <button 
+                                        type="button" 
+                                        onClick={() => handleUpdateStatus(order.id, 'cancelled', order.buyer_name)} 
+                                        style={{ backgroundColor: '#ef4444', color: '#ffffff', fontWeight: 'bold', fontSize: '11px', padding: '8px 12px', borderRadius: '6px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}
+                                      >
+                                        Tolak 
+                                      </button>
+                                    </div>
+                                  ) : currentStatus === 'confirmed' ? (
+                                    <button 
+                                      type="button" 
+                                      onClick={() => handleUpdateStatus(order.id, 'shipped', order.buyer_name)} 
+                                      style={{ backgroundColor: '#06b6d4', color: '#ffffff', fontWeight: 'bold', fontSize: '12px', padding: '8px 14px', borderRadius: '6px', border: 'none', cursor: 'pointer' }}
+                                    >
+                                      Kirim/Siapkan Produk 
+                                    </button>
+                                  ) : currentStatus === 'shipped' ? (
+                                    <button 
+                                      type="button" 
+                                      onClick={() => handleUpdateStatus(order.id, 'completed', order.buyer_name)} 
+                                      style={{ backgroundColor: '#4f46e5', color: '#ffffff', fontWeight: 'bold', fontSize: '12px', padding: '8px 14px', borderRadius: '6px', border: 'none', cursor: 'pointer' }}
+                                    >
+                                      Selesaikan Pesanan 
+                                    </button>
+                                  ) : (
+                                    <span className="text-emerald-600 bg-emerald-50 font-bold text-xs px-3 py-1.5 rounded-md inline-block">✨ Selesai</span>
+                                  )}
+                                </td>
+                              </tr>
+                            );
+                          })
+                      ) : (
+                        <tr>
+                          <td colSpan={6} className="p-6 text-center text-sm text-slate-400 font-medium">Belum ada pesanan masuk.</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
 
-      {/* 🚀 TOMBOL NAVIGASI PAGINATION PESANAN DI POJOK KANAN BAWAH */}
-      {recentOrders.length > ordersPerPage && (
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px', borderTop: '1px solid #f1f5f9', paddingTop: '12px' }}>
-          <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '500' }}>
-            Menampilkan {Math.min((orderPage - 1) * ordersPerPage + 1, recentOrders.length)} - {Math.min(orderPage * ordersPerPage, recentOrders.length)} dari {recentOrders.length} Pesanan
-          </span>
-          
-          <div style={{ display: 'flex', gap: '6px' }}>
-            <button
-              disabled={orderPage === 1}
-              onClick={() => setOrderPage(prev => prev - 1)}
-              style={{
-                padding: '6px 12px', fontSize: '12px', fontWeight: 'bold', borderRadius: '6px', border: '1px solid #e2e8f0',
-                backgroundColor: orderPage === 1 ? '#f8fafc' : '#ffffff',
-                color: orderPage === 1 ? '#cbd5e1' : '#334155',
-                cursor: orderPage === 1 ? 'not-allowed' : 'pointer'
-              }}
-            >
-              ◀ Prev
-            </button>
-            
-            {Array.from({ length: Math.ceil(recentOrders.length / ordersPerPage) }).map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setOrderPage(i + 1)}
-                style={{
-                  padding: '6px 12px', fontSize: '12px', fontWeight: 'bold', borderRadius: '6px',
-                  border: orderPage === i + 1 ? '1px solid #10b981' : '1px solid #e2e8f0',
-                  backgroundColor: orderPage === i + 1 ? '#10b981' : '#ffffff',
-                  color: orderPage === i + 1 ? '#ffffff' : '#334155',
-                  cursor: 'pointer'
-                }}
-              >
-                {i + 1}
-              </button>
-            ))}
+                {/* 🚀 TOMBOL NAVIGASI PAGINATION PESANAN DI POJOK KANAN BAWAH */}
+                {recentOrders.length > ordersPerPage && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px', borderTop: '1px solid #f1f5f9', paddingTop: '12px' }}>
+                    <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '500' }}>
+                      Menampilkan {Math.min((orderPage - 1) * ordersPerPage + 1, recentOrders.length)} - {Math.min(orderPage * ordersPerPage, recentOrders.length)} dari {recentOrders.length} Pesanan
+                    </span>
+                    
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <button
+                        disabled={orderPage === 1}
+                        onClick={() => setOrderPage(prev => prev - 1)}
+                        style={{
+                          padding: '6px 12px', fontSize: '12px', fontWeight: 'bold', borderRadius: '6px', border: '1px solid #e2e8f0',
+                          backgroundColor: orderPage === 1 ? '#f8fafc' : '#ffffff',
+                          color: orderPage === 1 ? '#cbd5e1' : '#334155',
+                          cursor: orderPage === 1 ? 'not-allowed' : 'pointer'
+                        }}
+                      >
+                        ◀ Prev
+                      </button>
+                      
+                      {Array.from({ length: Math.ceil(recentOrders.length / ordersPerPage) }).map((_, i) => (
+                        <button
+                          key={i}
+                          onClick={() => setOrderPage(i + 1)}
+                          style={{
+                            padding: '6px 12px', fontSize: '12px', fontWeight: 'bold', borderRadius: '6px',
+                            border: orderPage === i + 1 ? '1px solid #10b981' : '1px solid #e2e8f0',
+                            backgroundColor: orderPage === i + 1 ? '#10b981' : '#ffffff',
+                            color: orderPage === i + 1 ? '#ffffff' : '#334155',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          {i + 1}
+                        </button>
+                      ))}
 
-            <button
-              disabled={orderPage === Math.ceil(recentOrders.length / ordersPerPage)}
-              onClick={() => setOrderPage(prev => prev + 1)}
-              style={{
-                padding: '6px 12px', fontSize: '12px', fontWeight: 'bold', borderRadius: '6px', border: '1px solid #e2e8f0',
-                backgroundColor: orderPage === Math.ceil(recentOrders.length / ordersPerPage) ? '#f8fafc' : '#ffffff',
-                color: orderPage === Math.ceil(recentOrders.length / ordersPerPage) ? '#cbd5e1' : '#334155',
-                cursor: orderPage === Math.ceil(recentOrders.length / ordersPerPage) ? 'not-allowed' : 'pointer'
-              }}
-            >
-              Next ▶
-            </button>
+                      <button
+                        disabled={orderPage === Math.ceil(recentOrders.length / ordersPerPage)}
+                        onClick={() => setOrderPage(prev => prev + 1)}
+                        style={{
+                          padding: '6px 12px', fontSize: '12px', fontWeight: 'bold', borderRadius: '6px', border: '1px solid #e2e8f0',
+                          backgroundColor: orderPage === Math.ceil(recentOrders.length / ordersPerPage) ? '#f8fafc' : '#ffffff',
+                          color: orderPage === Math.ceil(recentOrders.length / ordersPerPage) ? '#cbd5e1' : '#334155',
+                          cursor: orderPage === Math.ceil(recentOrders.length / ordersPerPage) ? 'not-allowed' : 'pointer'
+                        }}
+                      >
+                        Next ▶
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
-        </div>
-      )}
-    </div>
-  </div>
-</div>
 
         </div>
         {/* <Footer /> */}

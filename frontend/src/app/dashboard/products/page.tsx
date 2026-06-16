@@ -379,34 +379,32 @@ export default function ProductManagement() {
               </div>
             </div>
 
-            {/* Card 2: Total Transaksi & Info Pelanggan */}
-            <div className="w-full max-w-full px-3 mb-6 sm:w-1/2 sm:flex-none xl:mb-0 xl:w-1/4">
-              <div className="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 rounded-2xl">
-                <div className="flex-auto p-4">
-                  <div className="flex flex-row -mx-3">
-                    <div className="flex-none w-2/3 max-w-full px-3">
-                      <div>
-                        {/* 🚀 JUDUL UTAMA DIGANTI JADI TOTAL TRANSAKSI */}
-                        <p className="mb-0 font-sans text-xs font-bold uppercase text-slate-400">Pelanggan</p>
-                        <h5 className="mb-2 font-bold dark:text-white text-lg text-slate-800">
-                          {/* 🚀 VARIABEL DIGANTI KE total_order */}
-                          {dashboardData?.total_order || 0} Orang
-                        </h5>
-                        {/* 💡 KETERANGAN DI BAWAH TETEP INFO PELANGGAN */}
-                        <p className="mb-0 dark:text-white dark:opacity-60 text-xs text-slate-400">
-                          Total Semua <span className="font-bold text-emerald-500">Pelanggan</span> Anda
-                        </p>
-                      </div>
-                    </div>
-                    <div className="px-3 text-right basis-1/3">
-                      <div className="inline-block w-12 h-12 text-center rounded-circle bg-gradient-to-tl from-red-600 to-orange-600">
-                        <i className="ni ni-world text-lg relative top-3.5 text-white"></i>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+           {/* Card 2: Total Transaksi & Info Pelanggan */}
+<div className="w-full max-w-full px-3 mb-6 sm:w-1/2 sm:flex-none xl:mb-0 xl:w-1/4">
+  <div className="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 rounded-2xl">
+    <div className="flex-auto p-4">
+      <div className="flex flex-row -mx-3">
+        <div className="flex-none w-2/3 max-w-full px-3">
+          <div>
+            <p className="mb-0 font-sans text-xs font-bold uppercase text-slate-400">Pelanggan</p>
+            <h5 className="mb-2 font-bold dark:text-white text-lg text-slate-800">
+              {/* 🔥 SEKARANG UDAH FIX SINKRON KE DB BRAY! */}
+              {dashboardData?.total_customers || 0} Orang 
+            </h5>
+            <p className="mb-0 dark:text-white dark:opacity-60 text-xs text-slate-400">
+              Total Semua <span className="font-bold text-emerald-500">Pelanggan</span> Anda
+            </p>
+          </div>
+        </div>
+        <div className="px-3 text-right basis-1/3">
+          <div className="inline-block w-12 h-12 text-center rounded-circle bg-gradient-to-tl from-red-600 to-orange-600">
+            <i className="ni ni-world text-lg relative top-3.5 text-white"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
             {/* Card 3: Active Products */}
             <div className="w-full max-w-full px-3 mb-6 sm:w-1/2 sm:flex-none xl:mb-0 xl:w-1/4">

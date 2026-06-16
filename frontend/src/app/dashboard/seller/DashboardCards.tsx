@@ -25,20 +25,16 @@ ChartJS.register(
   Legend
 );
 
-interface RecentOrder {
-  id: number;
-  buyer_name: string;
-  product_name: string;
+// 🔥 Kita satukan interface biar TypeScript gak bingung pas mapping data gabungan
+interface UnifiedOrder {
+  id?: number;
+  buyer_id?: number;
+  buyer_name?: string;
+  product_name?: string;
   quantity: number;
   total_price: number;
   status: string;
-  created_at?: string; 
-}
-
-interface ChartOrder {
-  total_price: number;
-  quantity: number;
-  created_at: string;
+  created_at: string; 
 }
 
 interface DashboardData {
@@ -46,8 +42,8 @@ interface DashboardData {
   total_revenue: number;
   total_products: number;
   total_customers: number;
-  recent_orders: RecentOrder[];
-  chart_orders?: ChartOrder[]; 
+  recent_orders: UnifiedOrder[];
+  chart_orders?: UnifiedOrder[]; 
 }
 
 type TimeFilterType = '1w' | '1m' | '1y';
@@ -57,12 +53,19 @@ export default function DashboardCards() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentSlide, setCurrentSlide] = useState(0);
-  
+
   const [timeFilter, setTimeFilter] = useState<TimeFilterType>('1y');
   const [activeMetric, setActiveMetric] = useState<MetricType>('revenue');
-  
+
   const [chartLabels, setChartLabels] = useState<string[]>([]);
   const [chartDataset, setChartDataset] = useState<number[]>([]);
+
+  const [dynamicStats, setDynamicStats] = useState({
+    revenue: 0,
+    customers: 0,
+    products: 0,
+    orders: 0
+  });
 
   const carouselItems = [
     {
@@ -85,39 +88,36 @@ export default function DashboardCards() {
     }
   ];
 
- useEffect(() => {
-  const fetchDashboardData = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) return;
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
 
-      const res = await fetch('http://localhost:5000/api/orders/stats', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      const result = await res.json();
-      if (result.status === 'success') setData(result.data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+        const res = await fetch('http://localhost:5000/api/orders/stats', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        const result = await res.json();
+        if (result.status === 'success') setData(result.data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // 1. Jalankan fungsi pertama kali pas halaman di-load
-  fetchDashboardData();
-
-  // 2. 🔥 SAKTI: Set interval biar otomatis fetch ulang tiap 10 detik tanpa refresh halaman!
-  const interval = setInterval(() => {
     fetchDashboardData();
-  }, 10000); // 10000 ms = 10 detik. Lu bisa ganti jadi 5000 (5 detik) kalau mau lebih cepet.
 
-  // 3. Bersihkan interval saat komponen mati biar gak memory leak
-  return () => clearInterval(interval);
-}, []);
+    const interval = setInterval(() => {
+      fetchDashboardData();
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -130,13 +130,88 @@ export default function DashboardCards() {
     if (!data) return;
 
     const sekarang = new Date();
-    const orders = data.chart_orders || data.recent_orders || [];
+    
+    // 1. Ambil chart_orders sebagai basis utama grafik biar gak tumpang tindih
+    const orders: UnifiedOrder[] = data.chart_orders && data.chart_orders.length > 0 
+      ? data.chart_orders 
+      : data.recent_orders;
 
-    const dapatkanNilaiMetrik = (order: any) => {
-      if (activeMetric === 'revenue') return Number(order.total_price || 0);
-      if (activeMetric === 'customers') return 1; 
-      if (activeMetric === 'products') return Number(order.quantity || 0); 
+    const parseSqlDate = (dateStr: any): Date => {
+      if (!dateStr) return new Date();
+      const formatted = String(dateStr).replace(' ', 'T');
+      const d = new Date(formatted);
+      return isNaN(d.getTime()) ? new Date(dateStr) : d;
+    };
+
+    let totalRevenueFiltered = 0;
+    let totalOrdersFiltered = 0;
+    let totalProductsFiltered = 0;
+    const pelangganUnikSet = new Set();
+
+    const isOrderInTimeRange = (orderDate: Date, limitDays: number) => {
+      const selisihWaktu = sekarang.getTime() - orderDate.getTime();
+      const selisihHari = Math.floor(selisihWaktu / (1000 * 60 * 60 * 24));
+      return selisihHari >= 0 && selisihHari < limitDays;
+    };
+
+    const isOrderInMonthRange = (orderDate: Date, limitMonths: number) => {
+      const selisihBulan = (sekarang.getFullYear() - orderDate.getFullYear()) * 12 + (sekarang.getMonth() - orderDate.getMonth());
+      return selisihBulan >= 0 && selisihBulan < limitMonths;
+    };
+
+    // Filter range waktu data
+    const filteredOrders = orders.filter(order => {
+      const tgl = parseSqlDate(order.created_at);
+      if (timeFilter === '1w') return isOrderInTimeRange(tgl, 7);
+      if (timeFilter === '1m') return isOrderInTimeRange(tgl, 30);
+      if (timeFilter === '1y') return isOrderInMonthRange(tgl, 12);
+      return true;
+    });
+
+ // 📊 Hitung Akumulasi Box Atas (Sesuai Logika Database)
+    filteredOrders.forEach(order => {
+      const statusValid = ['paid', 'confirmed', 'shipped', 'completed'];
+      
+      // Revenue cuma ngitung status sukses bray
+      if (statusValid.includes(order.status || '')) {
+        totalRevenueFiltered += Number(order.total_price || 0);
+      }
+      
+      totalOrdersFiltered += 1;
+      
+      // 🔥 PASTIKAN DI SINI: Apakah di data order lu namanya 'quantity'? 
+      // Kalau di JSON order namanya 'quantity', dia bakal nambahin sesuai jumlah yang dibeli di transaksi itu.
+      totalProductsFiltered += Number(order.quantity || 0);
+      
+      const buyerKey = order.buyer_id || order.buyer_name || 'anon';
+      pelangganUnikSet.add(buyerKey);
+    });
+
+    setDynamicStats({
+      revenue: totalRevenueFiltered,
+      orders: totalOrdersFiltered,
+      // 💡 JIKA LU INGIN PRODUK TERJUAL SELALU SAMA DENGAN DATABASE UTAMA (MUTLAK 20 ITEMS):
+      // Ganti baris di bawah ini jadi: products: data.total_products || 0,
+      products: totalProductsFiltered, 
+      customers: pelangganUnikSet.size
+    });
+
+    setDynamicStats({
+      revenue: totalRevenueFiltered,
+      orders: totalOrdersFiltered,
+      products: totalProductsFiltered,
+      customers: pelangganUnikSet.size
+    });
+
+    // 📅 Map Data Masuk Ke Sumbu Grafik
+    const dapatkanNilaiMetrik = (order: UnifiedOrder) => {
+      if (activeMetric === 'revenue') {
+        const statusValid = ['paid', 'confirmed', 'shipped', 'completed'];
+        if (order.status && !statusValid.includes(order.status)) return 0;
+        return Number(order.total_price || 0);
+      }
       if (activeMetric === 'orders') return 1; 
+      if (activeMetric === 'products') return Number(order.quantity || 0); 
       return 0;
     };
 
@@ -144,6 +219,7 @@ export default function DashboardCards() {
       const namaHari = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
       const hitunganHari = new Array(7).fill(0);
       const labelHari: string[] = [];
+      const pelangganHari: Set<any>[] = Array.from({ length: 7 }, () => new Set());
 
       for (let i = 6; i >= 0; i--) {
         const d = new Date();
@@ -151,59 +227,80 @@ export default function DashboardCards() {
         labelHari.push(namaHari[d.getDay()]);
       }
 
-      orders.forEach((order) => {
-        const tgl = order.created_at ? new Date(order.created_at) : new Date();
-        const selisihWaktu = sekarang.getTime() - tgl.getTime();
-        const selisihHari = Math.floor(selisihWaktu / (1000 * 60 * 60 * 24));
-
+      filteredOrders.forEach((order) => {
+        const tgl = parseSqlDate(order.created_at);
+        const selisihHari = Math.floor((sekarang.getTime() - tgl.getTime()) / (1000 * 60 * 60 * 24));
         if (selisihHari >= 0 && selisihHari < 7) {
-          hitunganHari[6 - selisihHari] += dapatkanNilaiMetrik(order);
-        }
-      });
-
-      setChartLabels(labelHari);
-      setChartDataset(hitunganHari);
-
-    } else if (timeFilter === '1m') {
-      const hitunganMinggu = new Array(4).fill(0);
-      
-      orders.forEach((order) => {
-        const tgl = order.created_at ? new Date(order.created_at) : new Date();
-        const selisihWaktu = sekarang.getTime() - tgl.getTime();
-        const selisihHari = Math.floor(selisihWaktu / (1000 * 60 * 60 * 24));
-
-        if (selisihHari >= 0 && selisihHari < 30) {
-          const indexMinggu = Math.floor(selisihHari / 7);
-          if (indexMinggu < 4) {
-            hitunganMinggu[3 - indexMinggu] += dapatkanNilaiMetrik(order);
+          const targetIdx = 6 - selisihHari;
+          if (activeMetric === 'customers') {
+            pelangganHari[targetIdx].add(order.buyer_id || order.buyer_name || 'anon');
+          } else {
+            hitunganHari[targetIdx] += dapatkanNilaiMetrik(order);
           }
         }
       });
 
-      setChartLabels(['Minggu ke-1', 'Minggu ke-2', 'Minggu ke-3', 'Minggu Ini']);
-      setChartDataset(hitunganMinggu);
+      setChartLabels(labelHari);
+      setChartDataset(activeMetric === 'customers' ? pelangganHari.map(s => s.size) : hitunganHari);
 
-    } else if (timeFilter === '1y') {
-      const hitunganBulan = new Array(12).fill(0);
+    } else if (timeFilter === '1m') {
+      const hitunganMinggu = new Array(4).fill(0);
+      const pelangganMinggu: Set<any>[] = Array.from({ length: 4 }, () => new Set());
 
-      orders.forEach((order) => {
-        const tgl = order.created_at ? new Date(order.created_at) : new Date();
-        if (tgl.getFullYear() === sekarang.getFullYear()) {
-          hitunganBulan[tgl.getMonth()] += dapatkanNilaiMetrik(order);
+      filteredOrders.forEach((order) => {
+        const tgl = parseSqlDate(order.created_at);
+        const selisihHari = Math.floor((sekarang.getTime() - tgl.getTime()) / (1000 * 60 * 60 * 24));
+        if (selisihHari >= 0 && selisihHari < 30) {
+          const indexMinggu = Math.floor(selisihHari / 7);
+          if (indexMinggu < 4) {
+            const targetIdx = 3 - indexMinggu;
+            if (activeMetric === 'customers') {
+              pelangganMinggu[targetIdx].add(order.buyer_id || order.buyer_name || 'anon');
+            } else {
+              hitunganMinggu[targetIdx] += dapatkanNilaiMetrik(order);
+            }
+          }
         }
       });
 
-      setChartLabels(['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']);
-      setChartDataset(hitunganBulan);
+      setChartLabels(['3 Minggu Lalu', '2 Minggu Lalu', '1 Minggu Lalu', 'Minggu Ini']);
+      setChartDataset(activeMetric === 'customers' ? pelangganMinggu.map(s => s.size) : hitunganMinggu);
+
+    } else if (timeFilter === '1y') {
+      const namaBulan = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+      const hitunganBulan = new Array(12).fill(0);
+      const labelBulan: string[] = [];
+      const pelangganBulan: Set<any>[] = Array.from({ length: 12 }, () => new Set());
+
+      for (let i = 11; i >= 0; i--) {
+        const d = new Date();
+        d.setMonth(sekarang.getMonth() - i);
+        labelBulan.push(namaBulan[d.getMonth()]);
+      }
+
+      filteredOrders.forEach((order) => {
+        const tgl = parseSqlDate(order.created_at);
+        const selisihBulan = (sekarang.getFullYear() - tgl.getFullYear()) * 12 + (sekarang.getMonth() - tgl.getMonth());
+        if (selisihBulan >= 0 && selisihBulan < 12) {
+          const targetIdx = 11 - selisihBulan;
+          if (activeMetric === 'customers') {
+            pelangganBulan[targetIdx].add(order.buyer_id || order.buyer_name || 'anon');
+          } else {
+            hitunganBulan[targetIdx] += dapatkanNilaiMetrik(order);
+          }
+        }
+      });
+
+      setChartLabels(labelBulan);
+      setChartDataset(activeMetric === 'customers' ? pelangganBulan.map(s => s.size) : hitunganBulan);
     }
 
   }, [timeFilter, activeMetric, data]);
 
   if (loading) return <p className="text-white opacity-80 animate-pulse text-sm px-4 py-2">Mengambil data transaksi...</p>;
 
-  // Hitung data pending/paid dari recent_orders
   const pendingCount = data?.recent_orders
-    ? data.recent_orders.filter((o: RecentOrder) => o.status === 'paid' || o.status === 'pending').length
+    ? data.recent_orders.filter((o: UnifiedOrder) => o.status === 'paid' || o.status === 'pending').length
     : 0;
 
   const labelNamaDataset = 
@@ -268,12 +365,13 @@ export default function DashboardCards() {
     },
   };
 
+  const timeLabelText = timeFilter === '1w' ? '7 Hari Terakhir' : timeFilter === '1m' ? '30 Hari Terakhir' : '12 Bulan Terakhir';
+
   return (
     <>
-      {/* ================= BARIS 1: 4 CARDS STATISTIK ATAS ================= */}
+      {/* ================= BARIS 1: CARDS ATAS (SINKRON & TIDAK ERROR) ================= */}
       <div className="flex flex-wrap -mx-3">
-        {/* Card 1: Total Revenue */}
-        {/* Card 1: Total Revenue */}
+        {/* Card 1: Pendapatan */}
         <div className="w-full max-w-full px-3 mb-6 sm:w-1/2 sm:flex-none xl:mb-0 xl:w-1/4">
           <div className="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 rounded-2xl">
             <div className="flex-auto p-4">
@@ -281,14 +379,11 @@ export default function DashboardCards() {
                 <div className="flex-none w-2/3 max-w-full px-3">
                   <div>
                     <p className="mb-0 font-sans text-xs font-bold uppercase text-slate-400">Pendapatan</p>
-                  <h5 className="mb-2 font-bold dark:text-white text-lg">
-                      {/* 🚀 FIX SAKTI: Dipaksa jadi Number dulu baru di-format ribuannya */}
-                      Rp {Number(data?.total_revenue || 0).toLocaleString('id-ID')}
+                    <h5 className="mb-2 font-bold dark:text-white text-lg">
+                      Rp {dynamicStats.revenue.toLocaleString('id-ID')}
                     </h5>
                     <p className="mb-0 dark:text-white dark:opacity-60 text-xs">
-                      Total Semua
-                      <span className="font-bold text-emerald-500"> Pendapatan </span>
-                      Anda
+                      Total <span className="font-bold text-emerald-500">{timeLabelText}</span>
                     </p>
                   </div>
                 </div>
@@ -302,24 +397,19 @@ export default function DashboardCards() {
           </div>
         </div>
 
-     {/* Card 2: Total Transaksi & Info Pelanggan */}
+        {/* Card 2: Pelanggan */}
         <div className="w-full max-w-full px-3 mb-6 sm:w-1/2 sm:flex-none xl:mb-0 xl:w-1/4">
           <div className="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 rounded-2xl">
             <div className="flex-auto p-4">
               <div className="flex flex-row -mx-3">
                 <div className="flex-none w-2/3 max-w-full px-3">
                   <div>
-                    {/* 🚀 JUDUL UTAMA DIGANTI JADI TOTAL TRANSAKSI */}
                     <p className="mb-0 font-sans text-xs font-bold uppercase text-slate-400">PELANGGAN</p>
                     <h5 className="mb-2 font-bold dark:text-white text-lg text-slate-800">
-                      {/* 🚀 VARIABEL DIGANTI JADI total_order BIAR JADI TRANSAKSI */}
-                      {data?.total_order || 0} Orang
+                      {dynamicStats.customers} Orang
                     </h5>
-                    {/* 💡 KETERANGAN DI BAWAH TETEP INFO PELANGGAN SESUAI REQUEST LU */}
                     <p className="mb-0 dark:text-white dark:opacity-60 text-xs text-slate-400">
-                      Total Semua
-                      <span className="font-bold text-emerald-500"> Pelanggan </span>
-                      Anda
+                      Pelanggan <span className="font-bold text-emerald-500">{timeLabelText}</span>
                     </p>
                   </div>
                 </div>
@@ -333,21 +423,19 @@ export default function DashboardCards() {
           </div>
         </div>
 
-        {/* Card 3: Active Products */}
+        {/* Card 3: Produk Terjual */}
         <div className="w-full max-w-full px-3 mb-6 sm:w-1/2 sm:flex-none xl:mb-0 xl:w-1/4">
           <div className="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 rounded-2xl">
             <div className="flex-auto p-4">
               <div className="flex flex-row -mx-3">
                 <div className="flex-none w-2/3 max-w-full px-3">
                   <div>
-                    <p className="mb-0 font-sans text-xs font-bold uppercase text-slate-400">Produk</p>
+                    <p className="mb-0 font-sans text-xs font-bold uppercase text-slate-400">Total Produk Terjual</p>
                     <h5 className="mb-2 font-bold dark:text-white text-lg">
-                      {data?.total_products || 0} Items
+                      {dynamicStats.products} Pcs
                     </h5>
                     <p className="mb-0 dark:text-white dark:opacity-60 text-xs">
-                      Total Semua
-                      <span className="font-bold text-emerald-500"> Produk </span>
-                      Anda
+                      Terjual <span className="font-bold text-emerald-500">{timeLabelText}</span>
                     </p>
                   </div>
                 </div>
@@ -361,57 +449,58 @@ export default function DashboardCards() {
           </div>
         </div>
 
-       {/* ================= CARD 4: PESANAN (TEKS BAWAH DINAMIS) ================= */}
-         
-        <div className="w-full max-w-full px-3 sm:w-1/2 sm:flex-none xl:w-1/4">
-          <div className="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 rounded-2xl">
-            <div className="flex-auto p-4">
-              <div className="flex flex-row -mx-3">
-                <div className="flex-none w-2/3 max-w-full px-3">
-                  <div>
-                    <p className="mb-0 font-sans text-xs font-bold uppercase text-slate-400">PESANAN</p>
-                    
-                    <div className="flex items-center gap-2 mt-0.5 mb-2">
-                      <h5 className={`mb-0 font-bold text-lg ${pendingCount > 0 ? 'text-red-500' : 'text-slate-700 dark:text-white'}`}>
-                        {pendingCount} Pesanan
-                      </h5>
-                     
-                    </div>
-
-                    <p className="mb-0 dark:text-white dark:opacity-60 text-xs text-slate-400">
-                      {pendingCount > 0 ? (
-                        <span className="text-red-500 font-bold animate-pulse">Perlu tindakan seller segera!</span>
-                      ) : (
-                        <span>Semua pesanan <span className="font-bold text-emerald-500">aman/clear</span></span>
-                      )}
-                    </p>
-                  </div>
-                </div>
-                <div className="px-3 text-right basis-1/3">
-                  <div className="inline-block w-12 h-12 text-center rounded-circle bg-gradient-to-tl from-orange-500 to-yellow-500">
-                    <i className="ni ni-cart text-lg relative top-3.5 text-white"></i>
-                  </div>
-                </div>
-              </div>
+        {/* Card 4: Total Order Masuk Dinamis (Udah Sinkron sama Halaman Produk) */}
+<div className="w-full max-w-full px-3 sm:w-1/2 sm:flex-none xl:w-1/4">
+  <div className="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 rounded-2xl">
+    <div className="flex-auto p-4">
+      <div className="flex flex-row -mx-3">
+        <div className="flex-none w-2/3 max-w-full px-3">
+          <div>
+            <p className="mb-0 font-sans text-xs font-bold uppercase text-slate-400">TOTAL ORDER</p>
+            <div className="flex items-center gap-2 mt-0.5 mb-2">
+              <h5 className="mb-0 font-bold text-lg text-slate-700 dark:text-white">
+                {dynamicStats.orders} Pesanan
+              </h5>
             </div>
+            
+            {/* 🚀 LOGIKA SINKRONISASI: Biar sama persis kayak di halaman produk */}
+            <p className="mb-0 dark:text-white dark:opacity-60 text-xs text-slate-400">
+              {pendingCount > 0 ? (
+                <span className="text-red-500 font-bold animate-pulse">
+                   {pendingCount} pending perlu tindakan seller! ⚠️
+                </span>
+              ) : (
+                <span>
+                  Semua pesanan <span className="font-bold text-emerald-500">aman/clear</span>
+                </span>
+              )}
+            </p>
+
           </div>
         </div>
+        <div className="px-3 text-right basis-1/3">
+          <div className="inline-block w-12 h-12 text-center rounded-circle bg-gradient-to-tl from-orange-500 to-yellow-500">
+            <i className="ni ni-cart text-lg relative top-3.5 text-white"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
       </div>
 
       {/* ================= BARIS 2: GRAFIK & CAROUSEL ================= */}
       <div className="flex flex-wrap mt-6 -mx-3">
-        {/* Kolom Kiri: Line Chart Container */}
+        {/* Kolom Kiri: Line Chart */}
         <div className="w-full max-w-full px-3 mt-0 lg:w-7/12 lg:flex-none">
           <div className="border-black/12.5 dark:bg-slate-850 dark:shadow-dark-xl shadow-xl relative z-20 flex min-w-0 flex-col break-words rounded-2xl border-0 border-solid bg-white bg-clip-border">
-            {/* Header Chart Utama */}
             <div className="border-black/12.5 mb-0 rounded-t-2xl border-b-0 border-solid p-6 pt-4 pb-0 flex flex-col gap-4 flex-none">
               <div className="flex flex-row justify-between items-start w-full">
                 <div>
                   <h6 className="capitalize dark:text-white font-bold text-slate-700 mb-1">Ringkasan Penjualan</h6>
                   <p className="mb-0 text-xs leading-normal dark:text-white dark:opacity-60 flex items-center gap-1">
                     <i className="fa fa-arrow-up text-emerald-500"></i>
-                    <i className="fa fa-arrow-down text-red-500"></i>
-                    <span className="text-slate-400">Pantau perkembangan performa toko secara berkala</span>
+                    <span className="text-slate-400">Angka di atas dan grafik otomatis sinkron dengan filter</span>
                   </p>
                 </div>
                 <div className="flex-none">
@@ -429,24 +518,28 @@ export default function DashboardCards() {
               </div>
               <div className="flex bg-slate-100 p-1 rounded-xl text-xs font-bold gap-1 flex-wrap self-start">
                 <button 
+                  type="button"
                   onClick={() => setActiveMetric('revenue')} 
                   className={`px-3 py-2 rounded-lg border-none cursor-pointer transition-all ${activeMetric === 'revenue' ? 'bg-blue-500 text-white shadow-md' : 'text-slate-600 hover:bg-slate-200'}`}
                 >
                   Total Pendapatan
                 </button>
                 <button 
+                  type="button"
                   onClick={() => setActiveMetric('customers')} 
                   className={`px-3 py-2 rounded-lg border-none cursor-pointer transition-all ${activeMetric === 'customers' ? 'bg-blue-500 text-white shadow-md' : 'text-slate-600 hover:bg-slate-200'}`}
                 >
                   Pelanggan
                 </button>
                 <button 
+                  type="button"
                   onClick={() => setActiveMetric('products')} 
                   className={`px-3 py-2 rounded-lg border-none cursor-pointer transition-all ${activeMetric === 'products' ? 'bg-blue-500 text-white shadow-md' : 'text-slate-600 hover:bg-slate-200'}`}
                 >
-                  Produk Aktif
+                  Produk Terjual
                 </button>
                 <button 
+                  type="button"
                   onClick={() => setActiveMetric('orders')} 
                   className={`px-3 py-2 rounded-lg border-none cursor-pointer transition-all ${activeMetric === 'orders' ? 'bg-blue-500 text-white shadow-md' : 'text-slate-600 hover:bg-slate-200'}`}
                 >
@@ -454,7 +547,6 @@ export default function DashboardCards() {
                 </button>
               </div>
             </div>
-            {/* Area Grafik Line Chart */}
             <div className="flex-auto p-4 mt-2 flex-grow flex flex-col justify-end">
               <div className="w-full" style={{ height: '410px' }}>
                 <Line data={chartData} options={chartOptions} />
@@ -463,7 +555,7 @@ export default function DashboardCards() {
           </div>
         </div>
 
-        {/* Kolom Kanan: Carousel Slider Banner */}
+        {/* Kolom Kanan: Carousel Slider */}
         <div className="w-full max-w-full px-3 mb-6 lg:w-5/12 lg:flex-none flex flex-col">
           <div className="relative w-full overflow-hidden rounded-2xl shadow-xl flex-grow min-h-[400px] lg:min-h-0">
             {carouselItems.map((slide, idx) => (
@@ -488,12 +580,14 @@ export default function DashboardCards() {
               </div>
             ))}
             <button
+              type="button"
               onClick={() => setCurrentSlide((prev) => (prev - 1 + carouselItems.length) % carouselItems.length)}
               className="absolute z-20 w-10 h-10 left-4 top-4 text-white bg-black/20 hover:bg-black/40 rounded-full border-none cursor-pointer flex items-center justify-center transition-all"
             >
               ❮
             </button>
             <button
+              type="button"
               onClick={() => setCurrentSlide((prev) => (prev + 1) % carouselItems.length)}
               className="absolute z-20 w-10 h-10 right-4 top-4 text-white bg-black/20 hover:bg-black/40 rounded-full border-none cursor-pointer flex items-center justify-center transition-all"
             >
