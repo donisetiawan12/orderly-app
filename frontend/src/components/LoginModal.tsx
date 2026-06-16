@@ -24,8 +24,15 @@ export default function LoginModal({ show, onClose, onOpenRegister, setUser }: L
     setLoading(true);
 
     try {
-      // Sesuaikan URL ini dengan endpoint backend Node.js/Laravel kamu bro
-      const res = await fetch('http://localhost:5000/api/auth/login', {
+      // 🔄 LOGIKA DINAMIS: Deteksi ENV Vercel, kalau gak ada fallback ke localhost laptop bray
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+      
+      // Bersihkan jika ada double slash akibat salah ketik env
+      const cleanUrl = `${baseUrl.replace(/\/$/, '')}/auth/login`;
+
+      console.log('🚀 Nembak API Login ke:', cleanUrl);
+
+      const res = await fetch(cleanUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -66,8 +73,7 @@ export default function LoginModal({ show, onClose, onOpenRegister, setUser }: L
     <div
       className="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center"
       style={{
-        background:
-          'rgba(0,0,0,.65)',
+        background: 'rgba(0,0,0,.65)',
         zIndex: 9999,
         backdropFilter: 'blur(6px)',
       }}
@@ -87,8 +93,7 @@ export default function LoginModal({ show, onClose, onOpenRegister, setUser }: L
             className="col-md-6 position-relative d-none d-md-block"
             style={{
               minHeight: '650px',
-              backgroundImage:
-                "url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=1200')",
+              backgroundImage: "url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=1200')",
               backgroundSize: 'cover',
               backgroundPosition: 'center',
             }}
@@ -98,8 +103,7 @@ export default function LoginModal({ show, onClose, onOpenRegister, setUser }: L
               style={{
                 position: 'absolute',
                 inset: 0,
-                background:
-                  'linear-gradient(rgba(79,70,229,.85), rgba(124,58,237,.85))',
+                background: 'linear-gradient(rgba(79,70,229,.85), rgba(124,58,237,.85))',
               }}
             />
 
@@ -110,23 +114,9 @@ export default function LoginModal({ show, onClose, onOpenRegister, setUser }: L
                 zIndex: 2,
               }}
             >
-              <h1
-                style={{
-                  fontSize: '3.5rem',
-                  fontWeight: 800,
-                }}
-              >
+              <h1 style={{ fontSize: '3.5rem', fontWeight: 800 }}>
                 Orderly
               </h1>
-
-              {/* <h3
-                className="mt-4"
-                style={{
-                  fontWeight: 700,
-                }}
-              >
-                Marketplace Mahasiswa
-              </h3> */}
 
               <p
                 className="mt-3"
@@ -135,36 +125,14 @@ export default function LoginModal({ show, onClose, onOpenRegister, setUser }: L
                   lineHeight: '1.8',
                 }}
               >
-                Platform yang
-                menghubungkan
-                mahasiswa untuk
-                menjual, membeli,
-                dan melakukan
-                pre-order berbagai
-                produk dalam satu
-                ekosistem digital.
+                Platform yang menghubungkan mahasiswa untuk menjual, membeli, dan melakukan pre-order berbagai produk dalam satu ekosistem digital.
               </p>
 
               <div className="mt-4">
-                <div className="mb-3">
-                  ✓ Jual Produk
-                  Mahasiswa
-                </div>
-
-                <div className="mb-3">
-                  ✓ Kelola Pesanan
-                  dengan Mudah
-                </div>
-
-                <div className="mb-3">
-                  ✓ Marketplace
-                  Kampus Terintegrasi
-                </div>
-
-                <div className="mb-3">
-                  ✓ Transaksi Aman
-                  dan Cepat
-                </div>
+                <div className="mb-3">✓ Jual Produk Mahasiswa</div>
+                <div className="mb-3">✓ Kelola Pesanan dengan Mudah</div>
+                <div className="mb-3">✓ Marketplace Kampus Terintegrasi</div>
+                <div className="mb-3">✓ Transaksi Aman dan Cepat</div>
               </div>
             </div>
           </div>
@@ -173,75 +141,46 @@ export default function LoginModal({ show, onClose, onOpenRegister, setUser }: L
           <div className="col-md-6 p-5">
             
             <div className="d-flex justify-content-between align-items-center mb-4">
-              <h2
-                className="fw-bold"
-              >
-                Login
-              </h2>
-
-              <button
-                className="btn-close"
-                onClick={onClose}
-              />
+              <h2 className="fw-bold">Login</h2>
+              <button className="btn-close" onClick={onClose} />
             </div>
 
-            <p
-              className="text-muted mb-4"
-            >
-              Masuk ke akun Anda
-              untuk mulai
-              bertransaksi di
-              Orderly.
+            <p className="text-muted mb-4">
+              Masuk ke akun Anda untuk mulai bertransaksi di Orderly.
             </p>
             {error && <div className="alert alert-danger py-2 mt-2">{error}</div>}
 
-            <form
-              onSubmit={handleLoginSubmit}
-            >
+            <form onSubmit={handleLoginSubmit}>
               <div className="mb-3">
-                <label className="form-label fw-semibold">
-                  Email
-                </label>
-
+                <label className="form-label fw-semibold">Email</label>
                 <input
                   type="email"
                   className="form-control"
                   placeholder="Masukkan email"
                   style={{
-                  borderRadius: '14px',
-                  height: '55px',
-                  border: '1px solid #e5e7eb',
-                }}
+                    borderRadius: '14px',
+                    height: '55px',
+                    border: '1px solid #e5e7eb',
+                  }}
                   value={email}
-                  onChange={(e) =>
-                    setEmail(
-                      e.target.value
-                    )
-                  }
+                  onChange={(e) => setEmail(e.target.value)}
                   required
                 />
               </div>
 
               <div className="mb-4">
-                <label className="form-label fw-semibold">
-                  Password
-                </label>
-
+                <label className="form-label fw-semibold">Password</label>
                 <input
                   type="password"
                   className="form-control"
                   placeholder="Masukkan password"
                   style={{
-                  borderRadius: '14px',
-                  height: '55px',
-                  border: '1px solid #e5e7eb',
-                }}
+                    borderRadius: '14px',
+                    height: '55px',
+                    border: '1px solid #e5e7eb',
+                  }}
                   value={password}
-                  onChange={(e) =>
-                    setPassword(
-                      e.target.value
-                    )
-                  }
+                  onChange={(e) => setPassword(e.target.value)}
                   required
                 />
               </div>
@@ -251,24 +190,19 @@ export default function LoginModal({ show, onClose, onOpenRegister, setUser }: L
                 disabled={loading}
                 className="btn w-100 py-3"
                 style={{
-                  background:
-                    'linear-gradient(90deg,#4f46e5,#ec4899)',
+                  background: 'linear-gradient(90deg,#4f46e5,#ec4899)',
                   color: '#fff',
                   border: 'none',
-                  borderRadius:
-                    '12px',
+                  borderRadius: '12px',
                   fontWeight: 600,
                 }}
               >
-                {loading
-                  ? 'Loading...'
-                  : 'Login'}
+                {loading ? 'Loading...' : 'Login'}
               </button>
             </form>
 
             <div className="text-center mt-4">
               Belum punya akun?
-
               <button
                 type="button"
                 className="btn btn-link text-decoration-none fw-semibold"
