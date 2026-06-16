@@ -20,7 +20,8 @@ const paymentRoutes = require('./routes/payments'); // 🚀 IMPOR ROUTE PAYMENT 
 
 // ============ MIDDLEWARE ============
 app.use(cors({
-    origin: 'http://localhost:3000',
+    // Izinkan localhost dan 127.0.0.1 sekaligus biar Macbook lu gak pusing bray!
+    origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization']
