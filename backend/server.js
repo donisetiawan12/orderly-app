@@ -10,17 +10,28 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// ============ MIDDLEWARE CORS (BUKA TOTAL BIAR VERCEL GA BLOCKED) ============
+// ============ MIDDLEWARE CORS (DINAMIS VERCEL & LOCALHOST) ============
+const allowedOrigins = [
+    'http://localhost:3000',
+    'http://localhost:5173', // Jaga-jaga kalau pake Vite lokal
+];
+
 app.use(cors({
-    // 🔓 Mengizinkan semua origin (*) agar proxy Vercel dan lokal bisa masuk lancar jaya bray
-    origin: '*', 
+    origin: function (origin, callback) {
+        // 1. Mengizinkan request tanpa origin (seperti Postman)
+        if (!origin) return callback(null, true);
+        
+        // 2. Mengizinkan jika origin ada di daftar lokal ATAU berakhiran .vercel.app
+        if (allowedOrigins.indexOf(origin) !== -1 || origin.endsWith('.vercel.app')) {
+            return callback(null, true);
+        } else {
+            return callback(new Error('Akses diblokir oleh kebijakan CORS bray!'));
+        }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
-
-// Handle preflight OPTIONS request secara manual biar mantap
-app.options('*', cors());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
