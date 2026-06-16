@@ -11,43 +11,65 @@ exports.createOrder = async (req, res) => {
     console.log("Data yang masuk dari Frontend:", req.body);
     console.log("==========================================");
 
-
     try {
-        // 1. Ambil data yang dikirim oleh buyer dari frontend
-        const { product_id, seller_id, quantity, total_price, payment_method, notes } = req.body;
-        const buyer_id = req.user.id; // Mengambil id buyer dari token middleware auth lu
+        // 1. Ambil data utama dari req.body dan req.user
+        const { total_price, notes, items, payment_method } = req.body;
+        const buyer_id = req.user.id; 
 
-        // 2. Query utama: Masukkan data pesanan baru ke tabel orders
-        const sqlInsertOrder = `
-            INSERT INTO orders (buyer_id, product_id, seller_id, quantity, total_price, status, payment_method, notes) 
-            VALUES (?, ?, ?, ?, ?, 'pending', ?, ?)
-        `;
-        
-        // PENTING: Gunakan db.query atau db.execute sesuai settingan awal project lu
-        const [orderResult] = await db.query(sqlInsertOrder, [
-            buyer_id, 
-            product_id, 
-            seller_id, 
-            quantity, 
-            total_price, 
-            payment_method, 
-            notes
-        ]);
+        // Validasi jika array items kosong
+        if (!items || items.length === 0) {
+            return res.status(400).json({ status: "error", message: "Gagal: Keranjang belanja kosong bray!" });
+        }
 
-        // 3. QUERY SAKTI: Paksa database untuk menambah sold_quantity produk tersebut!
-        // Ini yang bakal nembak langsung kolom 'sold_quantity' yang tadinya 0 di DB lu
-        const sqlUpdateProductSold = `
-            UPDATE products 
-            SET sold_quantity = sold_quantity + ? 
-            WHERE id = ?
-        `;
-        await db.query(sqlUpdateProductSold, [quantity, product_id]);
+        // Jalankan looping untuk memasukkan semua item keranjang ke dalam tabel orders satu per satu
+        for (const item of items) {
+            const { product_id, quantity, price } = item;
+
+            // 🔥 QUERY EXTRA: Cari siapa seller_id pemilik produk ini otomatis dari tabel products
+            const [productData] = await db.query(
+                "SELECT seller_id FROM products WHERE id = ?", 
+                [product_id]
+            );
+
+            if (productData.length === 0) {
+                return res.status(404).json({ status: "error", message: `Produk dengan ID ${product_id} tidak ditemukan bray!` });
+            }
+
+            const seller_id = productData[0].seller_id;
+            const item_total_price = Number(price) * Number(quantity);
+
+            // 2. Query utama: Masukkan data pesanan ke tabel orders
+            const sqlInsertOrder = `
+                INSERT INTO orders (buyer_id, product_id, seller_id, quantity, total_price, status, payment_method, notes) 
+                VALUES (?, ?, ?, ?, ?, 'pending', ?, ?)
+            `;
+            
+            await db.query(sqlInsertOrder, [
+                buyer_id, 
+                product_id, 
+                seller_id, 
+                quantity, 
+                item_total_price, 
+                payment_method || 'Transfer Bank', // fallback default jika payment_method kosong
+                notes
+            ]);
+
+            // 3. QUERY SAKTI: Tambah sold_quantity produk tersebut!
+            const sqlUpdateProductSold = `
+                UPDATE products 
+                SET sold_quantity = sold_quantity + ? 
+                WHERE id = ?
+            `;
+            await db.query(sqlUpdateProductSold, [quantity, product_id]);
+        }
+
+        // 🔥 QUERY TAMBAHAN: Bersihkan isi keranjang (cart) milik user ini karena sudah sukses dicheckout bray!
+        await db.query("DELETE FROM cart WHERE user_id = ?", [buyer_id]);
 
         // 4. Kirim respon sukses ke frontend buyer
         res.status(201).json({
             status: "success",
-            message: "🛒 Pesanan berhasil dibuat, kuota PO otomatis berkurang!",
-            orderId: orderResult.insertId
+            message: "🛒 Pesanan berhasil dibuat, kuota PO otomatis berkurang dan keranjang dikosongkan!"
         });
 
     } catch (err) {
