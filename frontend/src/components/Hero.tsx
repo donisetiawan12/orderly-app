@@ -9,6 +9,8 @@ interface HeroProps {
   onLoginOpen: () => void;
 }
 
+
+
 interface Order {
   id: number;
   status: 'pending' | 'paid' | 'confirmed' | 'shipped' | 'completed' | 'cancelled';
@@ -38,6 +40,24 @@ export default function Hero({
 }: HeroProps) {
   const [showWelcome, setShowWelcome] = useState(false);
   
+
+  // STATE UNTUK PAGINATION LIMIT NOTA PER KELOMPOK STATUS
+  const [visibleLimits, setVisibleLimits] = useState<Record<string, number>>({
+    pending: 3,
+    paid: 3,
+    confirmed: 3,
+    shipped: 3,
+    completed: 3,
+    cancelled: 3,
+  });
+
+  const handleShowMoreStatus = (statusKey: string) => {
+    setVisibleLimits(prev => ({ ...prev, [statusKey]: (prev[statusKey] || 3) + 3 }));
+  };
+
+  const handleShowLessStatus = (statusKey: string) => {
+    setVisibleLimits(prev => ({ ...prev, [statusKey]: 3 }));
+  };
   // STATE UTAMA MODAL PESANAN SAYA & TRACKING
   const [showOrdersPop, setShowOrdersPop] = useState(false);
   const [orders, setOrders] = useState<Order[]>([]);
@@ -326,19 +346,20 @@ export default function Hero({
         </div>
       )}
 
-     {/* POP-UP MODAL UTAMA: PESANAN SAYA (VERSI GABUNG NOTA OTOMATIS) */}
+ {/* POP-UP MODAL UTAMA: PESANAN SAYA (VERSI GABUNG NOTA FIX ANTI-DOUBLE) */}
 {showOrdersPop && (
   <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0, 0, 0, 0.4)', backdropFilter: 'blur(15px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000, padding: '16px' }} onClick={() => setShowOrdersPop(false)}>
-    <div style={{ backgroundColor: 'rgba(255, 255, 255, 0.85)', backdropFilter: 'blur(25px)', borderRadius: '30px', width: '100%', maxWidth: '480px', maxHeight: '82vh', overflow: 'hidden', boxShadow: '0 20px 50px rgba(0,0,0,0.15)', border: '1px solid rgba(255, 255, 255, 0.45)', position: 'relative', display: 'flex', flexDirection: 'column', animation: 'heroPopScale 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)' }} onClick={(e) => e.stopPropagation()}>
+    <div style={{ backgroundColor: 'rgba(255, 255, 255, 0.85)', backdropFilter: 'blur(25px)', borderRadius: '30px', width: '100%', maxWidth: '480px', maxHeight: '82vh', overflow: 'hidden', boxShadow: '0 20px 50px rgba(0,0,0,0.15)', border: '1px solid rgba(255, 255, 255, 0.45)', position: 'relative', display: 'flex', flexDirection: 'column' }} onClick={(e) => e.stopPropagation()}>
       
       {/* HEADER MODAL */}
-      <div style={{ padding: '24px', borderBottom: '1px solid rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <h3 style={{ margin: 0, fontSize: '19px', fontWeight: '800', color: '#111827' }}>📦 Pesanan Saya</h3>
-          <span style={{ fontSize: '12px', color: '#6b7280' }}>Verifikasi pembayaran & track menu PO lu</span>
-        </div>
-        <button onClick={() => setShowOrdersPop(false)} style={{ background: 'rgba(0,0,0,0.05)', border: 'none', color: '#111827', width: '32px', height: '32px', borderRadius: '50%', cursor: 'pointer', fontWeight: 'bold' }}>✕</button>
-      </div>
+    {/* HEADER MODAL - FIX CAMELCASE JUSTIFYCONTENT */}
+<div style={{ padding: '24px', borderBottom: '1px solid rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+  <div>
+    <h3 style={{ margin: 0, fontSize: '19px', fontWeight: '800', color: '#111827' }}>📦 Pesanan Saya</h3>
+    <span style={{ fontSize: '12px', color: '#6b7280' }}>Verifikasi pembayaran & track menu PO lu</span>
+  </div>
+  <button onClick={() => setShowOrdersPop(false)} style={{ background: 'rgba(0,0,0,0.05)', border: 'none', color: '#111827', width: '32px', height: '32px', borderRadius: '50%', cursor: 'pointer', fontWeight: 'bold' }}>✕</button>
+</div>
 
       {/* BODY MODAL */}
       <div style={{ padding: '24px', overflowY: 'auto', flex: 1 }}>
@@ -346,87 +367,96 @@ export default function Hero({
           <p style={{ textAlign: 'center', fontSize: '14px', color: '#6b7280' }}>Melacak pesanan aktif lu bray...</p>
         ) : orders.length > 0 ? (
           (() => {
-            // 🔥 TRICK SAKTI FRONTEND: Kelompokkan array orders berdasarkan created_at yang sama persis bray!
+            // Urutan Status Berdasarkan Hierarki Tracking Request Lu bray
+            const statusOrderPriority = ['pending', 'paid', 'confirmed', 'shipped', 'completed', 'cancelled'];
+
+            // 1. FILTERING ANTI DOUBLE ID ORDER akibat bug JOIN database bray
+            const uniqueOrders = orders.filter((v, i, a) => a.findIndex(t => t.id === v.id) === i);
+
+            // 2. GROUPING BERDASARKAN NOTA (created_at)
             const groupedOrders: { [key: string]: any[] } = {};
-            orders.forEach((order: any) => {
+            uniqueOrders.forEach((order: any) => {
               const key = order.created_at;
               if (!groupedOrders[key]) groupedOrders[key] = [];
               groupedOrders[key].push(order);
             });
 
-            // Loop per grup waktu (1 waktu = 1 Nota Pembayaran)
-            return Object.keys(groupedOrders).map((timeKey) => {
-              const currentGroup = groupedOrders[timeKey];
-              // Ambil item pertama sebagai perwakilan status, notes, dan data rekening seller
-              const representative = currentGroup[0];
-              
-              // Hitung total harga gabungan seluruh item di dalam satu nota bray
-              const grandTotalPrice = currentGroup.reduce((sum, item) => sum + Number(item.total_price), 0);
+            // Ambil semua key nota unik bray
+            const timeKeys = Object.keys(groupedOrders);
+
+            // 3. SORTING BERDASARKAN HIERARKI STATUS PRIORITAS LU BRAY
+            timeKeys.sort((a, b) => {
+              const statusA = groupedOrders[a][0]?.status || 'pending';
+              const statusB = groupedOrders[b][0]?.status || 'pending';
+              return statusOrderPriority.indexOf(statusA) - statusOrderPriority.indexOf(statusB);
+            });
+
+            // 4. SEPARASI NOTA PER KELOMPOK STATUS UNTUK PAGINATION LOKAL
+            const ordersByStatus: { [key: string]: string[] } = {
+              pending: [], paid: [], confirmed: [], shipped: [], completed: [], cancelled: []
+            };
+            timeKeys.forEach(key => {
+              const currentStatus = groupedOrders[key][0]?.status || 'pending';
+              if (ordersByStatus[currentStatus]) {
+                ordersByStatus[currentStatus].push(key);
+              }
+            });
+
+            // 5. RENDER NOTA YANG SUDAH TERFILTER DAN TERSORTING
+            return statusOrderPriority.map((statusKey) => {
+              const keysInStatus = ordersByStatus[statusKey] || [];
+              if (keysInStatus.length === 0) return null; // Skip kalau status ini ga ada datanya bray
+
+              // AMAN BRAY: Menggunakan pengecekan dinamis ke state internal jika ada, atau fallback ke default 3 data
+              // Ini mencegah ReferenceError jika variabel visibleLimits di luar scope tidak terbaca.
+              // Jika properti visibleLimits ga ada di scope komponen utama lu, kita kunci statis di 3 data atau dinamis.
+              // Biar lu ga error lagi, kita check tipenya dulu:
+              const currentLimit = (typeof visibleLimits !== 'undefined' && visibleLimits && visibleLimits[statusKey]) ? visibleLimits[statusKey] : 3;
+              const visibleKeys = keysInStatus.slice(0, currentLimit);
 
               return (
-                <div key={timeKey} style={{ backgroundColor: 'rgba(255, 255, 255, 0.7)', borderRadius: '22px', padding: '18px', border: '1px solid rgba(0,0,0,0.06)', marginBottom: '20px', boxShadow: '0 6px 16px rgba(0,0,0,0.03)' }}>
-                  
-                  {/* HEADER NOTA: Berisi Jam CO & Status Tunggal */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(0,0,0,0.04)', paddingBottom: '10px', marginBottom: '12px' }}>
-                    <span style={{ fontSize: '11px', color: '#6b7280', fontWeight: '600' }}>
-                      📆 {new Date(timeKey).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' })} WIB
+                <div key={statusKey} style={{ marginBottom: '24px' }}>
+                  {/* JUDUL PEMBATAS STATUS KELOMPOK */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', paddingBottom: '4px', borderBottom: '2px solid rgba(0,0,0,0.03)' }}>
+                    <span style={{ fontSize: '12px', fontWeight: '800', textTransform: 'uppercase', color: '#4b5563', letterSpacing: '0.05em' }}>
+                      Kelompok {statusKey === 'paid' ? 'Dicek Seller' : statusKey === 'confirmed' ? 'Sedang Dimasak' : statusKey === 'shipped' ? 'Sedang Diantar' : statusKey} ({keysInStatus.length})
                     </span>
-                    {renderStatusBadge(representative.status)}
                   </div>
 
-                  {/* LIST ITEM PRODUK DI DALEM NOTA YANG SAMA */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    {currentGroup.map((order: any) => (
-                      <div key={order.id} style={{ paddingBottom: '8px', borderBottom: '1px dashed rgba(0,0,0,0.03)' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                          <div>
-                            <h4 style={{ margin: '0 0 4px 0', fontSize: '14px', fontWeight: '700', color: '#111827' }}>{order.product_name}</h4>
-                            <p style={{ margin: '0', fontSize: '11px', color: '#6b7280' }}>Jumlah: {order.quantity} Porsi</p>
-                          </div>
-                          <div style={{ textAlign: 'right' }}>
-                            <span style={{ fontSize: '13px', fontWeight: '700', color: '#374151' }}>
-                              Rp {Math.trunc(order.total_price).toLocaleString('id-ID')}
-                            </span>
-                          </div>
+                  {/* LOOPING NOTA DI DALAM STATUS TERSEBUT */}
+                  {visibleKeys.map((timeKey) => {
+                    const currentGroup = groupedOrders[timeKey];
+                    const representative = currentGroup[0];
+                    const grandTotalPrice = currentGroup.reduce((sum, item) => sum + Number(item.total_price), 0);
+
+                    return (
+                      <div key={timeKey} style={{ backgroundColor: 'rgba(255, 255, 255, 0.7)', borderRadius: '22px', padding: '18px', border: '1px solid rgba(0,0,0,0.06)', marginBottom: '14px', boxShadow: '0 6px 16px rgba(0,0,0,0.03)' }}>
+                        
+                        {/* HEADER NOTA */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(0,0,0,0.04)', paddingBottom: '10px', marginBottom: '12px' }}>
+                          <span style={{ fontSize: '11px', color: '#6b7280', fontWeight: '600' }}>
+                            📆 {new Date(timeKey).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' })} WIB
+                          </span>
+                          {renderStatusBadge(representative.status)}
                         </div>
 
-                        {/* REVIEW PRODUK INDIVIDU (Tetap per menu khusus status completed bray) */}
-                        {order.status === 'completed' && (
-                          <div style={{ marginTop: '8px', padding: '10px', backgroundColor: order.review_rating ? 'rgba(34, 197, 94, 0.05)' : 'rgba(6, 182, 212, 0.05)', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.03)' }}>
-                            {order.review_rating ? (
-                              <div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                                  <label style={{ fontSize: '11px', fontWeight: '800', color: '#16a34a' }}>✅ Ulasan Lu:</label>
+                        {/* LIST ITEM PRODUK DI DALEM NOTA */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                          {currentGroup.map((order: any) => (
+                            <div key={order.id} style={{ paddingBottom: '8px', borderBottom: '1px dashed rgba(0,0,0,0.03)' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                <div>
+                                  <h4 style={{ margin: '0 0 4px 0', fontSize: '14px', fontWeight: '700', color: '#111827' }}>{order.product_name}</h4>
+                                  <p style={{ margin: '0', fontSize: '11px', color: '#6b7280' }}>Jumlah: {order.quantity} Porsi</p>
                                 </div>
-                                <div style={{ display: 'flex', gap: '2px', marginBottom: '4px' }}>
-                                  {[1, 2, 3, 4, 5].map((star) => (
-                                    <span key={star} style={{ fontSize: '12px', color: star <= order.review_rating ? '#eab308' : '#d1d5db' }}>★</span>
-                                  ))}
-                                </div>
-                                <p style={{ margin: 0, fontSize: '11px', color: '#4b5563', fontStyle: 'italic' }}>"{order.review_comment || 'Tanpa komentar teks.'}"</p>
-                              </div>
-                            ) : (
-                              <div>
-                                <label style={{ display: 'block', fontSize: '11px', fontWeight: '800', color: '#0891b2', marginBottom: '4px' }}>⭐️ Kasih Nilai Menu Ini:</label>
-                                <div style={{ display: 'flex', gap: '4px', marginBottom: '6px' }}>
-                                  {[1, 2, 3, 4, 5].map((star) => (
-                                    <button key={star} type="button" onClick={() => setReviewRating({ ...reviewRating, [order.id]: star })} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px', color: star <= (reviewRating[order.id] || 5) ? '#eab308' : '#d1d5db', padding: 0 }}>★</button>
-                                  ))}
-                                </div>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                  <textarea rows={1} placeholder="Tulis ulasan lu bray..." value={reviewComment[order.id] || ''} onChange={(e) => setReviewComment({ ...reviewComment, [order.id]: e.target.value })} style={{ width: '100%', fontSize: '11px', padding: '6px 10px', borderRadius: '8px', border: '1px solid #c2e7f0', background: '#fff', resize: 'none' }} />
-                                  <button type="button" onClick={() => handleSendReview(order.id)} disabled={submittingReviewId === order.id} style={{ width: '100%', padding: '6px', backgroundColor: '#0891b2', color: '#ffffff', border: 'none', borderRadius: '8px', fontSize: '11px', fontWeight: '700', cursor: submittingReviewId === order.id ? 'not-allowed' : 'pointer' }}>
-                                    {submittingReviewId === order.id ? 'Mengirim...' : '🚀 Kirim Ulasan'}
-                                  </button>
+                                <div style={{ textAlign: 'right' }}>
+                                  <span style={{ fontSize: '13px', fontWeight: '700', color: '#374151' }}>
+                                    Rp {Math.trunc(order.total_price).toLocaleString('id-ID')}
+                                  </span>
                                 </div>
                               </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
 
+<<<<<<< HEAD
                   {/* BOTTOM SUB-TOTAL NOTA GABUNGAN */}
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px', padding: '8px 0', borderTop: '2px solid rgba(0,0,0,0.04)' }}>
                     <span style={{ fontSize: '13px', fontWeight: '800', color: '#111827' }}>💰 Total Tagihan Nota:</span>
@@ -477,72 +507,132 @@ export default function Hero({
                               <span style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#15803d', marginBottom: '6px' }}>Scan / Unduh QRIS bray:</span>
                               <img src={`http://${process.env.NEXT_PUBLIC_API_URL}/uploads/payments/${representative.seller_qris_image}`} alt="QRIS Seller" style={{ width: '160px', height: '160px', objectFit: 'contain', borderRadius: '14px', backgroundColor: '#fff', padding: '6px', border: '1px solid #e5e7eb' }} onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/150?text=QRIS+Error'; }} />
                               <button type="button" onClick={() => handleDownloadQris(`http://${process.env.NEXT_PUBLIC_API_URL}/uploads/payments/${representative.seller_qris_image}`, representative.id)} style={{ marginTop: '8px', padding: '6px 14px', backgroundColor: '#16a34a', color: '#ffffff', border: 'none', borderRadius: '8px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>📥 Unduh Gambar QRIS</button>
+=======
+                              {/* REVIEW INDIVIDU */}
+                              {order.status === 'completed' && (
+                                <div style={{ marginTop: '8px', padding: '10px', backgroundColor: order.review_rating ? 'rgba(34, 197, 94, 0.05)' : 'rgba(6, 182, 212, 0.05)', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.03)' }}>
+                                  {order.review_rating ? (
+                                    <div>
+                                      <label style={{ fontSize: '11px', fontWeight: '800', color: '#16a34a', display: 'block' }}>✅ Ulasan Lu:</label>
+                                      <div style={{ display: 'flex', gap: '2px', marginBottom: '4px' }}>
+                                        {[1, 2, 3, 4, 5].map((star) => (
+                                          <span key={star} style={{ fontSize: '12px', color: star <= order.review_rating ? '#eab308' : '#d1d5db' }}>★</span>
+                                        ))}
+                                      </div>
+                                      <p style={{ margin: 0, fontSize: '11px', color: '#4b5563', fontStyle: 'italic' }}>"{order.review_comment || 'Tanpa komentar teks.'}"</p>
+                                    </div>
+                                  ) : (
+                                    <div>
+                                      <label style={{ display: 'block', fontSize: '11px', fontWeight: '800', color: '#0891b2', marginBottom: '4px' }}>⭐️ Kasih Nilai Menu Ini:</label>
+                                      <div style={{ display: 'flex', gap: '4px', marginBottom: '6px' }}>
+                                        {[1, 2, 3, 4, 5].map((star) => (
+                                          <button key={star} type="button" onClick={() => setReviewRating({ ...reviewRating, [order.id]: star })} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px', color: star <= (reviewRating[order.id] || 5) ? '#eab308' : '#d1d5db', padding: 0 }}>★</button>
+                                        ))}
+                                      </div>
+                                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                        <textarea rows={1} placeholder="Tulis ulasan lu bray..." value={reviewComment[order.id] || ''} onChange={(e) => setReviewComment({ ...reviewComment, [order.id]: e.target.value })} style={{ width: '100%', fontSize: '11px', padding: '6px 10px', borderRadius: '8px', border: '1px solid #c2e7f0', background: '#fff', resize: 'none' }} />
+                                        <button type="button" onClick={() => handleSendReview(order.id)} disabled={submittingReviewId === order.id} style={{ width: '100%', padding: '6px', backgroundColor: '#0891b2', color: '#ffffff', border: 'none', borderRadius: '8px', fontSize: '11px', fontWeight: '700', cursor: submittingReviewId === order.id ? 'not-allowed' : 'pointer' }}>
+                                          {submittingReviewId === order.id ? 'Mengirim...' : '🚀 Kirim Ulasan'}
+                                        </button>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+>>>>>>> bd07f59 (feat: fix filtering nota pesanan dan kembalikan ornamen menu premium bray)
                             </div>
+                          ))}
+                        </div>
+
+                        {/* BOTTOM SUB-TOTAL */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px', padding: '8px 0', borderTop: '2px solid rgba(0,0,0,0.04)' }}>
+                          <span style={{ fontSize: '13px', fontWeight: '800', color: '#111827' }}>💰 Total Tagihan Nota:</span>
+                          <span style={{ fontSize: '18px', fontWeight: '900', color: '#dc2626' }}>
+                            Rp {Math.trunc(grandTotalPrice).toLocaleString('id-ID')}
+                          </span>
+                        </div>
+
+                        {/* CATATAN PESANAN */}
+                        <div style={{ marginTop: '12px', paddingTop: '10px', borderTop: '1px dashed rgba(0,0,0,0.08)' }}>
+                          <span style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#4b5563', marginBottom: '4px' }}>📌 Catatan Pesanan:</span>
+                          {representative.status === 'pending' ? (
+                            <div style={{ display: 'flex', gap: '6px' }}>
+                              <input 
+                                type="text"
+                                value={editingNotes[representative.id] || ''}
+                                onChange={(e) => setEditingNotes({ ...editingNotes, [representative.id]: e.target.value })}
+                                placeholder="Contoh: Paha aja bray, sambal dipisah..."
+                                style={{ flex: 1, fontSize: '12px', padding: '6px 12px', borderRadius: '10px', border: '1px solid #d1d5db', background: '#fff' }}
+                              />
+                              <button onClick={() => handleUpdateNotes(representative.id)} disabled={updatingNotesId === representative.id} style={{ padding: '6px 14px', backgroundColor: '#0284c7', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>
+                                {updatingNotesId === representative.id ? 'Save...' : 'Simpan'}
+                              </button>
+                            </div>
+                          ) : (
+                            <p style={{ margin: '0', fontSize: '12px', color: '#6b7280', fontStyle: 'italic' }}>
+                              "{representative.notes || 'Tidak ada catatan'}"
+                            </p>
                           )}
                         </div>
-                      ) : (
-                        <p style={{ margin: 0, fontSize: '11px', color: '#9ca3af', fontStyle: 'italic' }}>Seller belum mengatur data rekening bray.</p>
+
+                        {/* QRIS & DATA REKENING GENERATOR */}
+                        {representative.status === 'pending' && (
+                          <div style={{ marginTop: '14px', padding: '12px 14px', backgroundColor: 'rgba(34, 197, 94, 0.08)', borderRadius: '16px', border: '1px solid rgba(34, 197, 94, 0.15)' }}>
+                            <span style={{ display: 'block', fontSize: '11px', fontWeight: '800', color: '#15803d', marginBottom: '6px' }}>🏦 TUJUAN TRANSFER SELLER:</span>
+                            <div style={{ fontSize: '12px', color: '#1f2937' }}>
+                              <p style={{ margin: '0 0 2px 0' }}><b>Nama Seller:</b> {representative.seller_account_name || 'Seller Utama'}</p>
+                              <p style={{ margin: '0 0 2px 0' }}><b>No. HP / Rek:</b> <span style={{ color: '#0284c7', fontWeight: '700' }}>{representative.seller_account_number || '08X-XXXX-XXXX'}</span></p>
+                              
+                              <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                <span style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#15803d', marginBottom: '6px' }}>Scan QRIS Resmi Seller:</span>
+                                <img 
+                                  src={representative.seller_qris_image ? `http://localhost:5000/uploads/payments/${representative.seller_qris_image}` : 'https://placehold.co/150?text=QRIS+Ready'} 
+                                  alt="QRIS Seller" 
+                                  style={{ width: '160px', height: '160px', objectFit: 'contain', borderRadius: '14px', backgroundColor: '#fff', padding: '6px', border: '1px solid #e5e7eb' }} 
+                                />
+                                <button type="button" onClick={() => handleDownloadQris(`http://localhost:5000/uploads/products/${representative.seller_qris_image}`, representative.id)} style={{ marginTop: '8px', padding: '6px 14px', backgroundColor: '#16a34a', color: '#ffffff', border: 'none', borderRadius: '8px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>📥 Unduh Gambar QRIS</button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* PILIHAN AKSI UPLOAD BUKTI */}
+                        {representative.status === 'pending' && (
+                          <div style={{ marginTop: '14px', padding: '12px 14px', backgroundColor: 'rgba(249, 115, 22, 0.08)', borderRadius: '16px', border: '1px solid rgba(249, 115, 22, 0.15)' }}>
+                            <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#c2410c', marginBottom: '6px' }}>📸 Pilihan Aksi Pesanan:</label>
+                            <div style={{ marginBottom: '10px' }}>
+                              <input type="file" accept="image/*" onChange={(e) => setSelectedFile(e.target.files?.[0] || null)} style={{ fontSize: '11px', width: '100%' }} />
+                            </div>
+                            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                              <button onClick={() => handleCancelOrder(representative.id)} disabled={cancellingId === representative.id} style={{ padding: '8px 14px', backgroundColor: '#ef4444', color: '#ffffff', border: 'none', borderRadius: '10px', fontSize: '11px', fontWeight: '700', cursor: cancellingId === representative.id ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                <i className="fas fa-ban"></i> {cancellingId === representative.id ? 'Membatalkan...' : 'Batalkan Pesanan'}
+                              </button>
+                              <button onClick={() => handleUploadProof(representative.id)} disabled={uploadingId === representative.id} style={{ padding: '8px 14px', backgroundColor: '#ea580c', color: '#ffffff', border: 'none', borderRadius: '10px', fontSize: '11px', fontWeight: '700', cursor: uploadingId === representative.id ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                <i className="fas fa-paper-plane"></i> {uploadingId === representative.id ? 'Mengupload...' : 'Kirim Bukti'}
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                      </div>
+                    );
+                  })}
+
+                  {/* NAVIGASI PAGINATION DINAMIS AMAN ANTI ERROR */}
+                  {typeof visibleLimits !== 'undefined' && typeof handleShowMoreStatus !== 'undefined' && (
+                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '10px' }}>
+                      {keysInStatus.length > currentLimit && (
+                        <button type="button" onClick={() => handleShowMoreStatus(statusKey)} style={{ background: 'rgba(2, 132, 199, 0.1)', border: 'none', color: '#0284c7', fontSize: '11px', padding: '6px 12px', borderRadius: '8px', fontWeight: '700', cursor: 'pointer' }}>
+                          ➕ Lihat Nota Lainnya (+{keysInStatus.length - currentLimit})
+                        </button>
+                      )}
+                      {currentLimit > 3 && typeof handleShowLessStatus !== 'undefined' && (
+                        <button type="button" onClick={() => handleShowLessStatus(statusKey)} style={{ background: 'rgba(239, 68, 68, 0.1)', border: 'none', color: '#ef4444', fontSize: '11px', padding: '6px 12px', borderRadius: '8px', fontWeight: '700', cursor: 'pointer' }}>
+                          ➖ Sembunyikan (-)
+                        </button>
                       )}
                     </div>
                   )}
-
-                  {/* AREA BERSAMA: UPLOAD BUKTI & BATALKAN (Cukup 1 pasang tombol aksi per grup nota bray) */}
-                  {representative.status === 'pending' && (
-                    <div style={{ marginTop: '14px', padding: '12px 14px', backgroundColor: 'rgba(249, 115, 22, 0.08)', borderRadius: '16px', border: '1px solid rgba(249, 115, 22, 0.15)' }}>
-                      <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#c2410c', marginBottom: '6px' }}>📸 Pilihan Aksi Pesanan:</label>
-                      
-                      <div style={{ marginBottom: '10px' }}>
-                        <input type="file" accept="image/*" onChange={(e) => setSelectedFile(e.target.files?.[0] || null)} style={{ fontSize: '11px', width: '100%' }} />
-                      </div>
-
-                      <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                        {/* 🛑 BUTTON BATALKAN - Memicu id perwakilan untuk hapus massal */}
-                        <button 
-                          onClick={() => handleCancelOrder(representative.id)} 
-                          disabled={cancellingId === representative.id} 
-                          style={{ 
-                            padding: '8px 14px', 
-                            backgroundColor: '#ef4444', 
-                            color: '#ffffff', 
-                            border: 'none', 
-                            borderRadius: '10px', 
-                            fontSize: '11px', 
-                            fontWeight: '700', 
-                            cursor: cancellingId === representative.id ? 'not-allowed' : 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '4px'
-                          }}
-                        >
-                          <i className="fas fa-ban"></i>
-                          {cancellingId === representative.id ? 'Membatalkan...' : 'Batalkan Pesanan'}
-                        </button>
-
-                        {/* 💳 BUTTON KIRIM BUKTI - Memicu id perwakilan untuk lunas massal */}
-                        <button 
-                          onClick={() => handleUploadProof(representative.id)} 
-                          disabled={uploadingId === representative.id} 
-                          style={{ 
-                            padding: '8px 14px', 
-                            backgroundColor: '#ea580c', 
-                            color: '#ffffff', 
-                            border: 'none', 
-                            borderRadius: '10px', 
-                            fontSize: '11px', 
-                            fontWeight: '700', 
-                            cursor: uploadingId === representative.id ? 'not-allowed' : 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '4px'
-                          }}
-                        >
-                          <i className="fas fa-paper-plane"></i>
-                          {uploadingId === representative.id ? 'Mengupload...' : 'Kirim Bukti'}
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
                 </div>
               );
             });

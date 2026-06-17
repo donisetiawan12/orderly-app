@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Waktu pembuatan: 16 Jun 2026 pada 21.50
+-- Waktu pembuatan: 17 Jun 2026 pada 19.35
 -- Versi server: 10.4.28-MariaDB
 -- Versi PHP: 8.0.28
 
@@ -113,7 +113,9 @@ INSERT INTO `orders` (`id`, `buyer_id`, `product_id`, `seller_id`, `quantity`, `
 (19, 3, 1, 2, 4, 60000.00, 'paid', 'Transfer Bank', 'pay-1781638671176.jpeg', 'Pre-order via web', '2026-06-16 19:37:35', '2026-06-16 19:37:51'),
 (20, 3, 7, 2, 7, 70000.00, 'pending', 'Transfer Bank', NULL, 'Pre-order via web', '2026-06-16 19:40:48', '2026-06-16 19:40:48'),
 (21, 3, 1, 2, 26, 390000.00, 'pending', 'Transfer Bank', NULL, 'Pre-order via web', '2026-06-16 19:41:10', '2026-06-16 19:41:10'),
-(22, 3, 1, 2, 7, 105000.00, 'pending', 'Transfer Bank', NULL, 'Pre-order via web', '2026-06-16 19:41:25', '2026-06-16 19:41:25');
+(22, 3, 1, 2, 7, 105000.00, 'pending', 'Transfer Bank', NULL, 'Pre-order via web', '2026-06-16 19:41:25', '2026-06-16 19:41:25'),
+(23, 3, 2, 2, 1, 12000.00, 'pending', 'Transfer Bank', NULL, 'Pre-order via web', '2026-06-17 17:27:12', '2026-06-17 17:27:12'),
+(24, 3, 2, 2, 1, 12000.00, 'pending', 'Transfer Bank', NULL, 'Pre-order via web', '2026-06-17 17:30:31', '2026-06-17 17:30:31');
 
 -- --------------------------------------------------------
 
@@ -145,7 +147,7 @@ CREATE TABLE `products` (
 
 INSERT INTO `products` (`id`, `seller_id`, `category_id`, `name`, `description`, `price`, `quantity`, `image`, `po_quota`, `po_deadline`, `status`, `created_at`, `updated_at`, `location`, `sold_quantity`) VALUES
 (1, 2, 1, 'Nasi Ayam Geprek Kampus', 'Ayam geprek krispi dengan sambal korek membara plus nasi hangat.', 15000.00, 0, 'ayam-geprel.jpeg', 50, '2026-06-30 03:00:00', 'active', '2026-06-16 09:33:38', '2026-06-16 19:41:25', 'Kampus B', 51),
-(2, 2, 2, 'Es Kopi Susu Gula Aren', 'Espresso premium ditambah susu segar dan manisnya gula aren asli.', 12000.00, 40, '1781603778465-natrix.png', 0, NULL, 'active', '2026-06-16 09:33:38', '2026-06-16 19:10:06', 'Kantin Utama', 13),
+(2, 2, 2, 'Es Kopi Susu Gula Aren', 'Espresso premium ditambah susu segar dan manisnya gula aren asli.', 12000.00, 40, '1781603778465-natrix.png', 0, NULL, 'active', '2026-06-16 09:33:38', '2026-06-17 17:30:31', 'Kantin Utama', 15),
 (3, 2, 3, 'Kabel Data Type-C Fast Charging', 'Kabel data awet dukung pengisian daya cepat 60W.', 25000.00, 15, '1781615626806-_ (1).jpeg', 0, NULL, 'active', '2026-06-16 09:33:38', '2026-06-16 19:08:35', 'Koperasi Mahasiswa', 3),
 (7, 2, 2, 'Jus Mangga', 'Jus mangga original asli', 10000.00, 0, '1781638726608-_ (14).jpeg', 50, '2026-07-01 04:40:00', 'active', '2026-06-16 19:38:46', '2026-06-16 19:40:48', 'Kampus A', 7);
 
@@ -285,7 +287,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT untuk tabel `cart`
 --
 ALTER TABLE `cart`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
 
 --
 -- AUTO_INCREMENT untuk tabel `categories`
@@ -297,7 +299,7 @@ ALTER TABLE `categories`
 -- AUTO_INCREMENT untuk tabel `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
 -- AUTO_INCREMENT untuk tabel `products`

@@ -38,19 +38,21 @@ export default function Menu({ searchTerm, activeFilter, setActiveFilter, onOpen
     fetchFreshData();
   }, []);
 
-  // 🔥 2. SELEBRITI EVENT LISTENER: Otomatis Fetch Ulang jika ada event update order/checkout!
+  // 🔥 2. SELEBRITI EVENT LISTENER: Otomatis Fetch Ulang jika ada event update order/checkout/review!
   useEffect(() => {
     const handleOrderOrCartUpdate = () => {
-      console.log("🔔 Ada aktivitas checkout/order! Sinkronisasi ulang kuota PO...");
-      fetchFreshData(); // Tarik data sold_quantity terbaru murni dari DB!
+      console.log("🔔 Ada aktivitas checkout/order/review! Sinkronisasi ulang kuota PO dan Rating...");
+      fetchFreshData(); // Tarik data sold_quantity & avg_rating terbaru murni dari DB!
     };
 
     window.addEventListener('orderUpdated', handleOrderOrCartUpdate);
     window.addEventListener('cartUpdated', handleOrderOrCartUpdate);
+    window.addEventListener('reviewUpdated', handleOrderOrCartUpdate); // Tambah listener review baru bray!
 
     return () => {
       window.removeEventListener('orderUpdated', handleOrderOrCartUpdate);
       window.removeEventListener('cartUpdated', handleOrderOrCartUpdate);
+      window.removeEventListener('reviewUpdated', handleOrderOrCartUpdate);
     };
   }, []);
 
@@ -129,21 +131,17 @@ export default function Menu({ searchTerm, activeFilter, setActiveFilter, onOpen
                     
                    {/* --- BADGE DEADLINE (FIXED TIMEZONE & ACCURATE DAYS) --- */}
                       {item.po_deadline && (() => {
-                          // 1. Buat objek tanggal sekarang (WIB) tapi set jamnya ke 00:00:00 biar adil bray
                           const sekarang = new Date();
                           sekarang.setHours(0, 0, 0, 0);
 
-                          // 2. Ambil tanggal deadline, potong stringnya ambil tanggalnya aja (YYYY-MM-DD)
-                          // Cara ini ampuh bray buat nge-bypass bug jam/timezone MySQL!
-                          const stringTanggalSaja = item.po_deadline.split(' ')[0]; // dapet "2026-06-30"
+                          const stringTanggalSaja = item.po_deadline.split(' ')[0]; 
                           const deadline = new Date(stringTanggalSaja);
                           deadline.setHours(0, 0, 0, 0);
 
-                          // 3. Hitung selisih hari murni
                           const diffTime = deadline.getTime() - sekarang.getTime();
-                          const diffDays = Math.floor(diffTime / (1000 * 3600 * 24)); // Gunakan Math.floor bray
+                          const diffDays = Math.floor(diffTime / (1000 * 3600 * 24)); 
 
-                          if (diffDays < 0) return null; // Kalo udah lewat deadline, badge ilang
+                          if (diffDays < 0) return null; 
 
                           return (
                             <div style={{
@@ -163,8 +161,15 @@ export default function Menu({ searchTerm, activeFilter, setActiveFilter, onOpen
                   <div className="mbody" style={{ padding: '15px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
                       <strong style={{ fontSize: '0.9rem', color: '#333' }}>{item.seller_name}</strong>
-                      <div style={{ fontSize: '0.8rem', color: '#f39c12', fontWeight: 'bold' }}>
-                        <i className="fas fa-star"></i> {Number(item.avg_rating || 0).toFixed(1)}
+                      
+                      {/* 🔥 FIX: SEKARANG RATING VALUASI REAL-TIME DAN SINKRON DENGAN DETAIL POP UP BRAY */}
+                      <div style={{ fontSize: '0.8rem', color: '#f39c12', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <i className="fas fa-star" style={{ color: '#eab308' }}></i> 
+                        <span>
+                          {item.avg_rating && Number(item.avg_rating) > 0 
+                            ? Number(item.avg_rating).toFixed(1) 
+                            : '5.0'} 
+                        </span>
                       </div>
                     </div>
 
@@ -203,21 +208,20 @@ export default function Menu({ searchTerm, activeFilter, setActiveFilter, onOpen
                     )}
 
                     {/* Footer Price */}
-                    {/* Footer Price */}
-                      <div className="mfoot" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
-                        <div className="mprice" style={{ fontWeight: 'bold', color: '#1e293b' }}>
-                          Rp. {Math.trunc(Number(item.price || 0)).toLocaleString('id-ID')}
-                        </div>
-                        
-                        {/* 🔥 FIX: Blokir tombol plus jika kuota PO sudah penuh */}
-                        {Number(item.po_quota) > 0 && (item.sold_quantity || 0) >= item.po_quota ? (
-                          <span style={{ fontSize: '11px', color: '#ef4444', fontWeight: '800', backgroundColor: '#fef2f2', padding: '4px 8px', borderRadius: '6px', border: '1px solid #fee2e2' }}>
-                            🚫 Habis
-                          </span>
-                        ) : (
-                          <button className="madd" style={{ padding: '5px 10px' }}><i className="fas fa-plus"></i></button>
-                        )}
+                    <div className="mfoot" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
+                      <div className="mprice" style={{ fontWeight: 'bold', color: '#1e293b' }}>
+                        Rp. {Math.trunc(Number(item.price || 0)).toLocaleString('id-ID')}
                       </div>
+                      
+                      {/* Block tombol jika kuota PO sudah penuh */}
+                      {Number(item.po_quota) > 0 && (item.sold_quantity || 0) >= item.po_quota ? (
+                        <span style={{ fontSize: '11px', color: '#ef4444', fontWeight: '800', backgroundColor: '#fef2f2', padding: '4px 8px', borderRadius: '6px', border: '1px solid #fee2e2' }}>
+                          🚫 Habis
+                        </span>
+                      ) : (
+                        <button className="madd" style={{ padding: '5px 10px' }}><i className="fas fa-plus"></i></button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

@@ -35,6 +35,21 @@ export default function MenuDetailPopup({ product, onClose }: any) {
 
   const mainBoxRef = useRef<HTMLDivElement>(null);
 
+  // 🛠️ TRICK SAKTI DYNAMIC API URL: Deteksi otomatis kalau lagi hosting atau localhost bray!
+  const getApiUrl = () => {
+    if (typeof window !== 'undefined') {
+      // Kalau diakses via localhost laptop lu/temen lu, arahkan ke port 5000 lokal
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        return 'http://127.0.0.1:5000';
+      }
+      // Kalau lagi dihosting, dia otomatis nembak sub-domain api atau domain tempat lu deploy backend bray
+      return window.location.origin.replace('//3000', '//5000'); // Fallback cerdas cerdik
+    }
+    return 'http://127.0.0.1:5000';
+  };
+
+  const API_BASE_URL = getApiUrl();
+
   // 🔥 VALIDASI KUOTA PO SECARA LOKAL
   const isPoProduct = Number(product?.po_quota) > 0;
   const soldQty = Number(product?.sold_quantity || 0);
@@ -47,13 +62,13 @@ export default function MenuDetailPopup({ product, onClose }: any) {
     setCustomAlert({ show: true, message, type });
   };
 
-  // 🔥 FIX ALAMAT IP BENTROK KE 127.0.0.1
+  // 🔥 FETCH DATA REVIEW MENGGUNAKAN API DINAMIS
   useEffect(() => {
     if (product?.id) {
       const fetchReviews = async () => {
         setLoadingReviews(true);
         try {
-          const res = await fetch(`http://127.0.0.1:5000/api/products/${product.id}/reviews`);
+          const res = await fetch(`${API_BASE_URL}/api/products/${product.id}/reviews`);
           const result = await res.json();
           if (result.status === 'success' || result.data) {
             const dataUlasan: Review[] = result.data || [];
@@ -75,17 +90,15 @@ export default function MenuDetailPopup({ product, onClose }: any) {
       };
       fetchReviews();
     }
-  }, [product?.id]);
-
+  }, [product?.id, API_BASE_URL]);
 
   const handleAddToCart = async () => {
-    // 1. Validasi awal di frontend sebelum loading jalan bray
     if (isPoProduct && qty > sisaKuota) {
       triggerAlert(`⚠️ Waduh bray, sisa kuota PO tinggal ${sisaKuota} Pcs, lu gak bisa pesan sampai ${qty} Pcs.`, "error");
       return; 
     }
 
-    setIsSubmitting(true); // Mulai loading memproses...
+    setIsSubmitting(true);
 
     try {
       const token = localStorage.getItem('token'); 
@@ -95,8 +108,7 @@ export default function MenuDetailPopup({ product, onClose }: any) {
         return;
       }
 
-      // Tembak pake IP 127.0.0.1 biar klop sama CORS baru backend lu bray
-      const response = await fetch('http://127.0.0.1:5000/api/cart', {
+      const response = await fetch(`${API_BASE_URL}/api/cart`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -108,7 +120,6 @@ export default function MenuDetailPopup({ product, onClose }: any) {
         }),
       });
 
-      // Proteksi kalau backend ngaco / ngasih status salah alamat biar gak crash di browser
       if (response.status === 404) {
         triggerAlert("❌ Gagal (Error 404): Alamat API tidak ditemukan atau token ditolak backend bray!", "error");
         return;
@@ -128,7 +139,6 @@ export default function MenuDetailPopup({ product, onClose }: any) {
       console.error("Error Add to Cart:", error);
       triggerAlert("❌ Koneksi ke server backend putus atau crash bray!", "error");
     } finally {
-      // 🔥 JAMINAN ANTI-STUCK ABADI: Apapun hasilnya, tulisan memproses WAJIB MATI DI SINI!
       setIsSubmitting(false);
     }
   };
@@ -193,12 +203,11 @@ export default function MenuDetailPopup({ product, onClose }: any) {
               {customAlert.message}
             </p>
 
-            {/* 🔥 BUTTON SAKTI: DI SINI IS_SUBMITTING DIPAKSA FALSE SAAT DIKLIK OKE */}
             <button
               onClick={() => {
                 const isSuccess = customAlert.type === 'success';
                 setCustomAlert(prev => ({ ...prev, show: false }));
-                setIsSubmitting(false); // RESET UTAMA BIAR GAK STUCK MEMPROSES
+                setIsSubmitting(false); 
                 if (isSuccess) {
                   onClose(); 
                 }
@@ -215,6 +224,60 @@ export default function MenuDetailPopup({ product, onClose }: any) {
             >
               Oke, Siap !
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* ⭐️ MODAL DETAIL REVIEW PEMBELI (FIX TERENDEEER!) */}
+      {showReviewsPop && (
+        <div 
+          style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(10px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 2000, padding: '16px' 
+          }}
+          onClick={() => setShowReviewsPop(false)}
+        >
+          <div 
+            style={{
+              backgroundColor: '#ffffff', borderRadius: '24px', width: '100%',
+              maxWidth: '400px', maxHeight: '60vh', display: 'flex',
+              flexDirection: 'column', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.3)',
+              position: 'relative'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ padding: '20px 24px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h4 style={{ margin: 0, fontSize: '17px', fontWeight: '800', color: '#0f172a' }}>⭐️ Ulasan Menu PO</h4>
+              <button onClick={() => setShowReviewsPop(false)} style={{ background: '#f1f5f9', border: 'none', color: '#0f172a', width: '28px', height: '28px', borderRadius: '50%', cursor: 'pointer', fontWeight: 'bold' }}>✕</button>
+            </div>
+
+            <div style={{ padding: '24px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {loadingReviews ? (
+                <p style={{ textAlign: 'center', fontSize: '13px', color: '#64748b' }}>Sedang memuat rating bray...</p>
+              ) : reviews.length > 0 ? (
+                reviews.map((rev, idx) => (
+                  <div key={idx} style={{ paddingBottom: '14px', borderBottom: '1px solid #f8fafc' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                      <span style={{ fontSize: '13px', fontWeight: '700', color: '#1e293b' }}>{rev.buyer_name || 'Pembeli Anonim'}</span>
+                      <div style={{ display: 'flex', gap: '2px' }}>
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <span key={star} style={{ fontSize: '12px', color: star <= rev.rating ? '#f59e0b' : '#cbd5e1' }}>★</span>
+                        ))}
+                      </div>
+                    </div>
+                    <p style={{ margin: 0, fontSize: '13px', color: '#475569', fontStyle: 'italic', lineHeight: '1.4' }}>
+                      "{rev.comment || 'Hanya memberikan rating bintang bray.'}"
+                    </p>
+                  </div>
+                ))
+              ) : (
+                <div style={{ textAlign: 'center', padding: '20px 0', color: '#94a3b8' }}>
+                  <p style={{ margin: 0, fontSize: '13px', fontWeight: '500' }}>Menu ini belum pernah diulas pembeli bray.</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -247,12 +310,12 @@ export default function MenuDetailPopup({ product, onClose }: any) {
             cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', color: '#1e293b'
           }}
         >
-          <i className="fas fa-times" style={{ fontSize: '14px' }}></i>
+          ✕
         </button>
         
         <div className="mpimg" style={{ position: 'relative', width: '100%', height: '250px', flexShrink: 0 }}>
           <img 
-            src={product.image ? `http://127.0.0.1:5000/uploads/products/${product.image}` : '/img/default.jpg'} 
+            src={product.image ? `${API_BASE_URL}/uploads/products/${product.image}` : '/img/default.jpg'} 
             alt={product.name} 
             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             onError={(e) => { (e.target as HTMLImageElement).src = '/img/default.jpg'; }}
@@ -273,7 +336,7 @@ export default function MenuDetailPopup({ product, onClose }: any) {
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', width: '100%' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: '#fef3c7', padding: '4px 10px', borderRadius: '12px', flexShrink: 0 }}>
-              <i className="fas fa-star" style={{ color: '#f59e0b', fontSize: '13px' }}></i> 
+              ★
               <span style={{ color: '#78350f', fontWeight: '700', fontSize: '13px' }}>
                 {liveAvgRating.toFixed(1)}
               </span>
@@ -371,7 +434,6 @@ export default function MenuDetailPopup({ product, onClose }: any) {
                 width: '100%', padding: '15px', backgroundColor: isSubmitting ? '#a7f3d0' : '#10b981', color: '#ffffff', border: 'none', borderRadius: '14px', fontWeight: '700', fontSize: '15px', cursor: isSubmitting ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 10px 15px -3px rgba(16,185,129,0.25)' 
               }}
             >
-              <i className="fas fa-shopping-cart"></i> 
               {isSubmitting ? 'Memproses...' : `Tambah Ke Keranjang (Rp ${(Math.trunc(Number(product.price || 0)) * qty).toLocaleString('id-ID')})`}
             </button>
           )}
