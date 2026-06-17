@@ -7,7 +7,8 @@ export default function Marquee() {
   useEffect(() => {
     async function fetchProducts() {
       try {
-        const response = await fetch('http://${process.env.NEXT_PUBLIC_API_URL}/api/products');
+        // 🔥 FIX: Pakai petik tunggal biasa tapi alamatnya langsung IP mentah backend lu bray! Gak pake env hantu lagi!
+        const response = await fetch('http://127.0.0.1:5000/api/products');
         const json = await response.json();
         
         // Sesuai dengan struktur JSON lu: json.data.products

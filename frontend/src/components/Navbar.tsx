@@ -55,7 +55,7 @@ export default function Navbar({
 
     setLoadingCart(true);
     try {
-      const res = await fetch('http://${process.env.NEXT_PUBLIC_API_URL}/api/cart', {
+      const res = await fetch('http://127.0.0.1:5000/api/cart', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -101,7 +101,7 @@ useEffect(() => {
   const handleDeleteItem = async (cartId: number) => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`http://${process.env.NEXT_PUBLIC_API_URL}/api/cart/${cartId}`, {
+      const res = await fetch(`http://127.0.0.1:5000/api/cart/${cartId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -140,7 +140,7 @@ useEffect(() => {
         price: item.price
       }));
 
-      const res = await fetch('http://${process.env.NEXT_PUBLIC_API_URL}/api/orders', {
+      const res = await fetch('http://127.0.0.1:5000/api/orders', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -382,7 +382,7 @@ useEffect(() => {
                     }}
                   >
                     <img 
-                      src={item.image ? `http://${process.env.NEXT_PUBLIC_API_URL}/uploads/products/${item.image}` : '/img/default.jpg'} 
+                      src={item.image ? `http://127.0.0.1:5000/uploads/products/${item.image}` : '/img/default.jpg'} 
                       alt={item.name}
                       style={{ width: '60px', height: '60px', borderRadius: '12px', objectFit: 'cover', backgroundColor: '#e2e8f0' }}
                       onError={(e) => { (e.target as HTMLImageElement).src = '/img/default.jpg'; }}

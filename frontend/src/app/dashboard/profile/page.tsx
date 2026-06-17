@@ -40,7 +40,7 @@ export default function ProfilePage() {
         const token = localStorage.getItem('token');
         if (!token) return;
 
-        const res = await fetch('http://${process.env.NEXT_PUBLIC_API_URL}/api/auth/me', {
+        const res = await fetch('http://127.0.0.1:5000/api/auth/me', {
           method: 'GET',
           headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -100,7 +100,7 @@ export default function ProfilePage() {
         data.append('ktm', selectedFile); 
       }
 
-      const res = await fetch('http://${process.env.NEXT_PUBLIC_API_URL}/api/auth/update-profile', {
+      const res = await fetch('http://127.0.0.1:5000/api/auth/update-profile', {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -153,7 +153,7 @@ export default function ProfilePage() {
     if (formData.profile_picture.startsWith('http')) return formData.profile_picture;
     
     // 4. Diarahkan ke subfolder /uploads/ktm/ sesuai backend lu abangkuh!
-    return `http://${process.env.NEXT_PUBLIC_API_URL}/uploads/ktm/${formData.profile_picture}`;
+    return `http://127.0.0.1:5000/uploads/ktm/${formData.profile_picture}`;
   };
 
   return (

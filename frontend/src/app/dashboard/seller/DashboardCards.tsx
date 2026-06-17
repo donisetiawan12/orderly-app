@@ -94,7 +94,7 @@ export default function DashboardCards() {
         const token = localStorage.getItem('token');
         if (!token) return;
 
-        const res = await fetch('http://${process.env.NEXT_PUBLIC_API_URL}/api/orders/stats', {
+        const res = await fetch('http://127.0.0.1:5000/api/orders/stats', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

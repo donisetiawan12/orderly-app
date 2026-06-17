@@ -6,14 +6,15 @@ export default function Menu({ searchTerm, activeFilter, setActiveFilter, onOpen
   const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAll, setShowAll] = useState(false);
+// 🚀 BIKIN FUNGSI FETCH TERPISAH BIAR BISA DIPANGGIL KAPAN SAJA
 
-  // 🚀 BIKIN FUNGSI FETCH TERPISAH BIAR BISA DIPANGGIL KAPAN SAJA
   const fetchFreshData = async () => {
     try {
+      // 🔥 FIX ABIS: Semua diubah pakai petik tunggal biasa tapi langsung tembak IP mentah backend lu bray!
       const [resP1, resP2, resCat] = await Promise.all([
-        fetch('http://${process.env.NEXT_PUBLIC_API_URL}/api/products?page=1'),
-        fetch('http://${process.env.NEXT_PUBLIC_API_URL}/api/products?page=2'),
-        fetch('http://${process.env.NEXT_PUBLIC_API_URL}/api/categories')
+        fetch('http://127.0.0.1:5000/api/products?page=1'),
+        fetch('http://127.0.0.1:5000/api/products?page=2'),
+        fetch('http://127.0.0.1:5000/api/categories')
       ]);
       
       const jsonP1 = await resP1.json();
@@ -123,7 +124,7 @@ export default function Menu({ searchTerm, activeFilter, setActiveFilter, onOpen
                 <div className="mcard" onClick={() => onOpenDetail(item)} style={{ cursor: 'pointer', border: '1px solid #eee', borderRadius: '10px', overflow: 'hidden' }}>
                   <div className="mimg" style={{ position: 'relative' }}>
                     <img 
-                      src={item.image ? `http://${process.env.NEXT_PUBLIC_API_URL}/uploads/products/${item.image}` : '/img/default.jpg'} 
+                      src={item.image ? `http://127.0.0.1:5000/uploads/products/${item.image}` : '/img/default.jpg'} 
                       alt={item.name} 
                       style={{ width: '100%', height: '200px', objectFit: 'cover' }}
                       onError={(e) => { (e.target as HTMLImageElement).src = '/img/default.jpg'; }}

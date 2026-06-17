@@ -7,7 +7,8 @@ export default function Categories({ activeFilter, setActiveFilter }: any) {
   useEffect(() => {
     async function fetchCategories() {
       try {
-        const response = await fetch('http://${process.env.NEXT_PUBLIC_API_URL}/api/categories');
+        // 🔥 FIX 1: Tembak langsung pakai IP mentah backend lu bray!
+        const response = await fetch('http://127.0.0.1:5000/api/categories');
         const json = await response.json();
         if (json && json.data) {
           const allOption = { id: 'all', name: 'All Items', image: null };
@@ -39,11 +40,10 @@ export default function Categories({ activeFilter, setActiveFilter }: any) {
             if (cat.id === 'all') {
               imageUrl = '/img/all-icon.jpg';
             } else if (cat.image) {
-              // Jika di DB string-nya sudah mengandung 'http', pakai langsung. 
-              // Jika tidak, gabungkan dengan URL upload backend.
+              // 🔥 FIX 2: Link image upload juga langsung diarahkan ke IP mentah backend bray!
               imageUrl = cat.image.startsWith('http') 
                 ? cat.image 
-                : `http://${process.env.NEXT_PUBLIC_API_URL}/uploads/categories/${cat.image}`;
+                : `http://127.0.0.1:5000/uploads/categories/${cat.image}`;
             }
 
             return (
