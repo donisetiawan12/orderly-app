@@ -619,11 +619,23 @@ export default function Hero({
       <section id="hero">
         <div className="container">
           <div className="row align-items-center g-5" style={{ minHeight: '88vh' }}>
-            <div className="col-lg-6">
-              <div className="hbadge"><span style={{marginLeft: '6px'}}>#1 Marketplace Mahasiswa</span></div>
-              <h1 className="htitle">Pesan produk anti drama, <span className="hl">Orderly</span><br />Bikin Rapih Bersama.</h1>
-              <p className="hdesc">Orderly hadir untuk membantu mahasiswa menjual and membeli berbagai produk dengan lebih terorganisir.</p>
+           <div className="col-lg-6">
+              <div className="hbadge">
+                     <div className="hbi"><i className="fas fa-star"></i></div>
+                     <span>#1 Marketplace Kampus</span>
+                  </div>
+              
+              <h1 className="htitle">
+                Pesan produk anti drama, <span className="hl">Orderly</span><br />
+                Bikin Rapih Bersama.
+              </h1>
+              
+              {/* 🔥 TEKS DESKRIPSI SUDAH LENGKAP KAP KAP SESUAI SCREENSHOT LU */}
+              <p className="hdesc">
+                Orderly hadir untuk membantu mahasiswa menjual dan membeli berbagai produk dengan lebih terorganisir, transparan, dan mudah diakses melalui satu platform marketplace kampus.
+              </p>
 
+              {/* Area Dua Tombol Utama */}
               <div className="d-flex flex-wrap gap-3 mb-2">
                 <button type="button" onClick={() => onSearchOpen()} className="btn-red" style={{ zIndex: 10, position: 'relative' }}>
                   <i className="fas fa-search me-2"></i> Cari Produk
@@ -673,15 +685,76 @@ export default function Hero({
                     {user.role === 'admin' && <a href="/dashboard/admin" className="btn-play"><div className="pico"><i className="fas fa-user-shield"></i></div><span>Dashboard Admin</span></a>}
                   </>
                 ) : (
-                  <button type="button" onClick={onLoginOpen} className="btn-play" style={{ cursor: 'pointer', border: 'none' }}><div className="pico"><i className="fas fa-user-plus"></i></div><span>Daftar Sekarang</span></button>
+                  <button type="button" onClick={onLoginOpen} className="btn-play" style={{ cursor: 'pointer', border: 'none' }}>
+                    <div className="pico"><i className="fas fa-user-plus"></i></div>
+                    <span>Daftar Sekarang</span>
+                  </button>
                 )}
               </div>
+
+              {/* 🚀 STATISTIK HERO BAWAH */}
+              <div className="hstats d-flex gap-3 flex-wrap mt-4">
+                <div className="hstat">
+                  <span className="snum">PO<em>+</em></span>
+                  <small>TRANSAKSI AMAN</small>
+                </div>
+                <div className="sdiv"></div>
+                <div className="hstat">
+                  <span className="snum">100%</span>
+                  <small>TRANSPARAN</small>
+                </div>
+                <div className="sdiv"></div>
+                <div className="hstat">
+                  <span className="snum">MUDAH</span>
+                  <small>SISTEM TERUKUR</small>
+                </div>
+              </div>
+
             </div>
 
             <div className="col-lg-6">
               <div style={{ position: 'relative', textAlign: 'center' }}>
-                <div className="hcircle"><img src="/img/hero.jpeg" alt="Orderly" className="img-fluid" /></div>
+                
+                {/* Lingkaran Foto Mbak Hijab */}
+                <div className="hcircle">
+                  <img src="/img/hero.jpeg" alt="Orderly" className="img-fluid" />
+                </div>
+
+                {/* ⏳ CARD 1: DEADLINE (KIRI) */}
+                <div className="fcard fc1">
+                  <div className="fcoi r">
+                    <i className="fas fa-clock"></i>
+                  </div>
+                  <div>
+                    <span className="fcnum">Deadline</span>
+                    <span className="fcsm">PO Terjadwal</span>
+                  </div>
+                </div>
+
+                {/* 🛵 CARD 2: TRACKING (KANAN ATAS) */}
+                <div className="fcard fc2">
+                  <div className="fcoi g">
+                    <i className="fas fa-route"></i>
+                  </div>
+                  <div>
+                    <span className="fcnum">Tracking</span>
+                    <span className="fcsm">Status Pesanan</span>
+                  </div>
+                </div>
+
+                {/* ✅ CARD 3: VERIFIKASI (KANAN BAWAH) */}
+                <div className="fcard fc3">
+                  <div className="fcoi y">
+                    <i className="fas fa-shield-alt"></i>
+                  </div>
+                  <div>
+                    <span className="fcnum">Verifikasi</span>
+                    <span className="fcsm">Pembayaran Aman</span>
+                  </div>
+                </div>
+
               </div>
+              
             </div>
           </div>
         </div>
