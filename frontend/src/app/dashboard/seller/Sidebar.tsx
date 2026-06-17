@@ -17,7 +17,7 @@ export default function Sidebar() {
         const token = localStorage.getItem('token');
         if (!token) return;
 
-        const res = await fetch('http://localhost:5000/api/orders/stats', {
+        const res = await fetch('http://${process.env.NEXT_PUBLIC_API_URL}/api/orders/stats', {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`

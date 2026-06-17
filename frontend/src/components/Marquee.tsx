@@ -7,7 +7,7 @@ export default function Marquee() {
   useEffect(() => {
     async function fetchProducts() {
       try {
-        const response = await fetch('http://localhost:5000/api/products');
+        const response = await fetch('http://${process.env.NEXT_PUBLIC_API_URL}/api/products');
         const json = await response.json();
         
         // Sesuai dengan struktur JSON lu: json.data.products

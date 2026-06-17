@@ -39,7 +39,7 @@ export default function PesananPage() {
       const token = localStorage.getItem('token');
       if (!token) return;
 
-      const res = await fetch('http://localhost:5000/api/orders/stats', {
+      const res = await fetch('http://${process.env.NEXT_PUBLIC_API_URL}/api/orders/stats', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -119,7 +119,7 @@ const handleUpdateStatus = async (orderId: number, nextStatus: string, buyerName
           if (!token) return;
 
           // 🔒 BACKEND SAFETY: Endpoint URL wajib tetep pake orderId biar database ga pusing nyari data!
-          const res = await fetch(`http://localhost:5000/api/orders/${orderId}/status`, {
+          const res = await fetch(`http://${process.env.NEXT_PUBLIC_API_URL}/api/orders/${orderId}/status`, {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
@@ -357,7 +357,7 @@ const handleUpdateStatus = async (orderId: number, nextStatus: string, buyerName
                                 </td>
                                 <td className="py-4 align-middle text-sm text-center">
                                   {order.payment_proof ? (
-                                    <button type="button" onClick={() => setActiveProof(`http://localhost:5000/uploads/payments/${order.payment_proof}`)} style={{ display: 'inline-block', border: 'none', backgroundColor: '#eff6ff', color: '#3b82f6', fontWeight: 'bold', fontSize: '11px', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer' }}>
+                                    <button type="button" onClick={() => setActiveProof(`http://${process.env.NEXT_PUBLIC_API_URL}/uploads/payments/${order.payment_proof}`)} style={{ display: 'inline-block', border: 'none', backgroundColor: '#eff6ff', color: '#3b82f6', fontWeight: 'bold', fontSize: '11px', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer' }}>
                                       Lihat Foto 👁️
                                     </button>
                                   ) : (

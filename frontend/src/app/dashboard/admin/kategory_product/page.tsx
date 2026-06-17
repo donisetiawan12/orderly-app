@@ -56,7 +56,7 @@ export default function KategoriProductPage() {
   const fetchCategories = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/categories', {
+      const res = await fetch('http://${process.env.NEXT_PUBLIC_API_URL}/api/categories', {
         method: 'GET',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -75,7 +75,7 @@ export default function KategoriProductPage() {
       const token = localStorage.getItem('token');
       
       // Ambil data pendaftaran seller (sesuaikan endpoint dengan backend lu ya bray)
-      const resSeller = await fetch('http://localhost:5000/api/sellers', {
+      const resSeller = await fetch('http://${process.env.NEXT_PUBLIC_API_URL}/api/sellers', {
         method: 'GET',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -85,7 +85,7 @@ export default function KategoriProductPage() {
       }
 
       // Opsional: Jika ada endpoint khusus hitung total buyer/user terdaftar
-      const resBuyer = await fetch('http://localhost:5000/api/users/count-buyers', {
+      const resBuyer = await fetch('http://${process.env.NEXT_PUBLIC_API_URL}/api/users/count-buyers', {
         method: 'GET',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -171,7 +171,7 @@ export default function KategoriProductPage() {
             formData.append('image', result.value.imageFile); 
           }
 
-          const res = await fetch('http://localhost:5000/api/categories', {
+          const res = await fetch('http://${process.env.NEXT_PUBLIC_API_URL}/api/categories', {
             method: 'POST',
             headers: { 
               'Authorization': `Bearer ${token}`
@@ -307,7 +307,7 @@ export default function KategoriProductPage() {
             formData.append('image', result.value.imageFile);
           }
 
-          const res = await fetch(`http://localhost:5000/api/categories/${category.id}`, {
+          const res = await fetch(`http://${process.env.NEXT_PUBLIC_API_URL}/api/categories/${category.id}`, {
             method: 'PUT',
             headers: { 'Authorization': `Bearer ${token}` },
             body: formData
@@ -396,7 +396,7 @@ export default function KategoriProductPage() {
         setActionLoading(id);
         try {
           const token = localStorage.getItem('token');
-          const res = await fetch(`http://localhost:5000/api/categories/${id}`, {
+          const res = await fetch(`http://${process.env.NEXT_PUBLIC_API_URL}/api/categories/${id}`, {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${token}` }
           });
@@ -681,7 +681,7 @@ export default function KategoriProductPage() {
                                   onClick={() => {
                                     Swal.fire({
                                       title: `<span style="color: #1e293b; font-weight: bold;">Cover - ${category.name}</span>`,
-                                      imageUrl: `http://localhost:5000/uploads/categories/${category.image}`,
+                                      imageUrl: `http://${process.env.NEXT_PUBLIC_API_URL}/uploads/categories/${category.image}`,
                                       imageAlt: 'Foto Kategori Produk',
                                       imageWidth: 400, 
                                       confirmButtonColor: '#3b82f6',
@@ -695,14 +695,14 @@ export default function KategoriProductPage() {
                                   style={{ opacity: 1, filter: 'none', display: 'inline-block' }}
                                 >
                                   <img 
-                                    src={`http://localhost:5000/uploads/categories/${category.image}`} 
+                                    src={`http://${process.env.NEXT_PUBLIC_API_URL}/uploads/categories/${category.image}`} 
                                     alt="Kategori" 
                                     className="w-16 h-10 object-cover rounded border border-gray-200 shadow-md" 
                                     style={{ opacity: '1 !important', filter: 'none' }} 
                                     onError={(e) => {
                                       const target = e.target as HTMLImageElement;
                                       if (!target.src.includes('/uploads/categories/')) return;
-                                      target.src = `http://localhost:5000${category.image}`;
+                                      target.src = `http://${process.env.NEXT_PUBLIC_API_URL}${category.image}`;
                                     }}
                                   />
                                 </div>

@@ -62,7 +62,7 @@ export default function AdminDashboard() {
   const fetchSummaryData = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/auth/admin/pending-sellers', {
+      const res = await fetch('http://${process.env.NEXT_PUBLIC_API_URL}/api/auth/admin/pending-sellers', {
         method: 'GET',
         headers: { 'Authorization': `Bearer ${token}` }
       });

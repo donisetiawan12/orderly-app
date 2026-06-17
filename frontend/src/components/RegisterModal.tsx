@@ -43,7 +43,7 @@ export default function RegisterModal({
         formData.append('ktm', ktm);
       }
 
-      const response = await fetch('http://localhost:5000/api/auth/register', {
+      const response = await fetch('http://${process.env.NEXT_PUBLIC_API_URL}/api/auth/register', {
         method: 'POST',
         body: formData, // Mengirim data multipart/form-data
       });

@@ -103,7 +103,7 @@ npm run dev
 Buka browser:
 
 ```
-http://localhost:5000
+http://${process.env.NEXT_PUBLIC_API_URL}
 ```
 
 ---

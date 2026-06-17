@@ -11,8 +11,8 @@ export default function SearchOverlay({ isOpen, onClose, searchTerm, setSearchTe
       if (!isOpen) return;
       try {
         const [res1, res2] = await Promise.all([
-          fetch('http://localhost:5000/api/products?page=1'),
-          fetch('http://localhost:5000/api/products?page=2')
+          fetch('http://${process.env.NEXT_PUBLIC_API_URL}/api/products?page=1'),
+          fetch('http://${process.env.NEXT_PUBLIC_API_URL}/api/products?page=2')
         ]);
         const json1 = await res1.json();
         const json2 = await res2.json();
@@ -73,7 +73,7 @@ export default function SearchOverlay({ isOpen, onClose, searchTerm, setSearchTe
             <div className="sovcat" key={item.id} onClick={() => handleSelectProduct(item)} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
               <img 
                 // PERBAIKAN: Menambahkan /uploads/products/ agar sesuai dengan struktur backend
-                src={item.image ? `http://localhost:5000/uploads/products/${item.image}` : '/img/default.jpg'} 
+                src={item.image ? `http://${process.env.NEXT_PUBLIC_API_URL}/uploads/products/${item.image}` : '/img/default.jpg'} 
                 alt={item.name} 
                 style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '5px', marginRight: '15px' }}
                 onError={(e: any) => { e.target.src = '/img/default.jpg'; }}
