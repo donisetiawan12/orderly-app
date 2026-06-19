@@ -484,9 +484,9 @@ export default function ProductManagement() {
          
 
     {/* TABEL DATA PRODUK */}
-<div className="w-full bg-white dark:bg-slate-850 rounded-2xl shadow-xl p-4 border-0 block overflow-hidden">
-  <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
-    <h6 className="mb-4 dark:text-white font-bold text-base text-slate-800">📦 Manajemen Katalog Produk</h6>
+<div className="relative flex flex-col min-w-0 mb-6 break-words bg-white border-0 border-transparent border-solid shadow-xl dark:bg-slate-850 dark:shadow-dark-xl rounded-2xl bg-clip-border overflow-hidden">
+  <div className="p-6 pb-0 mb-0 border-b-0 border-b-solid rounded-t-2xl border-b-transparent flex justify-between items-center flex-wrap gap-4">
+    <h6 className="mb-0 dark:text-white font-bold text-slate-800">📦 Manajemen Katalog Produk</h6>
     <button 
       onClick={openAddModal}
       style={{ backgroundColor: '#10b981', color: '#ffffff', fontWeight: 'bold', fontSize: '13px', padding: '10px 18px', borderRadius: '8px', border: 'none', cursor: 'pointer', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}
@@ -495,245 +495,234 @@ export default function ProductManagement() {
     </button>
   </div>
   
-  <div className="overflow-x-auto w-full">
-    <table className="items-center w-full mb-0 align-top border-collapse">
-      <thead>
-        <tr className="text-slate-400 text-xs uppercase text-left border-b border-gray-100">
-          <th className="py-3 font-bold text-center" style={{ width: '50px', textAlign: 'center' }}>No</th>
-          <th className="py-3 font-bold" style={{ minWidth: '80px' }}>Foto</th>
-          <th className="py-3 font-bold">Nama Produk</th>
-          <th className="py-3 font-bold text-center">Harga Jual</th>
-          <th className="py-3 font-bold text-center">Stok / Qty Ready</th>
-          <th className="py-3 font-bold text-center">Kuota Sisa PO</th>
-          <th className="py-3 font-bold text-center">Batas Waktu PO</th>
-          {/* Header Alamat */}
-          <th className="py-3 font-bold text-center" style={{ minWidth: '120px', textAlign: 'center' }}>Alamat / Stand</th>
-          <th className="py-3 font-bold">Deskripsi</th>
-          <th className="py-3 font-bold text-center">Aksi Manajemen</th>
-        </tr>
-      </thead>
-      <tbody>
-        {products.length > 0 ? (
-          /* 🚀 LOGIKA DINAMIS PAGINATION: Memotong data otomatis per 5 baris sesuai halaman aktif */
-          products
-            .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-            .map((product, index) => {
-              let deadlineDisplay = "Tanpa Batas";
-              if (product.po_deadline) {
-                const dateObj = new Date(product.po_deadline);
-                deadlineDisplay = dateObj.toLocaleString('id-ID', {
-                  day: '2-digit',
-                  month: 'short',
-                  year: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit'
-                });
-              }
+  <div className="flex-auto px-0 pt-0 pb-2">
+    <div className="p-0 overflow-x-auto w-full">
+      <table className="items-center w-full mb-0 align-top border-collapse dark:border-white/40 text-slate-500">
+        <thead className="align-bottom">
+          <tr className="border-b border-collapse border-solid dark:border-white/40">
+            <th className="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent shadow-none dark:text-white text-xxs tracking-none whitespace-nowrap text-slate-400 opacity-70" style={{ width: '50px', textAlign: 'center' }}>No</th>
+            <th className="px-6 py-3 pl-2 font-bold text-left uppercase align-middle bg-transparent shadow-none dark:text-white text-xxs tracking-none whitespace-nowrap text-slate-400 opacity-70" style={{ minWidth: '80px' }}>Foto</th>
+            <th className="px-6 py-3 font-bold text-left uppercase align-middle bg-transparent shadow-none dark:text-white text-xxs tracking-none whitespace-nowrap text-slate-400 opacity-70">Nama Produk</th>
+            <th className="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent shadow-none dark:text-white text-xxs tracking-none whitespace-nowrap text-slate-400 opacity-70">Harga Jual</th>
+            <th className="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent shadow-none dark:text-white text-xxs tracking-none whitespace-nowrap text-slate-400 opacity-70">Stok / Qty Ready</th>
+            <th className="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent shadow-none dark:text-white text-xxs tracking-none whitespace-nowrap text-slate-400 opacity-70">Kuota Sisa PO</th>
+            <th className="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent shadow-none dark:text-white text-xxs tracking-none whitespace-nowrap text-slate-400 opacity-70">Batas Waktu PO</th>
+            <th className="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent shadow-none dark:text-white text-xxs tracking-none whitespace-nowrap text-slate-400 opacity-70" style={{ minWidth: '120px', textAlign: 'center' }}>Alamat / Stand</th>
+            <th className="px-6 py-3 font-bold text-left uppercase align-middle bg-transparent shadow-none dark:text-white text-xxs tracking-none whitespace-nowrap text-slate-400 opacity-70">Deskripsi</th>
+            <th className="px-6 py-3 font-bold text-center uppercase align-middle bg-transparent shadow-none dark:text-white text-xxs tracking-none whitespace-nowrap text-slate-400 opacity-70">Aksi Manajemen</th>
+          </tr>
+        </thead>
+        <tbody>
+          {products.length > 0 ? (
+            products
+              .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+              .map((product, index) => {
+                let deadlineDisplay = "Tanpa Batas";
+                if (product.po_deadline) {
+                  const dateObj = new Date(product.po_deadline);
+                  deadlineDisplay = dateObj.toLocaleString('id-ID', {
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  });
+                }
 
-              // 🚀 FIX CRITICAL: Amankan data string lokasi dari nilai NULL database dan spasi gaib
-              const safeLocation = (product.location || 'Kampus A').trim();
+                const safeLocation = (product.location || 'Kampus A').trim();
 
-              return (
-                <tr key={product.id} className="border-b border-gray-50 last:border-none hover:bg-slate-50">
-                  <td className="py-4 align-middle text-sm text-center font-medium text-slate-500" style={{ textAlign: 'center' }}>
-                    {(currentPage - 1) * itemsPerPage + index + 1} {/* Nomor urut dinamis antar halaman */}
-                  </td>
-                  <td className="py-4 align-middle">
-                    <div style={{ width: '50px', height: '50px', borderRadius: '8px', overflow: 'hidden', backgroundColor: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #e2e8f0' }}>
-                      <img 
-                        src={product.image ? `http://127.0.0.1:5000/uploads/products/${product.image}` : 'https://placehold.co/100?text=No+Img'} 
-                        alt={product.name}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                        onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/100?text=No+Img'; }}
-                      />
-                    </div>
-                  </td>
-                  <td className="py-4 align-middle text-sm font-bold text-slate-800">
-                    {product.name}
-                  </td>
-                  
-                  <td className="py-4 align-middle text-sm text-center font-semibold text-slate-700" style={{ textAlign: 'center' }}>
-                    Rp. {Math.trunc(Number(product.price || 0)).toLocaleString('id-ID')}
-                  </td>
-                  
-                  <td className="py-4 align-middle text-center" style={{ textAlign: 'center' }}>
-                    <span style={{ 
-                      backgroundColor: product.quantity > 5 ? '#ecfdf5' : '#fef2f2', 
-                      color: product.quantity > 5 ? '#065f46' : '#991b1b', 
-                      padding: '6px 12px', 
-                      borderRadius: '20px', 
-                      fontWeight: 'bold', 
-                      fontSize: '11px', 
-                      display: 'inline-block' 
-                    }}>
-                      {product.quantity} Pcs
-                    </span>
-                  </td>
-
-                  <td className="py-4 align-middle text-center text-sm font-bold text-blue-600" style={{ textAlign: 'center', minWidth: '140px' }}>
-                    {product.po_quota > 0 ? (
-                      <div className="whitespace-nowrap">
-                        <span className="text-slate-800">
-                          {product.po_quota - (product.sold_quantity || 0)} Pcs <span className="text-xs font-normal text-slate-400">sisa </span>
-                        </span>
-                        <span className="text-[10px] text-slate-400 font-normal">
-                          dari {product.po_quota} Pcs
-                        </span>
+                return (
+                  <tr key={product.id}>
+                    <td className="p-2 align-middle bg-transparent border-b dark:border-white/40 text-sm text-center font-medium shadow-transparent" style={{ textAlign: 'center' }}>
+                      {(currentPage - 1) * itemsPerPage + index + 1}
+                    </td>
+                    <td className="p-2 align-middle bg-transparent border-b dark:border-white/40 shadow-transparent">
+                      <div style={{ width: '50px', height: '50px', borderRadius: '8px', overflow: 'hidden', backgroundColor: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #e2e8f0' }}>
+                        <img 
+                          src={product.image ? `http://127.0.0.1:5000/uploads/products/${product.image}` : 'https://placehold.co/100?text=No+Img'} 
+                          alt={product.name}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/100?text=No+Img'; }}
+                        />
                       </div>
-                    ) : (
-                      <span className="text-slate-400 font-normal">-</span>
-                    )}
-                  </td>
-
-                  <td className="py-4 align-middle text-center text-xs font-medium text-slate-600" style={{ textAlign: 'center' }}>
-                    {product.po_deadline ? (
-                      <span className="bg-amber-50 text-amber-700 px-2.5 py-1 rounded-md border border-amber-200 inline-block font-semibold">
-                        ⏳ {deadlineDisplay}
+                    </td>
+                    <td className="p-2 align-middle bg-transparent border-b dark:border-white/40 text-sm font-bold text-slate-800 shadow-transparent">
+                      {product.name}
+                    </td>
+                    
+                    <td className="p-2 align-middle bg-transparent border-b dark:border-white/40 text-sm text-center font-semibold text-slate-700 shadow-transparent" style={{ textAlign: 'center' }}>
+                      Rp. {Math.trunc(Number(product.price || 0)).toLocaleString('id-ID')}
+                    </td>
+                    
+                    <td className="p-2 align-middle bg-transparent border-b dark:border-white/40 text-center shadow-transparent" style={{ textAlign: 'center' }}>
+                      <span style={{ 
+                        backgroundColor: product.quantity > 5 ? '#ecfdf5' : '#fef2f2', 
+                        color: product.quantity > 5 ? '#065f46' : '#991b1b', 
+                        padding: '6px 12px', 
+                        borderRadius: '20px', 
+                        fontWeight: 'bold', 
+                        fontSize: '11px', 
+                        display: 'inline-block' 
+                      }}>
+                        {product.quantity} Pcs
                       </span>
-                    ) : (
-                      <span className="text-slate-400">-</span>
-                    )}
-                  </td>
+                    </td>
 
-                  {/* 🚀 TD ALAMAT: WARNA BARU KHUSUS ALAMAT BEBAS/CUSTOM BIAR TETEP NYALA */}
-                      <td className="py-4 align-middle text-center" style={{ textAlign: 'center' }}>
-                        {(() => {
-                          // Bersihkan text dan pastikan aman dari nilai null
-                          const currentLoc = product.location ? String(product.location).trim() : 'Kampus A';
-                          
-                          // Tentukan jenis lokasi berdasarkan kata kunci
-                          const isKampusB = currentLoc.toLowerCase().includes('kampus b');
-                          const isKampusA = currentLoc.toLowerCase().includes('kampus a');
+                    <td className="p-2 align-middle bg-transparent border-b dark:border-white/40 text-center text-sm font-bold text-blue-600 shadow-transparent" style={{ textAlign: 'center', minWidth: '140px' }}>
+                      {product.po_quota > 0 ? (
+                        <div className="whitespace-nowrap">
+                          <span className="text-slate-800">
+                            {product.po_quota - (product.sold_quantity || 0)} Pcs <span className="text-xs font-normal text-slate-400">sisa </span>
+                          </span>
+                          <span className="text-[10px] text-slate-400 font-normal">
+                            dari {product.po_quota} Pcs
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-slate-400 font-normal">-</span>
+                      )}
+                    </td>
 
-                          // 🎨 RACIKAN WARNA BARU:
-                          // Jika Kampus B = Biru
-                          // Jika Kampus A = Hijau
-                          // Jika Alamat Custom/Luar Kampus (Jl. Kesadaran, dll) = Oranye/Amber hangat biar gak pudar!
-                          const bgColor = isKampusB ? '#eff6ff' : isKampusA ? '#f0fdf4' : '#fffbeb';
-                          const textColor = isKampusB ? '#1d4ed8' : isKampusA ? '#166534' : '#b45309';
-                          const borderColor = isKampusB ? '#bfdbfe' : isKampusA ? '#bbf7d0' : '#fde68a';
+                    <td className="p-2 align-middle bg-transparent border-b dark:border-white/40 text-center text-xs font-medium text-slate-600 shadow-transparent" style={{ textAlign: 'center' }}>
+                      {product.po_deadline ? (
+                        <span className="bg-amber-50 text-amber-700 px-2.5 py-1 rounded-md border border-amber-200 inline-block font-semibold">
+                          ⏳ {deadlineDisplay}
+                        </span>
+                      ) : (
+                        <span className="text-slate-400">-</span>
+                      )}
+                    </td>
 
-                          return (
-                            <span style={{ 
-                              backgroundColor: bgColor,
-                              color: textColor,
-                              borderColor: borderColor,
-                              padding: '6px 12px', 
-                              borderRadius: '6px', 
-                              fontWeight: 'bold', 
-                              fontSize: '12px',
-                              border: '1px solid',
-                              display: 'inline-block',
-                              minWidth: '100px',
-                              whiteSpace: 'normal', 
-                              wordBreak: 'break-word',
-                              maxWidth: '180px'
-                            }}>
-                              📍 {currentLoc}
-                            </span>
-                          );
-                        })()}
-                      </td>
+                    <td className="p-2 align-middle bg-transparent border-b dark:border-white/40 text-center shadow-transparent" style={{ textAlign: 'center' }}>
+                      {(() => {
+                        const currentLoc = product.location ? String(product.location).trim() : 'Campus A';
+                        const isKampusB = currentLoc.toLowerCase().includes('kampus b');
+                        const isKampusA = currentLoc.toLowerCase().includes('kampus a');
 
-                  {/* 🚀 TD DESKRIPSI: FIX TEKS PANJANG OTOMATIS TURUN KE BAWAH */}
-                    <td className="py-4 align-middle text-sm text-slate-500">
+                        const bgColor = isKampusB ? '#eff6ff' : isKampusA ? '#f0fdf4' : '#fffbeb';
+                        const textColor = isKampusB ? '#1d4ed8' : isKampusA ? '#166534' : '#b45309';
+                        const borderColor = isKampusB ? '#bfdbfe' : isKampusA ? '#bbf7d0' : '#fde68a';
+
+                        return (
+                          <span style={{ 
+                            backgroundColor: bgColor,
+                            color: textColor,
+                            borderColor: borderColor,
+                            padding: '6px 12px', 
+                            borderRadius: '6px', 
+                            fontWeight: 'bold', 
+                            fontSize: '12px',
+                            border: '1px solid',
+                            display: 'inline-block',
+                            minWidth: '100px',
+                            whiteSpace: 'normal', 
+                            wordBreak: 'break-word',
+                            maxWidth: '180px'
+                          }}>
+                            📍 {currentLoc}
+                          </span>
+                        );
+                      })()}
+                    </td>
+
+                    <td className="p-2 align-middle bg-transparent border-b dark:border-white/40 text-sm text-slate-500 shadow-transparent">
                       <div style={{ 
                         whiteSpace: 'normal', 
-                        wordBreak: 'break-word', // Memotong kata di spasi yang normal
+                        wordBreak: 'break-word', 
                         overflowWrap: 'break-word',
-                        // Khusus buat teks dempet panjang tanpa spasi seperti 'sasasasaaaaa...', paksa patah pakai baris bawah ini:
                         overflow: 'hidden',
                         display: '-webkit-box',
-                        WebkitLineClamp: 3, // 🔒 MAKSIMAL TAMPIL 3 BARIS: Biar kalau deskripsinya se-novel gak ngerusak tinggi tabel
+                        WebkitLineClamp: 3, 
                         WebkitBoxOrient: 'vertical',
-                        maxWidth: '220px' // Batas lebar maksimal kolom deskripsi
+                        maxWidth: '220px' 
                       }}>
                         {product.description || <span className="italic text-slate-300">Tidak ada deskripsi</span>}
                       </div>
                     </td>
-                  <td className="py-4 align-middle text-center" style={{ textAlign: 'center' }}>
-                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-                      <button 
-                        onClick={() => openEditModal(product)}
-                        style={{ backgroundColor: '#f59e0b', color: '#ffffff', fontSize: '12px', fontWeight: 'bold', padding: '6px 14px', borderRadius: '6px', border: 'none', cursor: 'pointer' }}
-                      >
-                        ✏️ Edit
-                      </button>
-                      <button 
-                        onClick={() => handleDelete(product.id)}
-                        style={{ backgroundColor: '#ef4444', color: '#ffffff', fontSize: '12px', fontWeight: 'bold', padding: '6px 14px', borderRadius: '6px', border: 'none', cursor: 'pointer' }}
-                      >
-                        🗑️ Hapus
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              );
-            })
-        ) : (
-          <tr>
-            <td colSpan={10} className="p-6 text-center text-sm text-slate-400 font-medium">
-              Belum ada katalog produk terdaftar.
-            </td>
-          </tr>
-        )}
-      </tbody>
-    </table>
+                    <td className="p-2 align-middle bg-transparent border-b dark:border-white/40 text-center shadow-transparent" style={{ textAlign: 'center' }}>
+                      <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                        <button 
+                          onClick={() => openEditModal(product)}
+                          style={{ backgroundColor: '#f59e0b', color: '#ffffff', fontSize: '12px', fontWeight: 'bold', padding: '6px 14px', borderRadius: '6px', border: 'none', cursor: 'pointer' }}
+                        >
+                          ✏️ Edit
+                        </button>
+                        <button 
+                          onClick={() => handleDelete(product.id)}
+                          style={{ backgroundColor: '#ef4444', color: '#ffffff', fontSize: '12px', fontWeight: 'bold', padding: '6px 14px', borderRadius: '6px', border: 'none', cursor: 'pointer' }}
+                        >
+                          🗑️ Hapus
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
+          ) : (
+            <tr>
+              <td colSpan={10} className="p-6 text-center text-sm text-slate-400 font-medium bg-transparent border-b dark:border-white/40 shadow-transparent">
+                Belum ada katalog produk terdaftar.
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+
+    {/* PAGINATION SECTION */}
+    {products.length > itemsPerPage && (
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px', borderTop: '1px solid #f1f5f9', paddingTop: '12px', paddingLeft: '24px', paddingRight: '24px' }}>
+        <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '500' }}>
+          Menampilkan {Math.min((currentPage - 1) * itemsPerPage + 1, products.length)} - {Math.min(currentPage * itemsPerPage, products.length)} dari {products.length} Produk
+        </span>
+        
+        <div style={{ display: 'flex', gap: '6px' }}>
+          <button
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage(prev => prev - 1)}
+            style={{
+              padding: '6px 12px', fontSize: '12px', fontWeight: 'bold', borderRadius: '6px', border: '1px solid #e2e8f0',
+              backgroundColor: currentPage === 1 ? '#f8fafc' : '#ffffff',
+              color: currentPage === 1 ? '#cbd5e1' : '#334155',
+              cursor: currentPage === 1 ? 'not-allowed' : 'pointer'
+            }}
+          >
+            ◀ Prev
+          </button>
+          
+          {Array.from({ length: Math.ceil(products.length / itemsPerPage) }).map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrentPage(i + 1)}
+              style={{
+                padding: '6px 12px', fontSize: '12px', fontWeight: 'bold', borderRadius: '6px',
+                border: currentPage === i + 1 ? '1px solid #10b981' : '1px solid #e2e8f0',
+                backgroundColor: currentPage === i + 1 ? '#10b981' : '#ffffff',
+                color: currentPage === i + 1 ? '#ffffff' : '#334155',
+                cursor: 'pointer'
+              }}
+            >
+              {i + 1}
+            </button>
+          ))}
+
+          <button
+            disabled={currentPage === Math.ceil(products.length / itemsPerPage)}
+            onClick={() => setCurrentPage(prev => prev + 1)}
+            style={{
+              padding: '6px 12px', fontSize: '12px', fontWeight: 'bold', borderRadius: '6px', border: '1px solid #e2e8f0',
+              backgroundColor: currentPage === Math.ceil(products.length / itemsPerPage) ? '#f8fafc' : '#ffffff',
+              color: currentPage === Math.ceil(products.length / itemsPerPage) ? '#cbd5e1' : '#334155',
+              cursor: currentPage === Math.ceil(products.length / itemsPerPage) ? 'not-allowed' : 'pointer'
+            }}
+          >
+            Next ▶
+          </button>
+        </div>
+      </div>
+    )}
   </div>
-
-            {/* 🚀 TOMBOL NAVIGASI PAGINATION DI POJOK KANAN BAWAH */}
-            {products.length > itemsPerPage && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px', borderTop: '1px solid #f1f5f9', paddingTop: '12px' }}>
-                <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '500' }}>
-                  Menampilkan {Math.min((currentPage - 1) * itemsPerPage + 1, products.length)} - {Math.min(currentPage * itemsPerPage, products.length)} dari {products.length} Produk
-                </span>
-                
-                <div style={{ display: 'flex', gap: '6px' }}>
-                  <button
-                    disabled={currentPage === 1}
-                    onClick={() => setCurrentPage(prev => prev - 1)}
-                    style={{
-                      padding: '6px 12px', fontSize: '12px', fontWeight: 'bold', borderRadius: '6px', border: '1px solid #e2e8f0',
-                      backgroundColor: currentPage === 1 ? '#f8fafc' : '#ffffff',
-                      color: currentPage === 1 ? '#cbd5e1' : '#334155',
-                      cursor: currentPage === 1 ? 'not-allowed' : 'pointer'
-                    }}
-                  >
-                    ◀ Prev
-                  </button>
-                  
-                  {Array.from({ length: Math.ceil(products.length / itemsPerPage) }).map((_, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setCurrentPage(i + 1)}
-                      style={{
-                        padding: '6px 12px', fontSize: '12px', fontWeight: 'bold', borderRadius: '6px',
-                        border: currentPage === i + 1 ? '1px solid #10b981' : '1px solid #e2e8f0',
-                        backgroundColor: currentPage === i + 1 ? '#10b981' : '#ffffff',
-                        color: currentPage === i + 1 ? '#ffffff' : '#334155',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      {i + 1}
-                    </button>
-                  ))}
-
-                  <button
-                    disabled={currentPage === Math.ceil(products.length / itemsPerPage)}
-                    onClick={() => setCurrentPage(prev => prev + 1)}
-                    style={{
-                      padding: '6px 12px', fontSize: '12px', fontWeight: 'bold', borderRadius: '6px', border: '1px solid #e2e8f0',
-                      backgroundColor: currentPage === Math.ceil(products.length / itemsPerPage) ? '#f8fafc' : '#ffffff',
-                      color: currentPage === Math.ceil(products.length / itemsPerPage) ? '#cbd5e1' : '#334155',
-                      cursor: currentPage === Math.ceil(products.length / itemsPerPage) ? 'not-allowed' : 'pointer'
-                    }}
-                  >
-                    Next ▶
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
+</div>
 
         </div>
        

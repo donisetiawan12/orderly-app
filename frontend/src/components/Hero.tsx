@@ -620,149 +620,177 @@ export default function Hero({
       <style>{`@keyframes heroPopScale { from { transform: scale(0.88); opacity: 0; } to { transform: scale(1); opacity: 1; } }`}</style>
 
       {/* 🚀 MAIN HERO VIEW (MODIFIKASI MINI SEPEREMPAT LAYAR - AMAN & PIXEL PERFECT) */}
-      <section id="hero" className="hero-section py-5 d-flex align-items-center">
-          <div className="container">
-          {/* 🔥 TINGGI CONTAINER DIKECILKAN DARI minHeight 88vh MENJADI 40vh */}
-          <div className="row align-items-center g-5" style={{ minHeight: '88vh' }}>
-           <div className="col-lg-6">
-              <div className="hbadge">
-                     <div className="hbi"><i className="fas fa-star"></i></div>
-                     <span>#1 Marketplace Kampus</span>
-                  </div>
-              
-              <h1 className="htitle">
-                Pesan produk anti drama, <span className="hl">Orderly</span><br />
-                Bikin Rapih Bersama.
-              </h1>
-              
-              <p className="hdesc">
-                Orderly hadir untuk membantu mahasiswa menjual dan membeli berbagai produk dengan lebih terorganisir, transparan, dan mudah diakses melalui satu platform marketplace kampus.
-              </p>
-
-              {/* Area Dua Tombol Utama */}
-              <div className="d-flex flex-wrap gap-3 mb-2">
-                <button type="button" onClick={() => onSearchOpen()} className="btn-red" style={{ zIndex: 10, position: 'relative' }}>
-                  <i className="fas fa-search me-2"></i> Cari Produk
-                </button>
-
-                {user ? (
-                  <>
-                    {user.role === 'buyer' && (
-                      <a
-                        href="#"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setShowOrdersPop(true);
-                        }}
-                        className="btn-play"
-                        style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', zIndex: 11 }}
-                      >
-                        <div className="pico"><i className="fas fa-receipt"></i></div>
-                        <span>Pesanan Saya</span>
-                        
-                        {activeOrdersCount > 0 && (
-                          <span style={{
-                            position: 'absolute',
-                            top: '-6px',
-                            right: '-6px',
-                            backgroundColor: '#ef4444',
-                            color: '#ffffff',
-                            fontSize: '11px',
-                            fontWeight: '800',
-                            width: '20px',
-                            height: '20px',
-                            borderRadius: '50%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            border: '2px solid #ffffff',
-                            boxShadow: '0 4px 6px rgba(0,0,0,0.15)',
-                            animation: 'pulseNotify 2s infinite'
-                          }}>
-                            {activeOrdersCount}
-                          </span>
-                        )}
-                      </a>
-                    )}
-
-                    {user.role === 'seller' && <a href="/dashboard/seller" className="btn-play"><div className="pico"><i className="fas fa-tachometer-alt"></i></div><span>Dashboard Seller</span></a>}
-                    {user.role === 'admin' && <a href="/dashboard/admin" className="btn-play"><div className="pico"><i className="fas fa-user-shield"></i></div><span>Dashboard Admin</span></a>}
-                  </>
-                ) : (
-                  <button type="button" onClick={onLoginOpen} className="btn-play" style={{ cursor: 'pointer', border: 'none' }}>
-                    <div className="pico"><i className="fas fa-user-plus"></i></div>
-                    <span>Daftar Sekarang</span>
-                  </button>
-                )}
-              </div>
-
-              {/* STATISTIK HERO BAWAH */}
-              <div className="hstats d-flex gap-3 flex-wrap mt-4">
-                <div className="hstat">
-                  <span className="snum">PO<em>+</em></span>
-                  <small>TRANSAKSI AMAN</small>
-                </div>
-                <div className="sdiv"></div>
-                <div className="hstat">
-                  <span className="snum">100%</span>
-                  <small>TRANSPARAN</small>
-                </div>
-                <div className="sdiv"></div>
-                <div className="hstat">
-                  <span className="snum">MUDAH</span>
-                  <small>SISTEM TERUKUR</small>
-                </div>
-              </div>
-
-            </div>
-
-           <div className="col-lg-6">
-  {/* 🔥 UKURAN DIKEMBALIKAN KE SEMULA (PABRIKAN), EFEK SCALE(0.75) DIHAPUS TOTAL BIAR GEDE LAGI */}
-  <div style={{ position: 'relative', textAlign: 'center' }}>
-    
-    {/* Lingkaran Foto Mbak Hijab */}
-    <div className="hcircle">
-      <img src="/img/hero.jpeg" alt="Orderly" className="img-fluid" />
-    </div>
-
-    {/* ⏳ CARD 1: DEADLINE (KIRI) */}
-    <div className="fcard fc1">
-      <div className="fcoi r">
-        <i className="fas fa-clock"></i>
-      </div>
-      <div>
-        <span className="fcnum">Deadline</span>
-        <span className="fcsm">PO Terjadwal</span>
-      </div>
-    </div>
-
-    {/* 🛵 CARD 2: TRACKING (KANAN ATAS) */}
-    <div className="fcard fc2">
-      <div className="fcoi g">
-        <i className="fas fa-route"></i>
-      </div>
-      <div>
-        <span className="fcnum">Tracking</span>
-        <span className="fcsm">Status Pesanan</span>
-      </div>
-    </div>
-
-    {/* ✅ CARD 3: VERIFIKASI (KANAN BAWAH) */}
-    <div className="fcard fc3">
-      <div className="fcoi y">
-        <i className="fas fa-shield-alt"></i>
-      </div>
-      <div>
-        <span className="fcnum">Verifikasi</span>
-        <span className="fcsm">Pembayaran Aman</span>
-      </div>
-    </div>
-
+   <section id="hero" style={{ position: 'relative', overflow: 'hidden' }}>
+  {/* ⚡ DEKORASI BACKGROUND (Dikasih z-index -1 biar masuk ke background paling belakang, anti-tindih navbar!) */}
+  <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1, pointerEvents: 'none' }}>
+    <div className="hs hs1"></div>
+    <div className="hs hs2"></div>
+    <div className="hbgtxt" style={{ opacity: 0.05 }}>FOOD</div>
   </div>
-</div>
+
+  <div className="container" style={{ position: 'relative', zIndex: 2 }}>
+    {/* Row dengan min-height diatur responsif biar rapat pas di tengah */}
+    <div className="row align-items-center g-5" style={{ minHeight: '82vh', paddingTop: '40px', paddingBottom: '40px' }}>
+      
+      {/* KIRI: TEKS UTAMA & STATS */}
+      <div className="col-lg-6">
+        <div className="hbadge">
+          <div className="hbi"><i className="fas fa-star"></i></div>
+          <span>#1 Marketplace Kampus</span>
+        </div>
+        
+        <h1 className="htitle" style={{ fontSize: '2.8rem', lineHeight: '1.2' }}>
+          Pesan produk anti drama, <span className="hl">Orderly</span><br />
+          Bikin Rapih Bersama.
+        </h1>
+        
+        <p className="hdesc">
+          Orderly hadir untuk membantu mahasiswa menjual dan membeli berbagai produk dengan lebih terorganisir, transparan, dan mudah diakses melalui satu platform marketplace kampus.
+        </p>
+
+        {/* Area Tombol Utama (z-index dinaikkan biar bisa diklik) */}
+        <div className="d-flex flex-wrap gap-3 mb-2" style={{ position: 'relative', zIndex: 10 }}>
+          <button 
+            type="button" 
+            onClick={() => onSearchOpen()} 
+            className="btn-red" 
+          >
+            <i className="fas fa-search me-2"></i> Cari Produk
+          </button>
+
+          {user ? (
+            <>
+              {user.role === 'buyer' && (
+                <a
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setShowOrdersPop(true);
+                  }}
+                  className="btn-play"
+                  style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}
+                >
+                  <div className="pico"><i className="fas fa-receipt"></i></div>
+                  <span>Pesanan Saya</span>
+                  
+                  {activeOrdersCount > 0 && (
+                    <span style={{
+                      position: 'absolute',
+                      top: '-6px',
+                      right: '-6px',
+                      backgroundColor: '#ef4444',
+                      color: '#ffffff',
+                      fontSize: '11px',
+                      fontWeight: '800',
+                      width: '20px',
+                      height: '20px',
+                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      border: '2px solid #ffffff',
+                      boxShadow: '0 4px 6px rgba(0,0,0,0.15)',
+                      animation: 'pulseNotify 2s infinite'
+                    }}>
+                      {activeOrdersCount}
+                    </span>
+                  )}
+                </a>
+              )}
+
+              {user.role === 'seller' && (
+                <a href="/dashboard/seller" className="btn-play">
+                  <div className="pico"><i className="fas fa-tachometer-alt"></i></div>
+                  <span>Dashboard Seller</span>
+                </a>
+              )}
+              {user.role === 'admin' && (
+                <a href="/dashboard/admin" className="btn-play">
+                  <div className="pico"><i className="fas fa-user-shield"></i></div>
+                  <span>Dashboard Admin</span>
+                </a>
+              )}
+            </>
+          ) : (
+            <button 
+              type="button" 
+              onClick={onLoginOpen} 
+              className="btn-play" 
+              style={{ cursor: 'pointer', border: 'none' }}
+            >
+              <div className="pico"><i className="fas fa-user-plus"></i></div>
+              <span>Daftar Sekarang</span>
+            </button>
+          )}
+        </div>
+
+        {/* STATISTIK HERO BAWAH */}
+        <div className="hstats d-flex gap-3 flex-wrap mt-4">
+          <div className="hstat">
+            <span className="snum">PO<em>+</em></span>
+            <small>TRANSAKSI AMAN</small>
+          </div>
+          <div className="sdiv"></div>
+          <div className="hstat">
+            <span className="snum">100%</span>
+            <small>TRANSPARAN</small>
+          </div>
+          <div className="sdiv"></div>
+          <div className="hstat">
+            <span className="snum">MUDAH</span>
+            <small>SISTEM TERUKUR</small>
           </div>
         </div>
-      </section>
+      </div>
+
+      {/* KANAN: LINGKARAN FOTO & CARD MELAYANG */}
+      <div className="col-lg-6">
+        <div style={{ position: 'relative', textAlign: 'center' }}>
+          
+          {/* Lingkaran Foto Mbak Hijab */}
+          <div className="hcircle">
+            <img src="/img/hero.jpeg" alt="Orderly" />
+          </div>
+
+          {/* ⏳ CARD 1: DEADLINE (KIRI) */}
+          <div className="fcard fc1">
+            <div className="fcoi r">
+              <i className="fas fa-clock"></i>
+            </div>
+            <div>
+              <span className="fcnum">Deadline</span>
+              <span className="fcsm">PO Terjadwal</span>
+            </div>
+          </div>
+
+          {/* 🛵 CARD 2: TRACKING (KANAN ATAS) - Dipaksa fc2 sesuai style lingkaran template */}
+          <div className="fcard fc2">
+            <div className="fcoi g">
+              <i className="fas fa-route"></i>
+            </div>
+            <div>
+              <span className="fcnum">Tracking</span>
+              <span className="fcsm">Status Pesanan</span>
+            </div>
+          </div>
+
+          {/* ✅ CARD 3: VERIFIKASI (KANAN BAWAH) - Dipaksa fc3 biar rapat di bawah */}
+          <div className="fcard fc3">
+            <div className="fcoi y">
+              <i className="fas fa-shield-alt"></i>
+            </div>
+            <div>
+              <span className="fcnum">Verifikasi</span>
+              <span className="fcsm">Pembayaran Aman</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
 
       <style>{`
         @keyframes pulseNotify {

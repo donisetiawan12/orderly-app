@@ -1,3 +1,15 @@
+# Dependencies
 node_modules/
+
+# Kredensial & konfigurasi database rahasia lu bray!
 .env
-.DS_Store
+
+# Folder file upload / gambar produk dari user
+# Biar VPS lu nanti ga numpuk gambar contoh dari laptop lu
+uploads/products/*
+!uploads/products/.gitkeep
+
+# Logs
+logs
+*.log
+npm-debug.log*

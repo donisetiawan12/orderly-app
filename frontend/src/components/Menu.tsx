@@ -10,10 +10,10 @@ export default function Menu({ searchTerm, activeFilter, setActiveFilter, onOpen
 
   const fetchFreshData = async () => {
     try {
-      // 🔥 FIX ABIS: Semua diubah pakai petik tunggal biasa tapi langsung tembak IP mentah backend lu bray!
+      // 🔥 KEMBALI KE LOGIC ORIGINAL LU: Menggunakan Promise.all split page agar avg_rating dan reviews amannn!
       const [resP1, resP2, resCat] = await Promise.all([
-        fetch('http://127.0.0.1:5000/api/products?page=1'),
-        fetch('http://127.0.0.1:5000/api/products?page=2'),
+        fetch('http://127.0.0.1:5000/api/products/landing-page?page=1'),
+        fetch('http://127.0.0.1:5000/api/products/landing-page?page=2'),
         fetch('http://127.0.0.1:5000/api/categories')
       ]);
       
@@ -166,11 +166,11 @@ export default function Menu({ searchTerm, activeFilter, setActiveFilter, onOpen
                       {/* 🔥 FIX: SEKARANG RATING VALUASI REAL-TIME DAN SINKRON DENGAN DETAIL POP UP BRAY */}
                       <div style={{ fontSize: '0.8rem', color: '#f39c12', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>
                         <i className="fas fa-star" style={{ color: '#eab308' }}></i> 
-                        <span>
-                          {item.avg_rating && Number(item.avg_rating) > 0 
-                            ? Number(item.avg_rating).toFixed(1) 
-                            : '5.0'} 
-                        </span>
+                       <span>
+                        {item.avg_rating !== undefined && item.avg_rating !== null && parseFloat(item.avg_rating) > 0 
+                          ? parseFloat(item.avg_rating).toFixed(1) 
+                          : '0.0'} 
+                      </span>
                       </div>
                     </div>
 

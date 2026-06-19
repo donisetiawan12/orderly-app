@@ -1,25 +1,24 @@
 const db = require('../config/db');
 
-// Helper untuk format respon standar
+// Helper untuk format respon standar bawaan lu bray
 const sendResponse = (res, statusCode, status, message, data = null) => {
-    res.status(statusCode).json({ status, message, data });
+    return res.status(statusCode).json({ status, message, data });
 };
 
+// 1. CREATE PRODUCT
 exports.createProduct = async (req, res) => {
     try {
-        // 🚀 AMBIL SEMUA DATA TERMASUK PO_QUOTA, PO_DEADLINE, DAN LOCATION
         const { name, category_id, description, price, quantity, po_quota, po_deadline, location } = req.body;
         const seller_id = req.user.id; 
-        const image = req.file ? req.file.path : null;
+        const image = req.file ? req.file.filename : null;
 
         if (!name || !price) {
             return sendResponse(res, 400, "error", "Nama dan Harga produk wajib diisi");
         }
 
-        // 🚀 QUERY INSERT LENGKAP MENCAKUP SEMUA KOLOM DB LU BRO
         const sql = `INSERT INTO products 
-            (seller_id, category_id, name, description, price, quantity, po_quota, po_deadline, location, image) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+            (seller_id, category_id, name, description, price, quantity, po_quota, po_deadline, location, image, status) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')`;
         
         const [result] = await db.execute(sql, [
             seller_id, 
@@ -30,210 +29,195 @@ exports.createProduct = async (req, res) => {
             quantity || 0, 
             po_quota || 0, 
             po_deadline || null, 
-            location || 'Kampus A', // Memastikan location terisi aman
+            location || 'Kampus A', 
             image
         ]);
 
-        sendResponse(res, 201, "success", "Produk berhasil dibuat", { productId: result.insertId });
+        sendResponse(res, 201, "success", "🚀 Produk baru berhasil dimasukkan ke database!", { productId: result.insertId });
     } catch (error) {
         console.error("Create Product Error:", error);
-        sendResponse(res, 500, "error", "Gagal menambahkan produk");
+        sendResponse(res, 500, "error", "Gagal menambahkan produk: " + error.message);
     }
 };
 
+// 2. UPDATE PRODUCT
 exports.updateProduct = async (req, res) => {
     try {
         const { id } = req.params;
-        // 🚀 AMBIL DATA LENGKAP SAAT UPDATE BIAR GAK ADA VARIABEL YANG TERLEWAT
         const { name, description, price, quantity, status, po_quota, po_deadline, location, category_id } = req.body;
         const seller_id = req.user.id;
 
         const [product] = await db.execute("SELECT id FROM products WHERE id = ? AND seller_id = ?", [id, seller_id]);
-        if (product.length === 0) return sendResponse(res, 404, "error", "Produk tidak ditemukan atau bukan milik Anda");
+        if (product.length === 0) return sendResponse(res, 403, "error", "Aksi ditolak! Ini bukan produk milik Anda.");
 
-        // 🚀 SINKRONISASI UPDATE UTK SEMUA KOLOM DI DATABASE LU TERMASUK PO DAN LOCATION
-        const sql = `UPDATE products SET 
-            name=?, 
-            description=?, 
-            price=?, 
-            quantity=?, 
-            status=?, 
-            po_quota=?, 
-            po_deadline=?, 
-            location=?, 
-            category_id=? 
-            WHERE id=? AND seller_id=?`;
+        let sql = `UPDATE products SET name=?, description=?, price=?, quantity=?, status=?, po_quota=?, po_deadline=?, location=?, category_id=?`;
+        let params = [name, description || null, price, quantity || 0, status || 'active', po_quota || 0, po_deadline || null, location || 'Kampus A', category_id || null];
+
+        if (req.file) {
+            sql += `, image=?`;
+            params.push(req.file.filename);
+        }
+
+        sql += ` WHERE id=? AND seller_id=?`;
+        params.push(id, seller_id);
             
-        await db.execute(sql, [
-            name, 
-            description || null, 
-            price, 
-            quantity || 0, 
-            status || 'active', 
-            po_quota || 0, 
-            po_deadline || null, 
-            location || 'Kampus A', // 🎴 Kunci utama nembus Kampus B ada di sini bro!
-            category_id || null,
-            id, 
-            seller_id
-        ]);
-
-        sendResponse(res, 200, "success", "Produk berhasil diupdate");
+        await db.execute(sql, params);
+        sendResponse(res, 200, "success", "✨ Data produk berhasil diperbarui!");
     } catch (error) {
         console.error("Update Product Error:", error);
-        sendResponse(res, 500, "error", "Gagal mengupdate produk");
+        sendResponse(res, 500, "error", "Gagal mengupdate produk: " + error.message);
     }
 };
 
+// 3. DELETE PRODUCT
 exports.deleteProduct = async (req, res) => {
     try {
         const { id } = req.params;
         const seller_id = req.user.id;
 
         const [result] = await db.execute("DELETE FROM products WHERE id = ? AND seller_id = ?", [id, seller_id]);
-        if (result.affectedRows === 0) return sendResponse(res, 404, "error", "Produk tidak ditemukan");
+        if (result.affectedRows === 0) return sendResponse(res, 403, "error", "Aksi ditolak! Anda dilarang menghapus produk milik toko lain.");
 
-        sendResponse(res, 200, "success", "Produk berhasil dihapus");
+        sendResponse(res, 200, "success", "🗑️ Produk berhasil dihapus dari sistem!");
     } catch (error) {
         console.error("Delete Product Error:", error);
         sendResponse(res, 500, "error", "Gagal menghapus produk");
     }
 };
 
+// 4. GET ALL PRODUCTS (SUPPORT SELLER LOCK & LANDING PAGE DENGAN AVG RATING)
+
 exports.getAllProducts = async (req, res) => {
     try {
-        let { search, category, page, limit, sortBy, order } = req.query;
+        const sellerId = req.user ? req.user.id : null; 
+
+        let sql = `
+            SELECT 
+                p.*, 
+                u.name AS seller_name,
+                COALESCE(AVG(r.rating), 0) AS avg_rating, 
+                COUNT(r.id) AS total_reviews
+            FROM products p
+            JOIN users u ON p.seller_id = u.id
+            LEFT JOIN reviews r ON p.id = r.product_id
+        `;
         
-        page = parseInt(page) || 1;
-        limit = parseInt(limit) || 10;
-        const offset = (page - 1) * limit;
-
-        const allowedSortFields = ['price', 'created_at', 'name'];
-        const sortField = allowedSortFields.includes(sortBy) ? sortBy : 'created_at';
-        const sortOrder = order?.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
-
-        let sql = "SELECT * FROM products WHERE 1=1";
         let params = [];
-
-        if (search) {
-            sql += " AND name LIKE ?";
-            params.push(`%${search}%`);
+        if (sellerId) {
+            sql += ` WHERE p.seller_id = ?`;
+            params.push(sellerId);
         }
-
-       if (category) {
-            sql += " AND category_id = ?";
-            params.push(category);
-        }
-
-        sql += ` ORDER BY ${sortField} ${sortOrder} LIMIT ? OFFSET ?`;
-        params.push(limit, offset);
+        
+        // 🚀 DIUBAH DI SINI: ganti p.id DESC menjadi p.id ASC
+        sql += ` GROUP BY p.id ORDER BY p.id ASC`;
 
         const [products] = await db.execute(sql, params);
         
-        const [total] = await db.execute("SELECT COUNT(*) as count FROM products WHERE 1=1 " + (search ? "AND name LIKE ?" : ""), search ? [`%${search}%`] : []);
-        
-        sendResponse(res, 200, "success", "Data produk dimuat", {
-            products,
-            total_items: total[0].count,
-            current_page: page,
-            total_pages: Math.ceil(total[0].count / limit)
+        return res.status(200).json({
+            status: "success",
+            data: { products }
         });
     } catch (error) {
         console.error("Get Products Error:", error);
-        sendResponse(res, 500, "error", "Gagal memuat produk");
+        sendResponse(res, 500, "error", "Gagal memuat data produk");
     }
 };
 
-exports.getProductDetail = async (req, res) => {
-    try {
-        const { id } = req.params;
-
-        const [product] = await db.execute("SELECT * FROM products WHERE id = ?", [id]);
-        if (product.length === 0) return sendResponse(res, 404, "error", "Produk tidak ditemukan!");
-
-        const [stats] = await db.execute(
-            "SELECT AVG(rating) as avg_rating, COUNT(id) as total_reviews FROM reviews WHERE product_id = ?",
-            [id]
-        );
-
-        const [reviews] = await db.execute(
-            "SELECT r.rating, r.comment, r.created_at, u.name as username FROM reviews r JOIN users u ON r.buyer_id = u.id WHERE r.product_id = ?",
-            [id]
-        );
-
-        sendResponse(res, 200, "success", "Detail photos dimuat", {
-            product: product[0],
-            rating: {
-                average: parseFloat(stats[0].avg_rating || 0).toFixed(1),
-                total_reviews: stats[0].total_reviews
-            },
-            reviews: reviews
-        });
-    } catch (error) {
-        console.error("Detail Product Error:", error);
-        sendResponse(res, 500, "error", "Gagal memuat detail produk");
-    }
-};
-
-// =========================================================================
-// 🚀 FITUR BARU: AMBIL SEMUA ULASAN PEMBELI KHUSUS UNTUK PRODUK MILIK SELLER
-// =========================================================================
+// 5. GET SELLER REVIEWS (DIUPDATE BIAR NGE-FETCH BALASAN SELLER JUGA BRAY)
 exports.getSellerReviews = async (req, res) => {
     try {
         const { seller_id } = req.params;
-
-        // Query sakti JOIN 3 tabel menggunakan db.execute() async/await
         const sql = `
             SELECT 
-                r.id AS review_id,
-                r.rating,
-                r.comment,
-                r.created_at,
-                p.name AS product_name,
-                p.image AS product_image,
-                u.name AS buyer_name
+                r.id AS review_id, r.rating, r.comment, r.reply_comment, r.replied_at, r.created_at,
+                p.name AS product_name, p.image AS product_image, u.name AS buyer_name
             FROM reviews r
             JOIN products p ON r.product_id = p.id
             JOIN users u ON r.buyer_id = u.id
             WHERE p.seller_id = ? 
             ORDER BY r.created_at DESC
         `;
-
         const [reviews] = await db.execute(sql, [seller_id]);
-
-        sendResponse(res, 200, "success", "Data ulasan berhasil dimuat", reviews);
+        sendResponse(res, 200, "success", "Data ulasan berhasil dimuat bray", reviews);
     } catch (error) {
         console.error("Get Seller Reviews Error:", error);
         sendResponse(res, 500, "error", "Gagal memuat ulasan produk");
     }
 };
 
-// =========================================================================
-// 🚀 TAMBAHAN BARU: FETCH DATA REVIEW PER PRODUK SESUAI STRUKTUR TABEL REVIEWS LU
-// =========================================================================
-exports.getProductReviews = async (req, res) => {
+// 🚀 FUNGSI BARU: SELLER MEMBALAS ULASAN BUYER (TARUH DI PALING BAWAH FILE BRAY)
+exports.replyReview = async (req, res) => {
     try {
-        const { id } = req.params; // mengambil ID produk dari parameter URL
+        const { review_id } = req.params;
+        const { reply_comment } = req.body;
+        const seller_id = req.user.id; // Diambil aman lewat verifyToken middleware
 
-        const sql = `
+        if (!reply_comment || reply_comment.trim() === "") {
+            return sendResponse(res, 400, "error", "Isi pesan balasan tidak boleh kosong bray!");
+        }
+
+        // Validasi pengaman: Pastikan ulasan ini emang milik produk si seller yang sedang login
+        const checkSql = `
+            SELECT r.id FROM reviews r 
+            JOIN products p ON r.product_id = p.id 
+            WHERE r.id = ? AND p.seller_id = ?
+        `;
+        const [rows] = await db.execute(checkSql, [review_id, seller_id]);
+
+        if (rows.length === 0) {
+            return sendResponse(res, 403, "error", "Aksi ditolak! Ulasan ini bukan milik produk toko Anda.");
+        }
+
+        // Jalankan Query Update Balasan Ke Database
+        const updateSql = `
+            UPDATE reviews 
+            SET reply_comment = ?, replied_at = NOW() 
+            WHERE id = ?
+        `;
+        await db.execute(updateSql, [reply_comment, review_id]);
+
+        sendResponse(res, 200, "success", "✍️ Balasan ulasan Anda berhasil disimpan!");
+    } catch (error) {
+        console.error("Reply Review Error:", error);
+        sendResponse(res, 500, "error", "Gagal menyimpan balasan ulasan bray: " + error.message);
+    }
+};
+
+// Ambil ulasan untuk satu produk (Spesifik Buyer) - FIX AMAN BRAY
+exports.getProductReviews = async (req, res) => { // 🚀 FIX: Argumen cuma req dan res!
+    const { id } = req.params;
+
+    try {
+        // 🚀 FIX: Menggunakan COALESCE atau AS untuk alias ID, bukan pakai kata 'OR'
+        const query = `
             SELECT 
-                r.id,
-                r.rating,
-                r.comment,
-                r.created_at,
-                u.name AS buyer_name
+                r.id AS review_id, 
+                r.rating, 
+                r.comment, 
+                r.reply_comment,   
+                r.replied_at,      
+                r.created_at, 
+                u.name AS buyer_name 
             FROM reviews r
             JOIN users u ON r.buyer_id = u.id
             WHERE r.product_id = ?
             ORDER BY r.created_at DESC
         `;
 
-        const [reviews] = await db.execute(sql, [id]);
-        
-        // Memakai format standar helper sendResponse bawaan file lu bro
-        sendResponse(res, 200, "success", "Ulasan produk berhasil dimuat", reviews);
+        // Jalankan query database
+        const [reviews] = await db.execute(query, [id]); 
+
+        // Return response dengan struktur json yang bener
+        return res.status(200).json({
+            status: 'success',
+            data: reviews
+        });
+
     } catch (error) {
-        console.error("Get Product Reviews Error:", error);
-        sendResponse(res, 500, "error", "Gagal memuat ulasan produk bray");
+        console.error("Error Get Product Reviews:", error);
+        return res.status(500).json({ 
+            status: 'error',
+            message: "Gagal fetch ulasan bray: " + error.message 
+        });
     }
 };

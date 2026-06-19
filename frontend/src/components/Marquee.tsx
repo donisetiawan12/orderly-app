@@ -7,32 +7,45 @@ export default function Marquee() {
   useEffect(() => {
     async function fetchProducts() {
       try {
-        // 🔥 FIX: Pakai petik tunggal biasa tapi alamatnya langsung IP mentah backend lu bray! Gak pake env hantu lagi!
-        const response = await fetch('http://127.0.0.1:5000/api/products');
+        // 🚀 Tembak rute publik landing-page yang aman tanpa token JWT bray
+        const response = await fetch('http://127.0.0.1:5000/api/products/landing-page');
         const json = await response.json();
         
-        // Sesuai dengan struktur JSON lu: json.data.products
+        // Memastikan data array produk masuk dengan aman
         if (json && json.data && Array.isArray(json.data.products)) {
           setProducts(json.data.products);
         }
       } catch (error) {
-        console.error("Gagal load data marquee:", error);
+        console.error("Gagal load data marquee bray:", error);
       }
     }
     fetchProducts();
   }, []);
 
-  if (products.length === 0) return null;
+  // 🔥 TRIK UTAMA: Kalau isi DB masih dikit (< 10), kita panjangin baris antreannya 
+  // biar looping animasi CSS template lu gak tabrakan atau double di ujung.
+  const displayProducts = products.length > 0 && products.length < 10 
+    ? [...products, ...products, ...products] 
+    : products;
 
   return (
     <div className="mqsec">
       <div className="mqtrack">
-        {[...products, ...products].map((item, index) => (
-          <div className="mqitem" key={index} style={{ marginRight: '38px' }}>
-            <i className="fas fa-circle"></i>
-            {item.name}
-          </div>
-        ))}
+        {displayProducts.length > 0 ? (
+          displayProducts.map((item, index) => (
+            <div className="mqitem" key={`mq-${item.id}-${index}`}>
+              <i className="fas fa-circle"></i>
+              {item.name}
+            </div>
+          ))
+        ) : (
+          // Fallback tampilan statis berjalan pas server/DB lu lagi loading bray
+          <>
+            <div className="mqitem"><i className="fas fa-circle"></i>Memuat Menu Pilihan Kampus...</div>
+            <div className="mqitem"><i className="fas fa-circle"></i>Memuat Menu Pilihan Kampus...</div>
+            <div className="mqitem"><i className="fas fa-circle"></i>Memuat Menu Pilihan Kampus...</div>
+          </>
+        )}
       </div>
     </div>
   );

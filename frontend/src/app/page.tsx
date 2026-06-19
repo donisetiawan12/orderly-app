@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation'; // Untuk redirect halaman
+import { useRouter } from 'next/navigation';
 
 import Navbar from '../components/Navbar';
 import SearchOverlay from '../components/SearchOverlay';
@@ -20,16 +20,16 @@ import RegisterModal from '../components/RegisterModal';
 
 export default function Home() {
   const router = useRouter();
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [showLogin, setShowLogin] = useState(false);
-  const [showRegister, setShowRegister] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [activeFilter, setActiveFilter] = useState('all');
-  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
+  const [showLogin, setShowLogin] = useState<boolean>(false);
+  const [showRegister, setShowRegister] = useState<boolean>(false);
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [activeFilter, setActiveFilter] = useState<string>('all');
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
 
   // State User Global
   const [user, setUser] = useState<any>(null);
-  const [logoutMessage, setLogoutMessage] = useState(false);
+  const [logoutMessage, setLogoutMessage] = useState<boolean>(false);
 
   // Cek session user saat halaman pertama kali dimuat
   useEffect(() => {
@@ -43,9 +43,7 @@ export default function Home() {
   const handleLogout = () => {
     localStorage.removeItem('user');
     localStorage.removeItem('token');
-
     setUser(null);
-
     setLogoutMessage(true);
 
     setTimeout(() => {
@@ -56,7 +54,8 @@ export default function Home() {
   };
 
   return (
-    <>
+    <div id="landing-page-wrapper" style={{ width: '100%', minHeight: '100vh', position: 'relative' }}>
+      
       <SearchOverlay
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
@@ -65,7 +64,6 @@ export default function Home() {
           setSearchTerm(val);
           setActiveFilter('all');
           setTimeout(() => {
-            // ✅ DISINKRONKAN: Menuju ke target id baru agar konsisten
             const menuSection = document.getElementById('main-shop-section');
             if (menuSection) menuSection.scrollIntoView({ behavior: 'smooth' });
           }, 100);
@@ -76,7 +74,7 @@ export default function Home() {
       <LoginModal
         show={showLogin}
         onClose={() => setShowLogin(false)}
-        setUser={setUser} // Oper setUser ke modal login
+        setUser={setUser}
         onOpenRegister={() => {
           setShowLogin(false);
           setShowRegister(true);
@@ -95,14 +93,14 @@ export default function Home() {
 
       {/* NAVBAR */}
       <Navbar
-        user={user} // Oper data user ke navbar
+        user={user}
         onLogout={handleLogout}
         onSearchOpen={() => setIsSearchOpen(true)}
         onLoginOpen={() => setShowLogin(true)}
       />
 
       <main>
-        {/* HERO (Popup mini dengan fitur auto-scroll internal bawaan bray) */}
+        {/* HERO */}
         <Hero
           user={user}
           logoutMessage={logoutMessage}
@@ -112,10 +110,6 @@ export default function Home() {
 
         <Marquee />
 
-        {/* 🔥 KUNCINYA DI SINI BRAY! 
-          Kita bungkus Categories dan Menu ke dalam satu div dengan id="main-shop-section"
-          Biar pas 1 detik setelah landing page ke-load, Hero otomatis nembak scroll-nya tepat ke sini!
-        */}
         <div id="main-shop-section" style={{ scrollMarginTop: '20px' }}>
           <Categories activeFilter={activeFilter} setActiveFilter={setActiveFilter} />
 
@@ -138,6 +132,6 @@ export default function Home() {
       </main>
 
       <Footer />
-    </>
+    </div>
   );
 }

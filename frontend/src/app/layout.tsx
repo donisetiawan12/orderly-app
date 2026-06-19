@@ -1,20 +1,19 @@
 'use client';
-import 'bootstrap/dist/css/bootstrap.min.css';
 import { Plus_Jakarta_Sans } from 'next/font/google';
-import './globals.css'; // 👈 PASTIIN BARIS INI ADA BRAY!
-
-
-import "./globals.css";
+import './globals.css'; // 👈 Next.js otomatis naruh ini di paling bawah untuk override stylesheet di atasnya!
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ['latin'],
 });
-// src/app/layout.tsx
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <head>
-        {/* SEMUA LINK CSS HARUS ADA DI SINI */}
+        {/* 1. KUNCI UTAMA ANTI-ZOOM RAKSASA */}
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        
+        {/* 2. SEMUA LINK CSS BAWAAN TEMPLATE (Ditaruh di head biar di-load duluan) */}
         <link href="/css/bootstrap.min.css" rel="stylesheet" />
         <link href="/css/aos.css" rel="stylesheet" />
         <link href="/css/swiper-bundle.min.css" rel="stylesheet" />

@@ -373,23 +373,25 @@ export default function DashboardCards() {
       <div className="flex flex-wrap -mx-3">
         {/* Card 1: Pendapatan */}
         <div className="w-full max-w-full px-3 mb-6 sm:w-1/2 sm:flex-none xl:mb-0 xl:w-1/4">
-          <div className="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 rounded-2xl">
+          <div className="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 dark:shadow-dark-xl rounded-2xl bg-clip-border">
             <div className="flex-auto p-4">
-              <div className="flex flex-row -mx-3">
+              <div className="flex flex-row -mx-3 items-center">
                 <div className="flex-none w-2/3 max-w-full px-3">
-                  <div>
-                    <p className="mb-0 font-sans text-xs font-bold uppercase text-slate-400">Pendapatan</p>
-                    <h5 className="mb-2 font-bold dark:text-white text-lg">
+                  <div className="flex flex-col">
+                    <p className="mb-0 font-sans text-xs font-bold uppercase text-slate-400 tracking-wider whitespace-nowrap leading-tight">
+                      Pendapatan
+                    </p>
+                    <h5 className="mt-1 mb-1 font-bold dark:text-white text-lg font-sans tracking-tight whitespace-nowrap text-slate-800">
                       Rp {dynamicStats.revenue.toLocaleString('id-ID')}
                     </h5>
-                    <p className="mb-0 dark:text-white dark:opacity-60 text-xs">
-                      Total <span className="font-bold text-emerald-500">{timeLabelText}</span>
+                    <p className="mb-0 dark:text-white dark:opacity-60 text-xs text-slate-400">
+                       <span className="font-bold text-emerald-500">{timeLabelText}</span>
                     </p>
                   </div>
                 </div>
-                <div className="px-3 text-right basis-1/3">
-                  <div className="inline-block w-12 h-12 text-center rounded-circle bg-gradient-to-tl from-emerald-500 to-teal-400">
-                    <i className="ni ni-money-coins text-lg relative top-3.5 text-white"></i>
+                <div className="px-3 text-right basis-1/3 flex justify-end">
+                  <div className="inline-block w-12 h-12 text-center rounded-circle bg-gradient-to-tl from-emerald-500 to-teal-400 flex items-center justify-center shadow-md">
+                    <i className="ni ni-money-coins text-lg text-white leading-none"></i>
                   </div>
                 </div>
               </div>
@@ -399,23 +401,25 @@ export default function DashboardCards() {
 
         {/* Card 2: Pelanggan */}
         <div className="w-full max-w-full px-3 mb-6 sm:w-1/2 sm:flex-none xl:mb-0 xl:w-1/4">
-          <div className="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 rounded-2xl">
+          <div className="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 dark:shadow-dark-xl rounded-2xl bg-clip-border">
             <div className="flex-auto p-4">
-              <div className="flex flex-row -mx-3">
+              <div className="flex flex-row -mx-3 items-center">
                 <div className="flex-none w-2/3 max-w-full px-3">
-                  <div>
-                    <p className="mb-0 font-sans text-xs font-bold uppercase text-slate-400">PELANGGAN</p>
-                    <h5 className="mb-2 font-bold dark:text-white text-lg text-slate-800">
+                  <div className="flex flex-col">
+                    <p className="mb-0 font-sans text-xs font-bold uppercase text-slate-400 tracking-wider whitespace-nowrap leading-tight">
+                      PELANGGAN
+                    </p>
+                    <h5 className="mt-1 mb-1 font-bold dark:text-white text-lg font-sans tracking-tight whitespace-nowrap text-slate-800">
                       {dynamicStats.customers} Orang
                     </h5>
                     <p className="mb-0 dark:text-white dark:opacity-60 text-xs text-slate-400">
-                      Pelanggan <span className="font-bold text-emerald-500">{timeLabelText}</span>
+                       <span className="font-bold text-emerald-500">{timeLabelText}</span>
                     </p>
                   </div>
                 </div>
-                <div className="px-3 text-right basis-1/3">
-                  <div className="inline-block w-12 h-12 text-center rounded-circle bg-gradient-to-tl from-red-600 to-orange-600">
-                    <i className="ni ni-world text-lg relative top-3.5 text-white"></i>
+                <div className="px-3 text-right basis-1/3 flex justify-end">
+                  <div className="inline-block w-12 h-12 text-center rounded-circle bg-gradient-to-tl from-red-600 to-orange-600 flex items-center justify-center shadow-md">
+                    <i className="ni ni-world text-lg text-white leading-none"></i>
                   </div>
                 </div>
               </div>
@@ -425,23 +429,25 @@ export default function DashboardCards() {
 
         {/* Card 3: Produk Terjual */}
         <div className="w-full max-w-full px-3 mb-6 sm:w-1/2 sm:flex-none xl:mb-0 xl:w-1/4">
-          <div className="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 rounded-2xl">
+          <div className="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 dark:shadow-dark-xl rounded-2xl bg-clip-border">
             <div className="flex-auto p-4">
-              <div className="flex flex-row -mx-3">
+              <div className="flex flex-row -mx-3 items-center">
                 <div className="flex-none w-2/3 max-w-full px-3">
-                  <div>
-                    <p className="mb-0 font-sans text-xs font-bold uppercase text-slate-400">Total Produk Terjual</p>
-                    <h5 className="mb-2 font-bold dark:text-white text-lg">
+                  <div className="flex flex-col">
+                    <p className="mb-0 font-sans text-xs font-bold uppercase text-slate-400 tracking-wider whitespace-nowrap leading-tight">
+                      PRODUK TERJUAL
+                    </p>
+                    <h5 className="mt-1 mb-1 font-bold dark:text-white text-lg font-sans tracking-tight whitespace-nowrap text-slate-800">
                       {dynamicStats.products} Pcs
                     </h5>
-                    <p className="mb-0 dark:text-white dark:opacity-60 text-xs">
-                      Terjual <span className="font-bold text-emerald-500">{timeLabelText}</span>
+                    <p className="mb-0 dark:text-white dark:opacity-60 text-xs text-slate-400">
+                       <span className="font-bold text-emerald-500">{timeLabelText}</span>
                     </p>
                   </div>
                 </div>
-                <div className="px-3 text-right basis-1/3">
-                  <div className="inline-block w-12 h-12 text-center rounded-circle bg-gradient-to-tl from-blue-500 to-violet-500">
-                    <i className="ni ni-paper-diploma text-lg relative top-3.5 text-white"></i>
+                <div className="px-3 text-right basis-1/3 flex justify-end">
+                  <div className="inline-block w-12 h-12 text-center rounded-circle bg-gradient-to-tl from-blue-500 to-violet-500 flex items-center justify-center shadow-md">
+                    <i className="ni ni-paper-diploma text-lg text-white leading-none"></i>
                   </div>
                 </div>
               </div>
@@ -449,56 +455,55 @@ export default function DashboardCards() {
           </div>
         </div>
 
-        {/* Card 4: Total Order Masuk Dinamis (Udah Sinkron sama Halaman Produk) */}
-<div className="w-full max-w-full px-3 sm:w-1/2 sm:flex-none xl:w-1/4">
-  <div className="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 rounded-2xl">
-    <div className="flex-auto p-4">
-      <div className="flex flex-row -mx-3">
-        <div className="flex-none w-2/3 max-w-full px-3">
-          <div>
-            <p className="mb-0 font-sans text-xs font-bold uppercase text-slate-400">TOTAL ORDER</p>
-            <div className="flex items-center gap-2 mt-0.5 mb-2">
-              <h5 className="mb-0 font-bold text-lg text-slate-700 dark:text-white">
-                {dynamicStats.orders} Pesanan
-              </h5>
+        {/* Card 4: Total Order Masuk */}
+        <div className="w-full max-w-full px-3 mb-6 sm:w-1/2 sm:flex-none xl:mb-0 xl:w-1/4">
+          <div className="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 dark:shadow-dark-xl rounded-2xl bg-clip-border">
+            <div className="flex-auto p-4">
+              <div className="flex flex-row -mx-3 items-center">
+                <div className="flex-none w-2/3 max-w-full px-3">
+                  <div className="flex flex-col">
+                    <p className="mb-0 font-sans text-xs font-bold uppercase text-slate-400 tracking-wider whitespace-nowrap leading-tight">
+                      TOTAL ORDER
+                    </p>
+                    <h5 className="mt-1 mb-1 font-bold dark:text-white text-lg font-sans tracking-tight whitespace-nowrap text-slate-800">
+                      {dynamicStats.orders} Pesanan
+                    </h5>
+                    <p className="mb-0 dark:text-white dark:opacity-60 text-xs text-slate-400">
+                      {pendingCount > 0 ? (
+                        <span className="font-bold text-red-500 animate-pulse">
+                          {pendingCount} pending! ⚠️
+                        </span>
+                      ) : (
+                        <span>
+                          Semua pesanan <span className="font-bold text-emerald-500">clear</span>
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                </div>
+                <div className="px-3 text-right basis-1/3 flex justify-end">
+                  <div className="inline-block w-12 h-12 text-center rounded-circle bg-gradient-to-tl from-orange-500 to-yellow-500 flex items-center justify-center shadow-md">
+                    <i className="ni ni-cart text-lg text-white leading-none"></i>
+                  </div>
+                </div>
+              </div>
             </div>
-            
-            {/* 🚀 LOGIKA SINKRONISASI: Biar sama persis kayak di halaman produk */}
-            <p className="mb-0 dark:text-white dark:opacity-60 text-xs text-slate-400">
-              {pendingCount > 0 ? (
-                <span className="text-red-500 font-bold animate-pulse">
-                   {pendingCount} pending perlu tindakan seller! ⚠️
-                </span>
-              ) : (
-                <span>
-                  Semua pesanan <span className="font-bold text-emerald-500">aman/clear</span>
-                </span>
-              )}
-            </p>
-
           </div>
         </div>
-        <div className="px-3 text-right basis-1/3">
-          <div className="inline-block w-12 h-12 text-center rounded-circle bg-gradient-to-tl from-orange-500 to-yellow-500">
-            <i className="ni ni-cart text-lg relative top-3.5 text-white"></i>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
       </div>
 
       {/* ================= BARIS 2: GRAFIK & CAROUSEL ================= */}
-      <div className="flex flex-wrap mt-6 -mx-3">
+     <div className="flex flex-wrap mt-6 -mx-3">
         {/* Kolom Kiri: Line Chart */}
         <div className="w-full max-w-full px-3 mt-0 lg:w-7/12 lg:flex-none">
           <div className="border-black/12.5 dark:bg-slate-850 dark:shadow-dark-xl shadow-xl relative z-20 flex min-w-0 flex-col break-words rounded-2xl border-0 border-solid bg-white bg-clip-border">
+            {/* Class Header Card disesuaikan persis dengan Template HTML */}
             <div className="border-black/12.5 mb-0 rounded-t-2xl border-b-0 border-solid p-6 pt-4 pb-0 flex flex-col gap-4 flex-none">
               <div className="flex flex-row justify-between items-start w-full">
                 <div>
                   <h6 className="capitalize dark:text-white font-bold text-slate-700 mb-1">Ringkasan Penjualan</h6>
-                  <p className="mb-0 text-xs leading-normal dark:text-white dark:opacity-60 flex items-center gap-1">
+                  {/* Menggunakan text-sm leading-normal dark:text-white dark:opacity-60 sesuai template HTML */}
+                  <p className="mb-0 text-sm leading-normal dark:text-white dark:opacity-60 flex items-center gap-1">
                     <i className="fa fa-arrow-up text-emerald-500"></i>
                     <span className="text-slate-400">Angka di atas dan grafik otomatis sinkron dengan filter</span>
                   </p>
@@ -547,8 +552,9 @@ export default function DashboardCards() {
                 </button>
               </div>
             </div>
+            {/* Menggunakan flex-auto p-4 persis sesuai template HTML */}
             <div className="flex-auto p-4 mt-2 flex-grow flex flex-col justify-end">
-              <div className="w-full" style={{ height: '410px' }}>
+              <div className="w-full" style={{ height: '300' }}>
                 <Line data={chartData} options={chartOptions} />
               </div>
             </div>
