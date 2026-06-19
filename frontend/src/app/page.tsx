@@ -40,20 +40,20 @@ export default function Home() {
   }, []);
 
   // Fungsi Logout
- const handleLogout = () => {
-  localStorage.removeItem('user');
-  localStorage.removeItem('token');
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
 
-  setUser(null);
+    setUser(null);
 
-  setLogoutMessage(true);
+    setLogoutMessage(true);
 
-  setTimeout(() => {
-    setLogoutMessage(false);
-  }, 3000);
+    setTimeout(() => {
+      setLogoutMessage(false);
+    }, 3000);
 
-  router.push('/');
-};
+    router.push('/');
+  };
 
   return (
     <>
@@ -65,7 +65,8 @@ export default function Home() {
           setSearchTerm(val);
           setActiveFilter('all');
           setTimeout(() => {
-            const menuSection = document.getElementById('menu-section');
+            // ✅ DISINKRONKAN: Menuju ke target id baru agar konsisten
+            const menuSection = document.getElementById('main-shop-section');
             if (menuSection) menuSection.scrollIntoView({ behavior: 'smooth' });
           }, 100);
         }}
@@ -101,25 +102,31 @@ export default function Home() {
       />
 
       <main>
-        {/* HERO */}
-       <Hero
-        user={user}
-        logoutMessage={logoutMessage}
-        onSearchOpen={() => setIsSearchOpen(true)}
-        onLoginOpen={() => setShowLogin(true)}
-      />
+        {/* HERO (Popup mini dengan fitur auto-scroll internal bawaan bray) */}
+        <Hero
+          user={user}
+          logoutMessage={logoutMessage}
+          onSearchOpen={() => setIsSearchOpen(true)}
+          onLoginOpen={() => setShowLogin(true)}
+        />
 
         <Marquee />
 
-        <Categories activeFilter={activeFilter} setActiveFilter={setActiveFilter} />
+        {/* 🔥 KUNCINYA DI SINI BRAY! 
+          Kita bungkus Categories dan Menu ke dalam satu div dengan id="main-shop-section"
+          Biar pas 1 detik setelah landing page ke-load, Hero otomatis nembak scroll-nya tepat ke sini!
+        */}
+        <div id="main-shop-section" style={{ scrollMarginTop: '20px' }}>
+          <Categories activeFilter={activeFilter} setActiveFilter={setActiveFilter} />
 
-        <Menu
-          searchTerm={searchTerm}
-          activeFilter={activeFilter}
-          setActiveFilter={setActiveFilter}
-          onOpenDetail={setSelectedProduct}
-          onClearSearch={() => setSearchTerm('')}
-        />
+          <Menu
+            searchTerm={searchTerm}
+            activeFilter={activeFilter}
+            setActiveFilter={setActiveFilter}
+            onOpenDetail={setSelectedProduct}
+            onClearSearch={() => setSearchTerm('')}
+          />
+        </div>
 
         <HowItWorks />
 

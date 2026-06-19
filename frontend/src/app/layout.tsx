@@ -1,6 +1,7 @@
 'use client';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Plus_Jakarta_Sans } from 'next/font/google';
+import './globals.css'; // 👈 PASTIIN BARIS INI ADA BRAY!
 
 
 import "./globals.css";

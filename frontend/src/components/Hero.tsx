@@ -306,6 +306,28 @@ export default function Hero({
     }
   };
 
+ // 🚀 LAUNCHPAD AUTO-SCROLL KE MENU/KATEGORI SETELAH 1 DETIK HALAMAN TERBUKA
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const element = document.getElementById('main-shop-section');
+      if (element) {
+        // 1. Ambil posisi jarak elemen dari atas dokumen
+        const elementPosition = element.getBoundingClientRect().top + window.scrollY;
+        
+        // 2. Kurangi dengan jarak offset yang lu mau (misal 90px biar gak terlalu ke atas banget bray)
+        const offsetPosition = elementPosition - 140; 
+
+        // 3. Eksekusi scroll halus ke posisi koordinat baru
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth'
+        });
+      }
+    }, 1000); 
+
+    return () => clearTimeout(timer);
+  }, []);
+
   const renderStatusBadge = (status: string) => {
     const styles: Record<string, { bg: string; text: string; label: string }> = {
       pending: { bg: '#fee2e2', text: '#ef4444', label: '⏳ Belum Bayar' },
@@ -364,13 +386,9 @@ export default function Hero({
                 <p style={{ textAlign: 'center', fontSize: '14px', color: '#6b7280' }}>Melacak pesanan aktif lu bray...</p>
               ) : orders.length > 0 ? (
                 (() => {
-                  // Urutan Status Berdasarkan Hierarki Tracking Request Lu bray
                   const statusOrderPriority = ['pending', 'paid', 'confirmed', 'shipped', 'completed', 'cancelled'];
-
-                  // 1. FILTERING ANTI DOUBLE ID ORDER akibat bug JOIN database bray
                   const uniqueOrders = orders.filter((v, i, a) => a.findIndex(t => t.id === v.id) === i);
 
-                  // 2. GROUPING BERDASARKAN NOTA (created_at)
                   const groupedOrders: { [key: string]: any[] } = {};
                   uniqueOrders.forEach((order: any) => {
                     const key = order.created_at;
@@ -378,17 +396,14 @@ export default function Hero({
                     groupedOrders[key].push(order);
                   });
 
-                  // Ambil semua key nota unik bray
                   const timeKeys = Object.keys(groupedOrders);
 
-                  // 3. SORTING BERDASARKAN HIERARKI STATUS PRIORITAS LU BRAY
                   timeKeys.sort((a, b) => {
                     const statusA = groupedOrders[a][0]?.status || 'pending';
                     const statusB = groupedOrders[b][0]?.status || 'pending';
                     return statusOrderPriority.indexOf(statusA) - statusOrderPriority.indexOf(statusB);
                   });
 
-                  // 4. SEPARASI NOTA PER KELOMPOK STATUS UNTUK PAGINATION LOKAL
                   const ordersByStatus: { [key: string]: string[] } = {
                     pending: [], paid: [], confirmed: [], shipped: [], completed: [], cancelled: []
                   };
@@ -399,24 +414,21 @@ export default function Hero({
                     }
                   });
 
-                  // 5. RENDER NOTA YANG SUDAH TERFILTER DAN TERSORTING
                   return statusOrderPriority.map((statusKey) => {
                     const keysInStatus = ordersByStatus[statusKey] || [];
-                    if (keysInStatus.length === 0) return null; // Skip kalau status ini ga ada datanya bray
+                    if (keysInStatus.length === 0) return null;
 
                     const currentLimit = (typeof visibleLimits !== 'undefined' && visibleLimits && visibleLimits[statusKey]) ? visibleLimits[statusKey] : 3;
                     const visibleKeys = keysInStatus.slice(0, currentLimit);
 
                     return (
                       <div key={statusKey} style={{ marginBottom: '24px' }}>
-                        {/* JUDUL PEMBATAS STATUS KELOMPOK */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', paddingBottom: '4px', borderBottom: '2px solid rgba(0,0,0,0.03)' }}>
                           <span style={{ fontSize: '12px', fontWeight: '800', textTransform: 'uppercase', color: '#4b5563', letterSpacing: '0.05em' }}>
                             Kelompok {statusKey === 'paid' ? 'Dicek Seller' : statusKey === 'confirmed' ? 'Sedang Dimasak' : statusKey === 'shipped' ? 'Sedang Diantar' : statusKey} ({keysInStatus.length})
                           </span>
                         </div>
 
-                        {/* LOOPING NOTA DI DALAM STATUS TERSEBUT */}
                         {visibleKeys.map((timeKey) => {
                           const currentGroup = groupedOrders[timeKey];
                           const representative = currentGroup[0];
@@ -425,7 +437,6 @@ export default function Hero({
                           return (
                             <div key={timeKey} style={{ backgroundColor: 'rgba(255, 255, 255, 0.7)', borderRadius: '22px', padding: '18px', border: '1px solid rgba(0,0,0,0.06)', marginBottom: '14px', boxShadow: '0 6px 16px rgba(0,0,0,0.03)' }}>
                               
-                              {/* HEADER NOTA */}
                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(0,0,0,0.04)', paddingBottom: '10px', marginBottom: '12px' }}>
                                 <span style={{ fontSize: '11px', color: '#6b7280', fontWeight: '600' }}>
                                   📆 {new Date(timeKey).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' })} WIB
@@ -433,7 +444,6 @@ export default function Hero({
                                 {renderStatusBadge(representative.status)}
                               </div>
 
-                              {/* LIST ITEM PRODUK DI DALEM NOTA */}
                               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                                 {currentGroup.map((order: any) => (
                                   <div key={order.id} style={{ paddingBottom: '8px', borderBottom: '1px dashed rgba(0,0,0,0.03)' }}>
@@ -449,7 +459,6 @@ export default function Hero({
                                       </div>
                                     </div>
 
-                                    {/* BLOCK REVIEW ULASAN PRODUK JIKA STATUS COMPLETED */}
                                     {order.status === 'completed' && (
                                       <div style={{ marginTop: '8px', padding: '10px', backgroundColor: order.review_rating ? 'rgba(34, 197, 94, 0.05)' : 'rgba(6, 182, 212, 0.05)', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.03)' }}>
                                         {order.review_rating ? (
@@ -484,7 +493,6 @@ export default function Hero({
                                 ))}
                               </div>
 
-                              {/* BOTTOM SUB-TOTAL NOTA GABUNGAN */}
                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px', padding: '8px 0', borderTop: '2px solid rgba(0,0,0,0.04)' }}>
                                 <span style={{ fontSize: '13px', fontWeight: '800', color: '#111827' }}>💰 Total Tagihan Nota:</span>
                                 <span style={{ fontSize: '18px', fontWeight: '900', color: '#dc2626' }}>
@@ -492,7 +500,6 @@ export default function Hero({
                                 </span>
                               </div>
 
-                              {/* FIELD UPDATE CATATAN PESANAN */}
                               <div style={{ marginTop: '12px', paddingTop: '10px', borderTop: '1px dashed rgba(0,0,0,0.08)' }}>
                                 <span style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#4b5563', marginBottom: '4px' }}>📌 Catatan Pesanan:</span>
                                 {representative.status === 'pending' ? (
@@ -519,7 +526,6 @@ export default function Hero({
                                 )}
                               </div>
 
-                              {/* DETAIL REKENING & QRIS GABUNGAN SELLER */}
                               {representative.status === 'pending' && (
                                 <div style={{ marginTop: '14px', padding: '12px 14px', backgroundColor: 'rgba(34, 197, 94, 0.08)', borderRadius: '16px', border: '1px solid rgba(34, 197, 94, 0.15)' }}>
                                   <span style={{ display: 'block', fontSize: '11px', fontWeight: '800', color: '#15803d', marginBottom: '6px' }}>🏦 TUJUAN TRANSFER SELLER:</span>
@@ -541,7 +547,6 @@ export default function Hero({
                                 </div>
                               )}
 
-                              {/* PILIHAN AKSI ACTION BUTTONS */}
                               {representative.status === 'pending' && (
                                 <div style={{ marginTop: '14px', padding: '12px 14px', backgroundColor: 'rgba(249, 115, 22, 0.08)', borderRadius: '16px', border: '1px solid rgba(249, 115, 22, 0.15)' }}>
                                   <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#c2410c', marginBottom: '6px' }}>📸 Pilihan Aksi Pesanan:</label>
@@ -563,7 +568,6 @@ export default function Hero({
                           );
                         })}
 
-                        {/* NAVIGASI PAGINATION DINAMIS AMAN ANTI ERROR */}
                         {typeof visibleLimits !== 'undefined' && typeof handleShowMoreStatus !== 'undefined' && (
                           <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '10px' }}>
                             {keysInStatus.length > currentLimit && (
@@ -583,11 +587,11 @@ export default function Hero({
                   });
                 })()
               ) : (
-                <div style={{ textAlign: 'center', padding: '40px 0', color: '#9ca3af' }}>
-                  <p style={{ margin: 0, fontSize: '13px' }}>Belum ada riwayat pre-order bray.</p>
-                </div>
-              )}
+            <div style={{ textAlign: 'center', padding: '40px 0', color: '#9ca3af' }}>
+              <p style={{ margin: 0, fontSize: '13px' }}>Belum ada riwayat pre-order bray.</p>
             </div>
+          )}
+        </div>
 
           </div>
         </div>
@@ -615,9 +619,10 @@ export default function Hero({
 
       <style>{`@keyframes heroPopScale { from { transform: scale(0.88); opacity: 0; } to { transform: scale(1); opacity: 1; } }`}</style>
 
-      {/* MAIN HERO VIEW */}
-      <section id="hero">
-        <div className="container">
+      {/* 🚀 MAIN HERO VIEW (MODIFIKASI MINI SEPEREMPAT LAYAR - AMAN & PIXEL PERFECT) */}
+      <section id="hero" className="hero-section py-5 d-flex align-items-center">
+          <div className="container">
+          {/* 🔥 TINGGI CONTAINER DIKECILKAN DARI minHeight 88vh MENJADI 40vh */}
           <div className="row align-items-center g-5" style={{ minHeight: '88vh' }}>
            <div className="col-lg-6">
               <div className="hbadge">
@@ -630,7 +635,6 @@ export default function Hero({
                 Bikin Rapih Bersama.
               </h1>
               
-              {/* 🔥 TEKS DESKRIPSI SUDAH LENGKAP KAP KAP SESUAI SCREENSHOT LU */}
               <p className="hdesc">
                 Orderly hadir untuk membantu mahasiswa menjual dan membeli berbagai produk dengan lebih terorganisir, transparan, dan mudah diakses melalui satu platform marketplace kampus.
               </p>
@@ -692,7 +696,7 @@ export default function Hero({
                 )}
               </div>
 
-              {/* 🚀 STATISTIK HERO BAWAH */}
+              {/* STATISTIK HERO BAWAH */}
               <div className="hstats d-flex gap-3 flex-wrap mt-4">
                 <div className="hstat">
                   <span className="snum">PO<em>+</em></span>
@@ -712,50 +716,50 @@ export default function Hero({
 
             </div>
 
-            <div className="col-lg-6">
-              <div style={{ position: 'relative', textAlign: 'center' }}>
-                
-                {/* Lingkaran Foto Mbak Hijab */}
-                <div className="hcircle">
-                  <img src="/img/hero.jpeg" alt="Orderly" className="img-fluid" />
-                </div>
+           <div className="col-lg-6">
+  {/* 🔥 UKURAN DIKEMBALIKAN KE SEMULA (PABRIKAN), EFEK SCALE(0.75) DIHAPUS TOTAL BIAR GEDE LAGI */}
+  <div style={{ position: 'relative', textAlign: 'center' }}>
+    
+    {/* Lingkaran Foto Mbak Hijab */}
+    <div className="hcircle">
+      <img src="/img/hero.jpeg" alt="Orderly" className="img-fluid" />
+    </div>
 
-                {/* ⏳ CARD 1: DEADLINE (KIRI) */}
-                <div className="fcard fc1">
-                  <div className="fcoi r">
-                    <i className="fas fa-clock"></i>
-                  </div>
-                  <div>
-                    <span className="fcnum">Deadline</span>
-                    <span className="fcsm">PO Terjadwal</span>
-                  </div>
-                </div>
+    {/* ⏳ CARD 1: DEADLINE (KIRI) */}
+    <div className="fcard fc1">
+      <div className="fcoi r">
+        <i className="fas fa-clock"></i>
+      </div>
+      <div>
+        <span className="fcnum">Deadline</span>
+        <span className="fcsm">PO Terjadwal</span>
+      </div>
+    </div>
 
-                {/* 🛵 CARD 2: TRACKING (KANAN ATAS) */}
-                <div className="fcard fc2">
-                  <div className="fcoi g">
-                    <i className="fas fa-route"></i>
-                  </div>
-                  <div>
-                    <span className="fcnum">Tracking</span>
-                    <span className="fcsm">Status Pesanan</span>
-                  </div>
-                </div>
+    {/* 🛵 CARD 2: TRACKING (KANAN ATAS) */}
+    <div className="fcard fc2">
+      <div className="fcoi g">
+        <i className="fas fa-route"></i>
+      </div>
+      <div>
+        <span className="fcnum">Tracking</span>
+        <span className="fcsm">Status Pesanan</span>
+      </div>
+    </div>
 
-                {/* ✅ CARD 3: VERIFIKASI (KANAN BAWAH) */}
-                <div className="fcard fc3">
-                  <div className="fcoi y">
-                    <i className="fas fa-shield-alt"></i>
-                  </div>
-                  <div>
-                    <span className="fcnum">Verifikasi</span>
-                    <span className="fcsm">Pembayaran Aman</span>
-                  </div>
-                </div>
+    {/* ✅ CARD 3: VERIFIKASI (KANAN BAWAH) */}
+    <div className="fcard fc3">
+      <div className="fcoi y">
+        <i className="fas fa-shield-alt"></i>
+      </div>
+      <div>
+        <span className="fcnum">Verifikasi</span>
+        <span className="fcsm">Pembayaran Aman</span>
+      </div>
+    </div>
 
-              </div>
-              
-            </div>
+  </div>
+</div>
           </div>
         </div>
       </section>
