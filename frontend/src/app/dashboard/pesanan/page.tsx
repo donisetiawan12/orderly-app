@@ -317,12 +317,10 @@ const handleUpdateStatus = async (orderId: number, nextStatus: string, buyerName
                         <th className="py-3 text-center font-bold">Aksi Seller</th>
                       </tr>
                     </thead>
-                    <tbody>
+                   <tbody>
                       {recentOrders.length > 0 ? (
-                        /* 🚀 FIX PAGINATION: Membalikkan data terlebih dahulu, baru kemudian dipotong per 5 data */
+                        /* ✅ KODE BARU: Bersih, tanpa .reverse() dan tanpa double .slice() */
                         recentOrders
-                          .slice()
-                          .reverse()
                           .slice((orderPage - 1) * ordersPerPage, orderPage * ordersPerPage)
                           .map((order, index) => {
                             const currentStatus = (order.status || 'pending').trim().toLowerCase();

@@ -230,7 +230,7 @@ exports.addReview = async (req, res) => {
 };
 
 // =========================================================================
-// 📈 7. STATISTIK SELLER (TETAP AMAN)
+// 📈 7. STATISTIK SELLER (TETAP AMAN & FIX URUTAN ID TERBARU)
 // =========================================================================
 exports.getSellerStats = async (req, res) => {
     try {
@@ -240,7 +240,18 @@ exports.getSellerStats = async (req, res) => {
         const [totalProducts] = await db.execute("SELECT COUNT(*) as total FROM products WHERE seller_id = ?", [seller_id]);
         const [totalCustomers] = await db.execute("SELECT COUNT(DISTINCT buyer_id) as total FROM orders WHERE seller_id = ?", [seller_id]);
         const [chartOrders] = await db.execute(`SELECT total_price, quantity, status, buyer_id, created_at FROM orders WHERE seller_id = ?`, [seller_id]);
-        const [recentOrders] = await db.execute(`SELECT o.id, o.status, o.total_price, o.quantity, o.payment_proof, o.notes, u.name as buyer_name, p.name as product_name, o.created_at FROM orders o JOIN users u ON o.buyer_id = u.id JOIN products p ON o.product_id = p.id WHERE o.seller_id = ? ORDER BY o.created_at DESC LIMIT 50`, [seller_id]);
+        
+        // 🔥 FIX URUTAN: Sekarang diurutin pake o.id DESC biar orderan paling baru masuk nangkring paling atas di tabel!
+        const [recentOrders] = await db.execute(`
+            SELECT o.id, o.status, o.total_price, o.quantity, o.payment_proof, o.notes, 
+                   u.name as buyer_name, p.name as product_name, o.created_at 
+            FROM orders o 
+            JOIN users u ON o.buyer_id = u.id 
+            JOIN products p ON o.product_id = p.id 
+            WHERE o.seller_id = ? 
+            ORDER BY o.id DESC 
+            LIMIT 50
+        `, [seller_id]);
         
         sendResponse(res, 200, "success", "Data statistik berhasil", { 
             total_order: totalOrder[0].total || 0, 
