@@ -99,7 +99,7 @@ const [isNavOpen, setIsNavOpen] = useState(false);
 
     setLoadingCart(true);
     try {
-      const res = await fetch('http://127.0.0.1:5000/api/cart', {
+      const res = await fetch('http://orderly.web.id/api/cart', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -125,7 +125,7 @@ const [isNavOpen, setIsNavOpen] = useState(false);
 
     if (!isCountOnly) setLoadingOrders(true);
     try {
-      const res = await fetch(`http://127.0.0.1:5000/api/orders`, {
+      const res = await fetch(`http://orderly.web.id/api/orders`, {
         method: 'GET',
         headers: { 
           'Authorization': `Bearer ${token}`,
@@ -185,7 +185,7 @@ const [isNavOpen, setIsNavOpen] = useState(false);
   const handleDeleteItem = async (cartId: number) => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`http://127.0.0.1:5000/api/cart/${cartId}`, {
+      const res = await fetch(`http://orderly.web.id/api/cart/${cartId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -223,7 +223,7 @@ const [isNavOpen, setIsNavOpen] = useState(false);
         price: item.price
       }));
 
-      const res = await fetch('http://127.0.0.1:5000/api/orders', {
+      const res = await fetch('http://orderly.web.id/api/orders', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -261,7 +261,7 @@ const [isNavOpen, setIsNavOpen] = useState(false);
     if (!token) return;
     setCancellingId(orderId);
     try {
-      const res = await fetch(`http://127.0.0.1:5000/api/orders/${orderId}/cancel`, {
+      const res = await fetch(`http://orderly.web.id/api/orders/${orderId}/cancel`, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
       });
@@ -284,7 +284,7 @@ const [isNavOpen, setIsNavOpen] = useState(false);
     if (!token) return;
     setUpdatingNotesId(orderId);
     try {
-      const res = await fetch(`http://127.0.0.1:5000/api/orders/${orderId}/notes`, {
+      const res = await fetch(`http://orderly.web.id/api/orders/${orderId}/notes`, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ notes: editingNotes[orderId] || '' })
@@ -327,7 +327,7 @@ const [isNavOpen, setIsNavOpen] = useState(false);
     formData.append('payment_proof', selectedFile);
     setUploadingId(orderId);
     try {
-      const res = await fetch(`http://127.0.0.1:5000/api/orders/${orderId}/payment`, {
+      const res = await fetch(`http://orderly.web.id/api/orders/${orderId}/payment`, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${token}` },
         body: formData
@@ -351,7 +351,7 @@ const [isNavOpen, setIsNavOpen] = useState(false);
     const comment = reviewComment[orderId] || '';
     setSubmittingReviewId(orderId);
     try {
-      const res = await fetch(`http://127.0.0.1:5000/api/orders/review`, {
+      const res = await fetch(`http://orderly.web.id/api/orders/review`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ order_id: orderId, rating, comment })
@@ -596,7 +596,7 @@ const [isNavOpen, setIsNavOpen] = useState(false);
               ) : cartItems.length > 0 ? (
                 cartItems.map((item) => (
                   <div key={item.cart_id} style={{ display: 'flex', gap: '12px', alignItems: 'center', padding: '12px', backgroundColor: '#f8fafc', borderRadius: '16px', marginBottom: '12px', border: '1px solid #f1f5f9' }}>
-                    <img src={item.image ? `http://127.0.0.1:5000/uploads/products/${item.image}` : '/img/default.jpg'} alt={item.name} style={{ width: '60px', height: '60px', borderRadius: '12px', objectFit: 'cover', backgroundColor: '#e2e8f0' }} onError={(e) => { (e.target as HTMLImageElement).src = '/img/default.jpg'; }} />
+                    <img src={item.image ? `http://orderly.web.id/uploads/products/${item.image}` : '/img/default.jpg'} alt={item.name} style={{ width: '60px', height: '60px', borderRadius: '12px', objectFit: 'cover', backgroundColor: '#e2e8f0' }} onError={(e) => { (e.target as HTMLImageElement).src = '/img/default.jpg'; }} />
                     <div style={{ flex: 1 }}>
                       <h4 style={{ margin: '0 0 4px 0', fontSize: '14px', fontWeight: '700', color: '#1e293b' }}>{item.name || 'Menu Tidak Diketahui'}</h4>
                       <div style={{ fontSize: '13px', color: '#ef4444', fontWeight: '700' }}>Rp {Math.trunc(Number(item.price || 0)).toLocaleString('id-ID')} <span style={{ color: '#94a3b8', fontWeight: '500', fontSize: '11px', marginLeft: '6px' }}>x{item.quantity}</span></div>
@@ -775,8 +775,8 @@ const [isNavOpen, setIsNavOpen] = useState(false);
                                     <p style={{ margin: '0 0 2px 0' }}><b>No. HP / Rek:</b> <span style={{ color: '#0284c7', fontWeight: '700' }}>{representative.seller_account_number || '08X-XXXX-XXXX'}</span></p>
                                     <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                       <span style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#15803d', marginBottom: '6px' }}>Scan QRIS Resmi Seller:</span>
-                                      <img src={representative.seller_qris_image ? `http://127.0.0.1:5000/uploads/payments/${representative.seller_qris_image}` : 'https://placehold.co/150?text=QRIS+Ready'} alt="QRIS Seller" style={{ width: '160px', height: '160px', objectFit: 'contain', borderRadius: '14px', backgroundColor: '#fff', padding: '6px', border: '1px solid #e5e7eb' }} />
-                                      <button type="button" onClick={() => handleDownloadQris(`http://127.0.0.1:5000/uploads/payments/${representative.seller_qris_image}`, representative.id)} style={{ marginTop: '8px', padding: '6px 14px', backgroundColor: '#16a34a', color: '#ffffff', border: 'none', borderRadius: '8px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>📥 Unduh Gambar QRIS</button>
+                                      <img src={representative.seller_qris_image ? `http://orderly.web.id/uploads/payments/${representative.seller_qris_image}` : 'https://placehold.co/150?text=QRIS+Ready'} alt="QRIS Seller" style={{ width: '160px', height: '160px', objectFit: 'contain', borderRadius: '14px', backgroundColor: '#fff', padding: '6px', border: '1px solid #e5e7eb' }} />
+                                      <button type="button" onClick={() => handleDownloadQris(`http://orderly.web.id/uploads/payments/${representative.seller_qris_image}`, representative.id)} style={{ marginTop: '8px', padding: '6px 14px', backgroundColor: '#16a34a', color: '#ffffff', border: 'none', borderRadius: '8px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>📥 Unduh Gambar QRIS</button>
                                     </div>
                                   </div>
                                 </div>

@@ -43,7 +43,7 @@ export default function RegisterModal({
         formData.append('ktm', ktm);
       }
 
-      const response = await fetch('http://127.0.0.1:5000/api/auth/register', {
+      const response = await fetch('http://orderly.web.id/api/auth/register', {
         method: 'POST',
         body: formData, // Mengirim data multipart/form-data
       });

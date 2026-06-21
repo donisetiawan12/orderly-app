@@ -72,7 +72,7 @@ export default function MenuDetailPopup({ product, onClose }: any) {
         setLoadingReviews(true);
         try {
           // 2. Tembak API menggunakan ID yang sudah tervalidasi ada isinya
-          const res = await fetch(`http://127.0.0.1:5000/api/products/${targetProductId}/reviews`);
+          const res = await fetch(`http://orderly.web.id/api/products/${targetProductId}/reviews`);
           const result = await res.json();
           
           // 3. Ambil data ulasannya, sesuaikan dengan format response API backend
@@ -115,7 +115,7 @@ export default function MenuDetailPopup({ product, onClose }: any) {
         return;
       }
 
-      const response = await fetch('http://127.0.0.1:5000/api/cart', {
+      const response = await fetch('http://orderly.web.id/api/cart', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -210,7 +210,7 @@ export default function MenuDetailPopup({ product, onClose }: any) {
             flexShrink: 0 
           }}>
             <img 
-              src={product.image ? `http://127.0.0.1:5000/uploads/products/${product.image}` : '/img/default.jpg'} 
+              src={product.image ? `http://orderly.web.id/uploads/products/${product.image}` : '/img/default.jpg'} 
               alt={product.name} 
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               onError={(e) => { (e.target as HTMLImageElement).src = '/img/default.jpg'; }}

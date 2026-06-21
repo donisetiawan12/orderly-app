@@ -42,7 +42,7 @@ export default function VerifikasiSellerPage() {
   const fetchAllSellers = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://127.0.0.1:5000/api/auth/admin/pending-sellers', {
+      const res = await fetch('http://orderly.web.id/api/auth/admin/pending-sellers', {
         method: 'GET',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -106,7 +106,7 @@ export default function VerifikasiSellerPage() {
         setActionLoading(id);
         try {
           const token = localStorage.getItem('token');
-          const res = await fetch(`http://127.0.0.1:5000/api/auth/admin/verify-seller/${id}`, {
+          const res = await fetch(`http://orderly.web.id/api/auth/admin/verify-seller/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify({ status })
@@ -223,7 +223,7 @@ export default function VerifikasiSellerPage() {
                                   onClick={() => {
                                     Swal.fire({
                                       title: `<span style="color: #1e293b; font-weight: bold;">KTM - ${seller.name}</span>`,
-                                      imageUrl: `http://127.0.0.1:5000/uploads/ktm/${seller.profile_picture}`,
+                                      imageUrl: `http://orderly.web.id/uploads/ktm/${seller.profile_picture}`,
                                       imageAlt: 'Foto KTM Mahasiswa',
                                       imageWidth: 400, confirmButtonColor: '#3b82f6',
                                       confirmButtonText: '<span style="color: #ffffff; font-weight: bold;">Tutup</span>',
@@ -233,7 +233,7 @@ export default function VerifikasiSellerPage() {
                                   className="inline-block cursor-pointer"
                                   style={{ opacity: 1, filter: 'none', display: 'inline-block' }}
                                 >
-                                  <img src={`http://127.0.0.1:5000/uploads/ktm/${seller.profile_picture}`} alt="KTM" className="w-16 h-10 object-cover rounded border border-gray-200 shadow-md" style={{ opacity: '1 !important', filter: 'none' }} />
+                                  <img src={`http://orderly.web.id/uploads/ktm/${seller.profile_picture}`} alt="KTM" className="w-16 h-10 object-cover rounded border border-gray-200 shadow-md" style={{ opacity: '1 !important', filter: 'none' }} />
                                 </div>
                               ) : (
                                 <span className="italic font-semibold" style={{ color: '#94a3b8 !important', fontSize: '12px', display: 'block' }}>No File</span>

@@ -12,9 +12,9 @@ export default function Menu({ searchTerm, activeFilter, setActiveFilter, onOpen
     try {
       // 🔥 KEMBALI KE LOGIC ORIGINAL LU: Menggunakan Promise.all split page agar avg_rating dan reviews amannn!
       const [resP1, resP2, resCat] = await Promise.all([
-        fetch('http://127.0.0.1:5000/api/products/landing-page?page=1'),
-        fetch('http://127.0.0.1:5000/api/products/landing-page?page=2'),
-        fetch('http://127.0.0.1:5000/api/categories')
+        fetch('http://orderly.web.id/api/products/landing-page?page=1'),
+        fetch('http://orderly.web.id/api/products/landing-page?page=2'),
+        fetch('http://orderly.web.id/api/categories')
       ]);
       
       const jsonP1 = await resP1.json();
@@ -124,7 +124,7 @@ export default function Menu({ searchTerm, activeFilter, setActiveFilter, onOpen
                 <div className="mcard" onClick={() => onOpenDetail(item)} style={{ cursor: 'pointer', border: '1px solid #eee', borderRadius: '10px', overflow: 'hidden' }}>
                   <div className="mimg" style={{ position: 'relative' }}>
                     <img 
-                      src={item.image ? `http://127.0.0.1:5000/uploads/products/${item.image}` : '/img/default.jpg'} 
+                      src={item.image ? `http://orderly.web.id/uploads/products/${item.image}` : '/img/default.jpg'} 
                       alt={item.name} 
                       style={{ width: '100%', height: '200px', objectFit: 'cover' }}
                       onError={(e) => { (e.target as HTMLImageElement).src = '/img/default.jpg'; }}

@@ -70,7 +70,7 @@ export default function ProductManagement() {
       const token = localStorage.getItem('token');
       if (!token) return;
 
-      const res = await fetch('http://127.0.0.1:5000/api/orders/stats', {
+      const res = await fetch('http://orderly.web.id/api/orders/stats', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -90,7 +90,7 @@ export default function ProductManagement() {
   const fetchProducts = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://127.0.0.1:5000/api/products', {
+      const res = await fetch('http://orderly.web.id/api/products', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -115,7 +115,7 @@ export default function ProductManagement() {
   const fetchCategories = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://127.0.0.1:5000/api/categories', {
+      const res = await fetch('http://orderly.web.id/api/categories', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -197,8 +197,8 @@ export default function ProductManagement() {
     }
 
     const url = isEditMode 
-      ? `http://127.0.0.1:5000/api/products/${currentProductId}`
-      : 'http://127.0.0.1:5000/api/products';
+      ? `http://orderly.web.id/api/products/${currentProductId}`
+      : 'http://orderly.web.id/api/products';
       
     const method = isEditMode ? 'PUT' : 'POST';
 
@@ -281,7 +281,7 @@ export default function ProductManagement() {
       if (result.isConfirmed) {
         const token = localStorage.getItem('token');
         try {
-          const res = await fetch(`http://127.0.0.1:5000/api/products/${id}`, {
+          const res = await fetch(`http://orderly.web.id/api/products/${id}`, {
             method: 'DELETE',
             headers: {
               'Authorization': `Bearer ${token}`
@@ -542,7 +542,7 @@ export default function ProductManagement() {
                     <td className="p-2 align-middle bg-transparent border-b dark:border-white/40 shadow-transparent">
                       <div style={{ width: '50px', height: '50px', borderRadius: '8px', overflow: 'hidden', backgroundColor: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #e2e8f0' }}>
                         <img 
-                          src={product.image ? `http://127.0.0.1:5000/uploads/products/${product.image}` : 'https://placehold.co/100?text=No+Img'} 
+                          src={product.image ? `http://orderly.web.id/uploads/products/${product.image}` : 'https://placehold.co/100?text=No+Img'} 
                           alt={product.name}
                           style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                           onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/100?text=No+Img'; }}

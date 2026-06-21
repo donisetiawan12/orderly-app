@@ -56,7 +56,7 @@ export default function KategoriProductPage() {
   const fetchCategories = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://127.0.0.1:5000/api/categories', {
+      const res = await fetch('http://orderly.web.id/api/categories', {
         method: 'GET',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -75,7 +75,7 @@ export default function KategoriProductPage() {
       const token = localStorage.getItem('token');
       
       // Ambil data pendaftaran seller (sesuaikan endpoint dengan backend lu ya bray)
-      const resSeller = await fetch('http://127.0.0.1:5000/api/sellers', {
+      const resSeller = await fetch('http://orderly.web.id/api/sellers', {
         method: 'GET',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -85,7 +85,7 @@ export default function KategoriProductPage() {
       }
 
       // Opsional: Jika ada endpoint khusus hitung total buyer/user terdaftar
-      const resBuyer = await fetch('http://127.0.0.1:5000/api/users/count-buyers', {
+      const resBuyer = await fetch('http://orderly.web.id/api/users/count-buyers', {
         method: 'GET',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -171,7 +171,7 @@ export default function KategoriProductPage() {
             formData.append('image', result.value.imageFile); 
           }
 
-          const res = await fetch('http://127.0.0.1:5000/api/categories', {
+          const res = await fetch('http://orderly.web.id/api/categories', {
             method: 'POST',
             headers: { 
               'Authorization': `Bearer ${token}`
@@ -307,7 +307,7 @@ export default function KategoriProductPage() {
             formData.append('image', result.value.imageFile);
           }
 
-          const res = await fetch(`http://127.0.0.1:5000/api/categories/${category.id}`, {
+          const res = await fetch(`http://orderly.web.id/api/categories/${category.id}`, {
             method: 'PUT',
             headers: { 'Authorization': `Bearer ${token}` },
             body: formData
@@ -396,7 +396,7 @@ export default function KategoriProductPage() {
         setActionLoading(id);
         try {
           const token = localStorage.getItem('token');
-          const res = await fetch(`http://127.0.0.1:5000/api/categories/${id}`, {
+          const res = await fetch(`http://orderly.web.id/api/categories/${id}`, {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${token}` }
           });
@@ -681,7 +681,7 @@ export default function KategoriProductPage() {
                                   onClick={() => {
                                     Swal.fire({
                                       title: `<span style="color: #1e293b; font-weight: bold;">Cover - ${category.name}</span>`,
-                                      imageUrl: `http://127.0.0.1:5000/uploads/categories/${category.image}`,
+                                      imageUrl: `http://orderly.web.id/uploads/categories/${category.image}`,
                                       imageAlt: 'Foto Kategori Produk',
                                       imageWidth: 400, 
                                       confirmButtonColor: '#3b82f6',
@@ -695,14 +695,14 @@ export default function KategoriProductPage() {
                                   style={{ opacity: 1, filter: 'none', display: 'inline-block' }}
                                 >
                                   <img 
-                                    src={`http://127.0.0.1:5000/uploads/categories/${category.image}`} 
+                                    src={`http://orderly.web.id/uploads/categories/${category.image}`} 
                                     alt="Kategori" 
                                     className="w-16 h-10 object-cover rounded border border-gray-200 shadow-md" 
                                     style={{ opacity: '1 !important', filter: 'none' }} 
                                     onError={(e) => {
                                       const target = e.target as HTMLImageElement;
                                       if (!target.src.includes('/uploads/categories/')) return;
-                                      target.src = `http://127.0.0.1:5000${category.image}`;
+                                      target.src = `http://orderly.web.id${category.image}`;
                                     }}
                                   />
                                 </div>

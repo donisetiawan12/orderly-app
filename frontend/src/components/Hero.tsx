@@ -113,7 +113,7 @@ export default function Hero({
 
     if (!isCountOnly) setLoadingOrders(true);
     try {
-      const res = await fetch(`http://127.0.0.1:5000/api/orders`, {
+      const res = await fetch(`http://orderly.web.id/api/orders`, {
         method: 'GET',
         headers: { 
           'Authorization': `Bearer ${token}`,
@@ -163,7 +163,7 @@ export default function Hero({
 
     setCancellingId(orderId);
     try {
-      const res = await fetch(`http://127.0.0.1:5000/api/orders/${orderId}/cancel`, {
+      const res = await fetch(`http://orderly.web.id/api/orders/${orderId}/cancel`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -193,7 +193,7 @@ export default function Hero({
 
     setUpdatingNotesId(orderId);
     try {
-      const res = await fetch(`http://127.0.0.1:5000/api/orders/${orderId}/notes`, {
+      const res = await fetch(`http://orderly.web.id/api/orders/${orderId}/notes`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -249,7 +249,7 @@ export default function Hero({
 
     setUploadingId(orderId);
     try {
-      const res = await fetch(`http://127.0.0.1:5000/api/orders/${orderId}/payment`, {
+      const res = await fetch(`http://orderly.web.id/api/orders/${orderId}/payment`, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${token}` },
         body: formData
@@ -281,7 +281,7 @@ export default function Hero({
 
     setSubmittingReviewId(orderId);
     try {
-      const res = await fetch(`http://127.0.0.1:5000/api/orders/review`, {
+      const res = await fetch(`http://orderly.web.id/api/orders/review`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -537,11 +537,11 @@ export default function Hero({
                                     <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                       <span style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#15803d', marginBottom: '6px' }}>Scan QRIS Resmi Seller:</span>
                                       <img 
-                                        src={representative.seller_qris_image ? `http://127.0.0.1:5000/uploads/payments/${representative.seller_qris_image}` : 'https://placehold.co/150?text=QRIS+Ready'} 
+                                        src={representative.seller_qris_image ? `http://orderly.web.id/uploads/payments/${representative.seller_qris_image}` : 'https://placehold.co/150?text=QRIS+Ready'} 
                                         alt="QRIS Seller" 
                                         style={{ width: '160px', height: '160px', objectFit: 'contain', borderRadius: '14px', backgroundColor: '#fff', padding: '6px', border: '1px solid #e5e7eb' }} 
                                       />
-                                      <button type="button" onClick={() => handleDownloadQris(`http://127.0.0.1:5000/uploads/payments/${representative.seller_qris_image}`, representative.id)} style={{ marginTop: '8px', padding: '6px 14px', backgroundColor: '#16a34a', color: '#ffffff', border: 'none', borderRadius: '8px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>📥 Unduh Gambar QRIS</button>
+                                      <button type="button" onClick={() => handleDownloadQris(`http://orderly.web.id/uploads/payments/${representative.seller_qris_image}`, representative.id)} style={{ marginTop: '8px', padding: '6px 14px', backgroundColor: '#16a34a', color: '#ffffff', border: 'none', borderRadius: '8px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>📥 Unduh Gambar QRIS</button>
                                     </div>
                                   </div>
                                 </div>

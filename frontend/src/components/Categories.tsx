@@ -8,7 +8,7 @@ export default function Categories({ activeFilter, setActiveFilter }: any) {
     async function fetchCategories() {
       try {
         // 🔥 FIX 1: Tembak langsung pakai IP mentah backend lu bray!
-        const response = await fetch('http://127.0.0.1:5000/api/categories');
+        const response = await fetch('http://orderly.web.id/api/categories');
         const json = await response.json();
         if (json && json.data) {
           const allOption = { id: 'all', name: 'All Items', image: null };
@@ -43,7 +43,7 @@ export default function Categories({ activeFilter, setActiveFilter }: any) {
               // 🔥 FIX 2: Link image upload juga langsung diarahkan ke IP mentah backend bray!
               imageUrl = cat.image.startsWith('http') 
                 ? cat.image 
-                : `http://127.0.0.1:5000/uploads/categories/${cat.image}`;
+                : `http://orderly.web.id/uploads/categories/${cat.image}`;
             }
 
             return (

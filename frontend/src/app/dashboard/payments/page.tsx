@@ -73,7 +73,7 @@ export default function PaymentsPage() {
       try {
         const rawId = getUserId();
         const cleanUserId = String(rawId).replace(/\D/g, ''); 
-        const targetUrl = `http://127.0.0.1:5000/api/payments/get-payment?userId=${cleanUserId}`;
+        const targetUrl = `http://orderly.web.id/api/payments/get-payment?userId=${cleanUserId}`;
         
         console.log("🚀 Next.js lagi nembak ke URL ini bray:", targetUrl);
 
@@ -98,7 +98,7 @@ export default function PaymentsPage() {
           }
 
           if (payment.qris_image) {
-            setPreviewUrl(`http://127.0.0.1:5000/uploads/payments/${payment.qris_image}`);
+            setPreviewUrl(`http://orderly.web.id/uploads/payments/${payment.qris_image}`);
           }
         }
       } catch (err) {
@@ -129,7 +129,7 @@ export default function PaymentsPage() {
 
     setBtnLoading(true);
     try {
-      const res = await axios.post('http://127.0.0.1:5000/api/payments/save-bank', {
+      const res = await axios.post('http://orderly.web.id/api/payments/save-bank', {
         user_id: getUserId(),
         bank_name: bankName,
         account_name: accountName,
@@ -156,11 +156,11 @@ export default function PaymentsPage() {
 
     setBtnLoading(true);
     try {
-      const res = await axios.post('http://127.0.0.1:5000/api/payments/upload-qris', formData);
+      const res = await axios.post('http://orderly.web.id/api/payments/upload-qris', formData);
       
       if (res.data.success) {
         showToast('QRIS TOKO BERHASIL DIUPLOAD ABANGKUH! 🚀', 'success');
-        setPreviewUrl(`http://127.0.0.1:5000/uploads/payments/${res.data.filename}`);
+        setPreviewUrl(`http://orderly.web.id/uploads/payments/${res.data.filename}`);
       }
     } catch (err) {
       showToast('Gagal upload QRIS bray! Cek terminal backend lu.', 'error');

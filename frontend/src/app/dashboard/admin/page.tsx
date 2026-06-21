@@ -64,7 +64,7 @@ export default function AdminDashboard() {
   const fetchSummaryData = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://127.0.0.1:5000/api/auth/admin/pending-sellers', {
+      const res = await fetch('http://orderly.web.id/api/auth/admin/pending-sellers', {
         method: 'GET',
         headers: { 'Authorization': `Bearer ${token}` }
       });

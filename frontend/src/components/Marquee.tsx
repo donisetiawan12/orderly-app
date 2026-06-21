@@ -8,7 +8,7 @@ export default function Marquee() {
     async function fetchProducts() {
       try {
         // 🚀 Tembak rute publik landing-page yang aman tanpa token JWT bray
-        const response = await fetch('http://127.0.0.1:5000/api/products/landing-page');
+        const response = await fetch('http://orderly.web.id/api/products/landing-page');
         const json = await response.json();
         
         // Memastikan data array produk masuk dengan aman

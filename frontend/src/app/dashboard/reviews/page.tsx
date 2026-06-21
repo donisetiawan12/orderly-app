@@ -61,7 +61,7 @@ export default function SellerReviewsPage() {
 
     const fetchReviews = async () => {
       try {
-        const res = await fetch(`http://127.0.0.1:5000/api/products/seller/reviews/${sellerId}`);
+        const res = await fetch(`http://orderly.web.id/api/products/seller/reviews/${sellerId}`);
         
         if (res.ok) {
           const resData = await res.json();
@@ -96,7 +96,7 @@ export default function SellerReviewsPage() {
   }
 
   try {
-    const res = await fetch(`http://127.0.0.1:5000/api/products/seller/reviews/reply/${reviewId}`, {
+    const res = await fetch(`http://orderly.web.id/api/products/seller/reviews/reply/${reviewId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -394,7 +394,7 @@ export default function SellerReviewsPage() {
                                 <div className="inline-block w-12 h-12 rounded-circle bg-gradient-to-tl from-blue-500 to-violet-500 flex items-center justify-center p-1.5 shadow-sm">
                                   <div className="w-9 h-9 rounded-circle overflow-hidden bg-white flex items-center justify-center flex-shrink-0">
                                     <img 
-                                      src={rev.product_image ? `http://127.0.0.1:5000/uploads/products/${rev.product_image}` : 'https://placehold.co/100?text=No+Img'} 
+                                      src={rev.product_image ? `http://orderly.web.id/uploads/products/${rev.product_image}` : 'https://placehold.co/100?text=No+Img'} 
                                       alt={rev.product_name}
                                       className="w-full h-full object-cover aspect-square"
                                       onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/100?text=No+Img'; }}
