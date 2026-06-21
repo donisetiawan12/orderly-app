@@ -3,7 +3,12 @@
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 
-export default function NavbarAdmin() {
+// 🔑 WAJIB: Daftarkan props toggleSidebar biar bisa dihubungkan ke sidebar bray
+interface NavbarAdminProps {
+  toggleSidebar?: () => void;
+}
+
+export default function NavbarAdmin({ toggleSidebar }: NavbarAdminProps) {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -63,14 +68,28 @@ export default function NavbarAdmin() {
               </button>
             </li>
 
-            <li className="flex items-center">
+            {/* 💻 DESKTOP ONLY: Icon Profile (Hanya kelihatan di Laptop, di HP lenyap) */}
+            <li className="hidden lg:flex items-center">
               <Link
                 href="/dashboard/admin/profile"
                 className="block px-0 py-2 text-sm font-semibold text-white transition-all hover:opacity-80"
               >
                 <i className="fa fa-user sm:mr-1"></i>
-                <span className="hidden sm:inline">Admin Profile</span>
+                <span>Admin Profile</span>
               </Link>
+            </li>
+
+            {/* 📱 MOBILE ONLY: Tombol Hamburger pengganti Profile (Hanya nongol di HP bray) */}
+            <li className="block lg:hidden flex items-center">
+              <button
+                type="button"
+                onClick={toggleSidebar} // 💥 Memicu fungsi buka tutup sidebar pas diklik
+                className="p-1 text-white transition-all cursor-pointer bg-transparent border-0 flex items-center justify-center"
+                style={{ fontSize: '20px' }}
+                aria-label="Toggle Sidebar"
+              >
+                <i className="fas fa-bars"></i>
+              </button>
             </li>
           </ul>
         </div>

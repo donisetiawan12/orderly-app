@@ -11,6 +11,8 @@ export default function SellerDashboard() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
 
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   useEffect(() => {
     const user = localStorage.getItem('user');
     const token = localStorage.getItem('token');
@@ -37,14 +39,14 @@ export default function SellerDashboard() {
       <div className="absolute w-full bg-blue-500 min-h-75"></div>
 
       {/* Sidebar */}
-      <Sidebar />
+      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
       {/* Main wrapper */}
       <main className="relative h-full min-h-screen transition-all duration-200 ease-in-out xl:ml-68 rounded-xl flex flex-col justify-between">
         
         <div>
           {/* Navbar */}
-          <Navbar />
+          <Navbar toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
 
           {/* Content area */}
           <div className="px-6 py-6 mx-auto w-full">

@@ -25,6 +25,9 @@ export default function PaymentsPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState('');
 
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  
+
   // 📈 STATE BARU: STATISTIK PENDAPATAN LANGSUNG (OMZET)
   const [totalOmzet, setTotalOmzet] = useState(0);
   const [totalSalesCount, setTotalSalesCount] = useState(0);
@@ -180,14 +183,14 @@ export default function PaymentsPage() {
       <div className="absolute w-full bg-blue-500 min-h-75 top-0 left-0 -z-10"></div>
 
       {/* Sidebar */}
-      <Sidebar />
+      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
       {/* Main wrapper */}
       <main className="relative h-full min-h-screen transition-all duration-200 ease-in-out xl:ml-68 rounded-xl flex flex-col justify-between">
         
         <div>
           {/* Navbar */}
-          <Navbar />
+           <Navbar toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
 
           {/* Content area */}
           <div className="px-6 py-6 mx-auto w-full">

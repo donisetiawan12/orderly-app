@@ -76,6 +76,8 @@ export default function Navbar({
     setVisibleLimits(prev => ({ ...prev, [statusKey]: 3 }));
   };
 
+const [isNavOpen, setIsNavOpen] = useState(false);
+  
   // 🔥 STATE JUMLAH NOTIFIKASI ITEM DI KERANJANG
   const [cartCount, setCartCount] = useState<number>(0);
 
@@ -402,139 +404,182 @@ export default function Navbar({
       )}
 
       {/* -- START NAVBAR HTML -- */}
-      <nav className="navbar navbar-expand-lg" id="nav">
-        <div className="container">
-          <a className="navbar-brand" href="#">
-            <div className="blogo">
-              <div className="bico"><i className="fas fa-store"></i></div>
-              <div>
-                <div className="bname">Order<span>ly</span></div>
-                <div className="bsub">Marketplace Pre-Order Mahasiswa</div>
-              </div>
-            </div>
-          </a>
-
-          <button className="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navmenu">
-            <i className="fas fa-bars" style={{ color: 'var(--primary)', fontSize: '1.35rem' }}></i>
-          </button>
-
-          <div className="collapse navbar-collapse" id="navmenu">
-            <ul className="navbar-nav mx-auto">
-              <li className="nav-item"><a className="nav-link" href="#hero">Home</a></li>
-              <li className="nav-item"><a className="nav-link" href="#about">Tentang</a></li>
-              <li className="nav-item"><a className="nav-link" href="#menu-section">Produk</a></li>
-              <li className="nav-item"><a className="nav-link" href="#hours">Cara Kerja</a></li>
-              <li className="nav-item"><a className="nav-link" href="#contact-section">Kontak</a></li>
-            </ul>
-
-            <div className="d-flex align-items-center gap-2">
-              <button onClick={onSearchOpen} id="navSearchBtn" className="btn btn-light rounded-circle">
-                <i className="fas fa-search"></i>
-              </button>
-
-              {user ? (
-                <>
-                 {user.role === 'buyer' && (
-  <>
-    {/* 🔥 TOMBOL PESANAN SAYA (HANYA IKON BULAT) */}
-    <button
-      onClick={() => {
-        fetchMyOrders(); // Narik data pesanan terbaru pas diklik
-        setShowOrdersPop(true);
-      }}
-      className="btn btn-light rounded-circle"
-      style={{
-        width: '42px',
-        height: '42px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        position: 'relative',
-        backgroundColor: '#f1f5f9',
-        border: 'none',
-        color: '#334155'
-      }}
-      title="Pesanan Saya"
-    >
-      <i className="fas fa-receipt" style={{ fontSize: '1.1rem' }}></i>
+   <nav className="navbar navbar-expand-lg navbar-light bg-white" id="nav" style={{ padding: '12px 0', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
+    <div className="container">
       
-      {activeOrdersCount > 0 && (
-        <span style={{
-          position: 'absolute', top: '-4px', right: '-4px',
-          backgroundColor: '#ef4444', color: '#ffffff', fontSize: '10px',
-          fontWeight: '800', width: '18px', height: '18px', borderRadius: '50%',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          border: '2px solid #ffffff', boxShadow: '0 2px 4px rgba(0,0,0,0.15)',
-          animation: 'pulseCartNotify 2s infinite'
-        }}>
-          {activeOrdersCount}
-        </span>
-      )}
-    </button>
-
-    {/* 🔥 TOMBOL KERANJANG SAYA (HANYA IKON BULAT - FIX SEKARANG OTOMATIS AMBIL DATA) */}
-    <button
-      onClick={() => {
-        fetchCartData(); // 🔥 INI DIA! Kita paksa fetch data terbaru pas user klik tombolnya
-        setShowCartPop(true);
-      }}
-      className="btn btn-light rounded-circle"
-      style={{
-        width: '42px',
-        height: '42px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        position: 'relative',
-        backgroundColor: '#f1f5f9',
-        border: 'none',
-        color: '#334155'
-      }}
-      title="Keranjang Saya"
-    >
-      <i className="fas fa-shopping-bag" style={{ fontSize: '1.1rem' }}></i>
-
-      {cartCount > 0 && (
-        <span style={{
-          position: 'absolute', top: '-4px', right: '-4px',
-          backgroundColor: '#ef4444', color: '#ffffff', fontSize: '10px',
-          fontWeight: '800', width: '18px', height: '18px', borderRadius: '50%',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          border: '2px solid #ffffff', boxShadow: '0 2px 4px rgba(0,0,0,0.15)',
-          animation: 'pulseCartNotify 2s infinite'
-        }}>
-          {cartCount}
-        </span>
-      )}
-    </button>
-  </>
-)}
-
-                  {user.role === 'seller' && (
-                    <a href="/dashboard/seller" className="nav-link nav-cta border-0" style={{ textDecoration: 'none', background: 'linear-gradient(135deg, #f59e0b, #d97706)' }}>
-                      <i className="fas fa-store me-2"></i>Dashboard Seller
-                    </a>
-                  )}
-
-                  {user.role === 'admin' && (
-                    <a href="/dashboard/admin" className="nav-link nav-cta border-0" style={{ textDecoration: 'none', background: 'linear-gradient(135deg, #ef4444, #dc2626)' }}>
-                      <i className="fas fa-user-shield me-2"></i>Dashboard Admin
-                    </a>
-                  )}
-
-                  <button onClick={onLogout} className="nav-link nav-cta border-0" style={{ borderRadius: '50px', padding: '8px 16px', fontSize: '0.85rem', fontWeight: '600', cursor: 'pointer' }}>
-                    Logout
-                  </button>
-                </>
-              ) : (
-                <button onClick={onLoginOpen} className="nav-link nav-cta border-0" style={{ cursor: 'pointer' }}>
-                  <i className="fas fa-shopping-bag me-2"></i>Pesan Sekarang
-                </button>
-              )}
-            </div>
+      {/* BRAND LOGO (Otomatis d-none d-lg-block di laptop diganti versi bawah, di mobile pakai link ini) */}
+      <a className="navbar-brand" href="#" style={{ zIndex: 10 }}>
+        <div className="blogo">
+          {/* 🔥 LOGO MENGGUNAKAN IMG.JPEG BULAT */}
+          <div className="bico" style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', borderRadius: '50%' }}>
+            <img src="/img/img.jpeg" alt="Logo Orderly" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          </div>
+          <div>
+            <div className="bname">Order<span>ly</span></div>
+            <div className="bsub">Marketplace Pre-Order Mahasiswa</div>
           </div>
         </div>
-      </nav>
+      </a>
+
+      {/* 📱 AREA TOMBOL AKSI KHUSUS MOBILE (Hanya muncul di layar HP < 992px) */}
+      <div className="d-flex align-items-center gap-2 d-lg-none ms-auto me-2" style={{ zIndex: 10 }}>
+        {/* Tombol Search Mobile */}
+        <button onClick={onSearchOpen} className="btn btn-light rounded-circle" style={{ width: '38px', height: '38px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <i className="fas fa-search" style={{ fontSize: '0.95rem' }}></i>
+        </button>
+
+        {user && user.role === 'buyer' && (
+          <>
+            {/* Tombol Pesanan Mobile */}
+            <button
+              onClick={() => { fetchMyOrders(); setShowOrdersPop(true); }}
+              className="btn btn-light rounded-circle"
+              style={{ width: '38px', height: '38px', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', backgroundColor: '#f1f5f9', border: 'none', color: '#334155' }}
+            >
+              <i className="fas fa-receipt" style={{ fontSize: '0.95rem' }}></i>
+              {activeOrdersCount > 0 && (
+                <span style={{ position: 'absolute', top: '-2px', right: '-2px', backgroundColor: '#ef4444', color: '#ffffff', fontSize: '9px', fontWeight: '800', width: '16px', height: '16px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1.5px solid #ffffff' }}>
+                  {activeOrdersCount}
+                </span>
+              )}
+            </button>
+
+            {/* Tombol Keranjang Mobile */}
+            <button
+              onClick={() => { fetchCartData(); setShowCartPop(true); }}
+              className="btn btn-light rounded-circle"
+              style={{ width: '38px', height: '38px', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', backgroundColor: '#f1f5f9', border: 'none', color: '#334155' }}
+            >
+              <i className="fas fa-shopping-bag" style={{ fontSize: '0.95rem' }}></i>
+              {cartCount > 0 && (
+                <span style={{ position: 'absolute', top: '-2px', right: '-2px', backgroundColor: '#ef4444', color: '#ffffff', fontSize: '9px', fontWeight: '800', width: '16px', height: '16px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1.5px solid #ffffff' }}>
+                  {cartCount}
+                </span>
+              )}
+            </button>
+          </>
+        )}
+      </div>
+
+      {/* 📱 HAMBURGER BUTTON (Mepet kanan setelah deretan tombol di mobile) */}
+      <button className="navbar-toggler border-0 p-1" type="button" onClick={() => setIsNavOpen(!isNavOpen)} aria-expanded={isNavOpen}>
+        <i className="fas fa-bars" style={{ color: 'var(--primary)', fontSize: '1.35rem' }}></i>
+      </button>
+
+      {/* 💻 CONTAINER MENU UTAMA (100% Persis Struktur Asli Lu Pas di Laptop) */}
+      <div className={`collapse navbar-collapse ${isNavOpen ? 'show' : ''}`} id="navmenu">
+        <ul className="navbar-nav mx-auto text-center text-lg-start my-3 my-lg-0">
+          <li className="nav-item"><a className="nav-link" href="#hero" onClick={() => setIsNavOpen(false)}>Home</a></li>
+          <li className="nav-item"><a className="nav-link" href="#about" onClick={() => setIsNavOpen(false)}>Tentang</a></li>
+          <li className="nav-item"><a className="nav-link" href="#menu-section" onClick={() => setIsNavOpen(false)}>Produk</a></li>
+          <li className="nav-item"><a className="nav-link" href="#hours" onClick={() => setIsNavOpen(false)}>Cara Kerja</a></li>
+          <li className="nav-item"><a className="nav-link" href="#contact-section" onClick={() => setIsNavOpen(false)}>Kontak</a></li>
+        </ul>
+
+        {/* 💻 AREA KANAN (Hanya Aktif & Kelihatan di Laptop) */}
+        <div className="d-flex flex-column flex-lg-row align-items-center gap-2 mt-2 mt-lg-0">
+          
+          {/* Tombol Search Desktop */}
+          <button onClick={onSearchOpen} id="navSearchBtn" className="btn btn-light rounded-circle d-none d-lg-flex" style={{ width: '42px', height: '42px', alignItems: 'center', justifyContent: 'center' }}>
+            <i className="fas fa-search"></i>
+          </button>
+
+          {user ? (
+            <>
+              {user.role === 'buyer' && (
+                <div className="d-none d-lg-flex align-items-center gap-2">
+                  {/* Tombol Pesanan Saya Desktop */}
+                  <button
+                    onClick={() => { fetchMyOrders(); setShowOrdersPop(true); }}
+                    className="btn btn-light rounded-circle"
+                    style={{ width: '42px', height: '42px', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', backgroundColor: '#f1f5f9', border: 'none', color: '#334155' }}
+                    title="Pesanan Saya"
+                  >
+                    <i className="fas fa-receipt" style={{ fontSize: '1.1rem' }}></i>
+                    {activeOrdersCount > 0 && (
+                      <span style={{ position: 'absolute', top: '-4px', right: '-4px', backgroundColor: '#ef4444', color: '#ffffff', fontSize: '10px', fontWeight: '800', width: '18px', height: '18px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #ffffff', boxShadow: '0 2px 4px rgba(0,0,0,0.15)' }}>
+                        {activeOrdersCount}
+                      </span>
+                    )}
+                  </button>
+
+                  {/* Tombol Keranjang Saya Desktop */}
+                  <button
+                    onClick={() => { fetchCartData(); setShowCartPop(true); }}
+                    className="btn btn-light rounded-circle"
+                    style={{ width: '42px', height: '42px', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', backgroundColor: '#f1f5f9', border: 'none', color: '#334155' }}
+                    title="Keranjang Saya"
+                  >
+                    <i className="fas fa-shopping-bag" style={{ fontSize: '1.1rem' }}></i>
+                    {cartCount > 0 && (
+                      <span style={{ position: 'absolute', top: '-4px', right: '-4px', backgroundColor: '#ef4444', color: '#ffffff', fontSize: '10px', fontWeight: '800', width: '18px', height: '18px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #ffffff', boxShadow: '0 2px 4px rgba(0,0,0,0.15)' }}>
+                        {cartCount}
+                  </span>
+                    )}
+                  </button>
+                </div>
+              )}
+
+             {user.role === 'seller' && (
+  <a 
+    href="/dashboard/seller" 
+    className="nav-cta border-0 text-center px-3" 
+    style={{ 
+      textDecoration: 'none', 
+      background: 'linear-gradient(135deg, #f59e0b, #d97706)', 
+      borderRadius: '50px', 
+      color: '#fff', 
+      fontSize: '0.82rem', 
+      fontWeight: '600',
+      height: '38px', // 🔑 Ngunci tinggi biar pas sama tombol logout
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      whiteSpace: 'nowrap' // Biar teksnya ga kepotong/turun ke bawah
+    }} 
+    onClick={() => setIsNavOpen(false)}
+  >
+    <i className="fas fa-store me-2"></i>Dashboard Seller
+  </a>
+)}
+
+{user.role === 'admin' && (
+  <a 
+    href="/dashboard/admin" 
+    className="nav-cta border-0 text-center px-3" 
+    style={{ 
+      textDecoration: 'none', 
+      background: 'linear-gradient(135deg, #ef4444, #dc2626)', 
+      borderRadius: '50px', 
+      color: '#fff', 
+      fontSize: '0.82rem', 
+      fontWeight: '600',
+      height: '38px', // 🔑 Ngunci tinggi biar pas sama tombol logout
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      whiteSpace: 'nowrap'
+    }} 
+    onClick={() => setIsNavOpen(false)}
+  >
+    <i className="fas fa-user-shield me-2"></i>Dashboard Admin
+  </a>
+)}
+
+              <button onClick={() => { onLogout(); setIsNavOpen(false); }} className="nav-link nav-cta border-0 text-center w-100 w-lg-auto" style={{ borderRadius: '50px', padding: '10px 24px', fontSize: '0.85rem', fontWeight: '600', cursor: 'pointer', backgroundColor: '#64748b', color: '#fff' }}>
+                Logout
+              </button>
+            </>
+          ) : (
+            <button onClick={() => { onLoginOpen(); setIsNavOpen(false); }} className="nav-link nav-cta border-0 text-center w-100 w-lg-auto" style={{ cursor: 'pointer', padding: '10px 24px', borderRadius: '50px' }}>
+              <i className="fas fa-shopping-bag me-2"></i>Pesan Sekarang
+            </button>
+          )}
+        </div>
+      </div>
+
+    </div>
+  </nav>
 
       {/* POP-UP KERANJANG BELANJAAN */}
       {showCartPop && (

@@ -34,6 +34,10 @@ export default function PesananPage() {
   const [orderPage, setOrderPage] = useState(1);
   const ordersPerPage = 5; // Batasan maksimal 5 baris per halaman
 
+
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+
   const fetchOrders = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -165,10 +169,10 @@ const handleUpdateStatus = async (orderId: number, nextStatus: string, buyerName
     <div className="m-0 font-sans text-base antialiased font-normal dark:bg-slate-900 leading-default bg-gray-50 text-slate-500 min-h-screen">
       <div className="absolute w-full bg-blue-500 min-h-75 top-0 left-0 z-0"></div>
 
-      <Sidebar />
+     <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
       <main className="relative h-full max-h-screen transition-all duration-200 ease-in-out xl:ml-68 rounded-xl z-10">
-        <Navbar />
+       <Navbar toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
 
         <div className="px-6 py-6 mx-auto w-full max-w-full block box-border overflow-x-hidden">
           

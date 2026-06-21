@@ -54,6 +54,9 @@ export default function ProductManagement() {
   const [description, setDescription] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
 
+
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   // State Khusus Pre-Order (PO)
   const [poQuota, setPoQuota] = useState('');
   const [poDeadline, setPoDeadline] = useState('');
@@ -343,10 +346,10 @@ export default function ProductManagement() {
     <div className="m-0 font-sans text-base antialiased font-normal dark:bg-slate-900 leading-default bg-gray-50 text-slate-500 min-h-screen">
       <div className="absolute w-full bg-blue-500 min-h-75 top-0 left-0 z-0"></div>
 
-      <Sidebar />
+     <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
       <main className="relative h-full max-h-screen transition-all duration-200 ease-in-out xl:ml-68 rounded-xl z-10">
-        <Navbar />
+        <Navbar toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
 
         <div className="px-6 py-6 mx-auto w-full max-w-full block box-border overflow-x-hidden">
           

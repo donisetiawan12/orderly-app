@@ -28,6 +28,10 @@ export default function SellerReviewsPage() {
   
   const [sellerId, setSellerId] = useState<number | null>(null);
 
+
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+
   // 1. PROTEKSI LOGIN & AMBIL DATA SESSION
   useEffect(() => {
     const userSession = localStorage.getItem('user');
@@ -176,11 +180,11 @@ export default function SellerReviewsPage() {
     <>
       <div className="absolute w-full bg-blue-500 min-h-75"></div>
 
-      <Sidebar />
+       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
       <main className="relative h-full min-h-screen transition-all duration-200 ease-in-out xl:ml-68 rounded-xl flex flex-col justify-between">
         <div>
-          <Navbar />
+         <Navbar toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
 
           <div className="px-6 py-6 mx-auto w-full max-w-full block box-border overflow-x-hidden">
             

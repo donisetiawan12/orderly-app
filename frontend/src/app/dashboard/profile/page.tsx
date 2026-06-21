@@ -33,6 +33,9 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   // 🔄 Fetch data profil dari backend /api/auth/me pas halaman dibuka
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -162,11 +165,11 @@ export default function ProfilePage() {
       <div className="absolute w-full bg-blue-500 min-h-75 top-0 left-0 -z-10"></div>
 
       {/* 📋 Sidebar Kiri */}
-      <Sidebar />
+      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
       {/* 🚀 Main Content Wrapper */}
       <main className="relative h-full min-h-screen transition-all duration-200 ease-in-out xl:ml-68 rounded-xl flex flex-col">
-        <Navbar />
+        <Navbar toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
 
         {/* 👤 Container Form Profile */}
         <div className="px-6 py-6 mx-auto w-full mt-20">
